@@ -39,10 +39,17 @@ Estructura `src/app` (router, providers), `src/features/<capacidad>`, `src/lib/a
 Pantalla única `HealthScreen` que llama a `GET /health` con la URL base leída de `--dart-define=API_URL`. `firebase_auth` se agrega en este change para no repetir la configuración de `google-services.json` después, pero el login mobile se implementa en `mobile-mvp`.
 
 **D8 · CI en GitHub Actions con dos workflows.**
-`ci.yml` (pull request y `main`): `pnpm install --frozen-lockfile`, lint, typecheck, test, build, verificación de `openapi.json`; job separado `flutter analyze` con `subosito/flutter-action`. `deploy.yml` (`main`): Railway vía `railway up` con token, Vercel vía integración Git nativa (no requiere workflow). Los tests e2e de API usan PostgreSQL como servicio del job.
+`ci.yml` (pull request y `main`): `pnpm install --frozen-lockfile`, lint, typecheck, test, build, verificación de `openapi.json`; job separado `flutter analyze` con `subosito/flutter-action`. Despliegue: Render y Vercel despliegan `main` por su integración Git nativa, así que no hace falta `deploy.yml`; CI sólo valida. Los tests e2e de API usan PostgreSQL como servicio del job.
 
-**D9 · Despliegue de la API como contenedor Docker en Railway.**
-`apps/api/Dockerfile` multi-stage (build con pnpm, runtime `node:22-alpine`), `prisma migrate deploy` en el arranque. Variables: `DATABASE_URL` (Neon), `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`. Alternativa descartada: Nixpacks automático de Railway (menos control sobre pnpm workspaces).
+**D9 · Despliegue de la API como contenedor Docker en Render (plan Free).**
+Decidido el 09/09/2026: el período de prueba de Railway venció y el plan Hobby exige tarjeta. Render ofrece un servicio web gratuito con Docker y deploy automático desde GitHub. `apps/api/Dockerfile` multi-stage (build con pnpm, runtime `node:22-alpine`), `prisma migrate deploy` en el arranque, `render.yaml` en la raíz para declarar el servicio. Variables: `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon directa), `FIREBASE_SERVICE_ACCOUNT_JSON`, `CORS_ORIGINS`. Limitación conocida: el servicio Free se suspende tras 15 minutos sin tráfico y tarda 30 a 50 s en despertar; aceptable para la tesis, se revisa en el sprint 5 (alternativas: Render Starter pago, Koyeb, o créditos del GitHub Student Developer Pack con el correo institucional).
+
+**D11 · Versiones fijadas durante la implementación (09/09/2026).**
+- NestJS **11.2** y no 12: la línea 12 se publicó como ESM puro y Jest no puede cargarla en Node 22 (`require(esm)` recién llega a Jest en Node 24.9). NestJS 11 sigue soportado; se revisa cuando el ecosistema (Jest, ts-jest, nestjs-pino, throttler) esté alineado con 12.
+- TypeScript **5.9** y no 7: NestJS depende de `emitDecoratorMetadata`, que el compilador 7 (nativo) no cubre aún.
+- Prisma **7.10** con `@prisma/adapter-pg` y `prisma.config.ts` (la URL ya no vive en el schema). El cliente se genera en `apps/api/src/generated` (ignorado por git) y cada script de build, typecheck y e2e corre `prisma generate` antes.
+- `firebase-admin` 14 trae `jose` (sólo ESM): los tests e2e mapean `firebase-admin/app` y `firebase-admin/auth` a stubs (`test/stubs`) y reemplazan `TokenVerifier` por un doble. El SDK real se verificó levantando la API y enviando tokens inválidos (401 con el error de decodificación de Firebase en el log).
+- Tests del paquete `shared` con Vitest (ESM nativo) en lugar de Jest; la API mantiene Jest + ts-jest + Supertest.
 
 **D10 · Convenciones fijadas ahora para no renegociarlas.**
 Código en inglés, UI en español; Conventional Commits con el ID de HU; ramas `feat/hu-xx-nombre`; errores `{ code, message, details }` desde el primer filtro de excepciones; prefijo global `/api/v1`.
@@ -50,7 +57,8 @@ Código en inglés, UI en español; Conventional Commits con el ID de HU; ramas 
 ## Risks / Trade-offs
 
 - [Flutter no está instalado; la instalación de Android Studio y el emulador puede consumir medio día] → Tarea explícita al inicio; el resto del sprint no depende de ella.
-- [Cuentas y credenciales externas (Firebase, Neon, Railway, Vercel) deben crearlas Franco a mano] → Tareas marcadas como manuales con el dato exacto que hay que obtener; el agente no ingresa credenciales.
+- [El servicio Free de Render se duerme sin tráfico y la primera respuesta puede tardar hasta 50 s] → Para la demo, abrir la API un minuto antes; evaluar plan pago o créditos estudiantiles en el sprint 5.
+- [Cuentas y credenciales externas (Firebase, Neon, Render, Vercel) deben crearlas Franco a mano] → Tareas marcadas como manuales con el dato exacto que hay que obtener; el agente no ingresa credenciales.
 - [La clave privada del service account de Firebase pasó por el chat durante el setup] → Rotarla (generar nueva y eliminar la actual) antes del hito H4, tarea del sprint 5.
 - [Verificar el token de Firebase en cada request agrega latencia] → `firebase-admin` cachea las claves públicas; suficiente para RNF-04. Se mide en el change `financial-dashboard`.
 - [`GET /me` sin persistencia puede confundirse con la funcionalidad final] → Comentario en el código y en el proposal: es prueba de humo; `auth-tenancy` lo reemplaza.

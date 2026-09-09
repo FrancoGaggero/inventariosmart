@@ -9,3 +9,5 @@ build/
 Thumbs.db
 apps/mobile/build/
 apps/mobile/.dart_tool/
+# Cliente Prisma generado (prisma generate)
+apps/api/src/generated/

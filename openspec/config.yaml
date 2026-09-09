@@ -20,7 +20,7 @@ context: |
   ID token con firebase-admin. Roles y comercio viven en PostgreSQL.
   Monorepo pnpm: apps/api, apps/web, apps/mobile, packages/shared (zod),
   packages/api-client, docs/adr, docs/openapi.json.
-  Nube: Railway (API), Neon (Postgres), Vercel (web), Resend (correo).
+  Nube: Render plan Free (API en Docker), Neon (Postgres 18), Vercel (web), Resend (correo).
 
   Multi-tenencia: el tenant es el Comercio. Toda tabla de negocio lleva
   comercio_id; la API fija el tenant en el contexto del request y una

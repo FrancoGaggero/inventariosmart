@@ -206,7 +206,7 @@ html{scroll-behavior:smooth}
 
       <rect x="130" y="180" width="520" height="110" rx="12" fill="#2563EB" fill-opacity=".08" stroke="#2563EB" stroke-width="1.8"/>
       <text x="150" y="204" fill="currentColor" font-weight="800" font-size="13">API NestJS · /api/v1</text>
-      <text x="150" y="222" fill="currentColor" opacity=".7" font-size="11">Railway · Linux · Node 22</text>
+      <text x="150" y="222" fill="currentColor" opacity=".7" font-size="11">Render · Linux · Node 22</text>
       <g font-size="10" fill="currentColor">
         <rect x="150" y="236" width="186" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="243" y="251" text-anchor="middle">Guards: auth · tenant · rol · plan</text>
         <rect x="344" y="236" width="140" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="414" y="251" text-anchor="middle">Módulos por HU (01…14)</text>
@@ -318,7 +318,7 @@ CREATE POLICY producto_por_comercio ON producto
 <span class="cmt">-- la misma política se repite en movimiento, proveedor, gasto, alerta, orden_compra</span></code></pre>
   <h3>Otras medidas de RNF-03</h3>
   <ul>
-    <li><b>Cifrado:</b> TLS en tránsito (Vercel, Railway y Neon lo dan por defecto); cifrado en reposo del proveedor de base de datos. No se guardan contraseñas: las gestiona Firebase.</li>
+    <li><b>Cifrado:</b> TLS en tránsito (Vercel, Render y Neon lo dan por defecto); cifrado en reposo del proveedor de base de datos. No se guardan contraseñas: las gestiona Firebase.</li>
     <li><b>Superficie:</b> <span class="id">helmet</span>, CORS restringido a los orígenes de la web y la app, rate limit por IP y por comercio, tamaño máximo de archivo en la importación (5.000 filas, según wireframe).</li>
     <li><b>Auditoría mínima:</b> cada movimiento guarda <span class="id">usuario_id</span> y fecha. Los movimientos no se borran (RN-07); una corrección es un ajuste que referencia al original.</li>
     <li><b>Prueba obligatoria de aislamiento:</b> un test e2e crea dos comercios y verifica que ningún endpoint del catálogo devuelva datos cruzados. Es la evidencia de RNF-10 para la cátedra.</li>
@@ -518,13 +518,13 @@ CREATE POLICY producto_por_comercio ON producto
   <div class="tbl"><table>
     <thead><tr><th>Componente</th><th>Servicio</th><th>Plan</th><th>Costo estimado / mes</th></tr></thead>
     <tbody>
-      <tr><td class="k">API NestJS</td><td>Railway (contenedor Docker, Linux)</td><td>Hobby</td><td class="num">≈ USD 5</td></tr>
+      <tr><td class="k">API NestJS</td><td>Render (contenedor Docker, Linux)</td><td>Free</td><td class="num">0 · se suspende tras 15 min sin uso</td></tr>
       <tr><td class="k">PostgreSQL</td><td>Neon (Postgres gestionado, con ramas para dev/prod)</td><td>Free</td><td class="num">0</td></tr>
       <tr><td class="k">Web React</td><td>Vercel (estático + CDN)</td><td>Hobby</td><td class="num">0</td></tr>
       <tr><td class="k">Autenticación</td><td>Firebase Authentication</td><td>Spark</td><td class="num">0</td></tr>
       <tr><td class="k">Correo</td><td>Resend</td><td>Free (3.000 envíos)</td><td class="num">0</td></tr>
       <tr><td class="k">Respaldos</td><td>Cloudflare R2 o Backblaze B2 (bucket con retención de 30 días)</td><td>Free</td><td class="num">0</td></tr>
-      <tr><td class="k">Errores y logs</td><td>Sentry + logs de Railway</td><td>Developer</td><td class="num">0</td></tr>
+      <tr><td class="k">Errores y logs</td><td>Sentry + logs de Render</td><td>Developer</td><td class="num">0</td></tr>
       <tr><td class="k">APK</td><td>Distribución directa (link) o Play Console interno</td><td>—</td><td class="num">0 · USD 25 único si se publica</td></tr>
       <tr><td class="k">LLM (Fase 3)</td><td>API de Anthropic u OpenAI</td><td>Pago por uso</td><td class="num">variable, acotado por diseño (§4.1 Propuesta)</td></tr>
     </tbody>
@@ -533,7 +533,7 @@ CREATE POLICY producto_por_comercio ON producto
   <h3>Entornos</h3>
   <ul>
     <li><b>Local:</b> Docker Compose con PostgreSQL 16; <span class="id">.env.example</span> documentado; seeds con el comercio de demostración «Repuestos Carlos».</li>
-    <li><b>Producción:</b> rama <span class="id">main</span> → Railway y Vercel. Rama Neon <span class="id">prod</span>.</li>
+    <li><b>Producción:</b> rama <span class="id">main</span> → Render y Vercel. Rama Neon <span class="id">prod</span>.</li>
     <li><b>Preview:</b> cada PR levanta un preview de Vercel contra una rama Neon <span class="id">dev</span>. Suficiente para una persona; no hace falta un staging permanente.</li>
   </ul>
   <h3>Respaldo y recuperación (RNF-09)</h3>
@@ -578,7 +578,7 @@ CREATE POLICY producto_por_comercio ON producto
   <h2><span class="n">10</span>Plan de arranque</h2>
   <p>El Gantt v2 concentra todo el desarrollo entre el 12/10 y el 04/12: ocho semanas para 47 SP más la app Flutter. La propuesta es mantener las fechas de los hitos H3, H4 y H5 pero <b>adelantar el esqueleto técnico a septiembre</b>, solapado con la Etapa 3. Sprints de dos semanas, de lunes a viernes, velocidad objetivo de 9 a 10 SP por sprint.</p>
   <div class="sprints">
-    <div class="sp"><div class="when"><b>Sprint 0</b>14/09 → 25/09</div><div class="what"><b>Esqueleto andante.</b> Monorepo, CI, Docker Compose, NestJS con <span class="id">/health</span> y Swagger desplegado en Railway, web desplegada en Vercel, login con Google funcionando de punta a punta (Firebase → API → usuario en Postgres), proyecto Flutter que llama a <span class="id">/health</span>. En paralelo: tareas 3.1 a 3.3 del Gantt (casos de uso).</div></div>
+    <div class="sp"><div class="when"><b>Sprint 0</b>14/09 → 25/09</div><div class="what"><b>Esqueleto andante.</b> Monorepo, CI, Docker Compose, NestJS con <span class="id">/health</span> y Swagger desplegado en Render, web desplegada en Vercel, login con Google funcionando de punta a punta (Firebase → API → usuario en Postgres), proyecto Flutter que llama a <span class="id">/health</span>. En paralelo: tareas 3.1 a 3.3 del Gantt (casos de uso).</div></div>
     <div class="sp"><div class="when"><b>Sprint 1</b>28/09 → 09/10</div><div class="what"><b>HU-11 completa</b> (roles, guards, tenant, RLS, test de aislamiento) y <b>HU-01</b> inventario API + web. Cierre de DER, diagrama de clases, arquitectura y componentes (tareas 3.4 a 3.8). <span class="pill f1">11 SP</span></div></div>
     <div class="sp hito"><div class="when"><b>H3</b>09/10</div><div class="what"><b>Cierre del diseño técnico.</b> Igual que en el Gantt, pero con la infraestructura ya desplegada y dos historias hechas.</div></div>
     <div class="sp"><div class="when"><b>Sprint 2</b>12/10 → 23/10</div><div class="what"><b>HU-10</b> movimientos con transacción y stock, <b>HU-02</b> proveedores e importación de listas de precios. <span class="pill f1">13 SP</span></div></div>
@@ -610,7 +610,7 @@ CREATE POLICY producto_por_comercio ON producto
     <div><span class="n">D1</span><div><b>Fecha de entrega y tratamiento de Fases 2 y 3 con la cátedra.</b><span>Recomendación: confirmar 18/12 y declarar Fases 2 y 3 como evolución, con HU-06 como objetivo opcional.</span></div></div>
     <div><span class="n">D2</span><div><b>Monorepo o tres repositorios.</b><span>Recomendación: monorepo. En el PL03 se informa la misma URL con la carpeta de cada componente.</span></div></div>
     <div><span class="n">D3</span><div><b>Firebase Auth o Supabase.</b><span>Recomendación: mantener Firebase, que es lo comprometido y lo que el wireframe muestra (login con Google).</span></div></div>
-    <div><span class="n">D4</span><div><b>Proveedor de nube.</b><span>Recomendación: Railway + Neon + Vercel. Cambiarlo después cuesta una tarde; elegirlo ahora destraba el sprint 0.</span></div></div>
+    <div><span class="n">D4</span><div><b>Proveedor de nube.</b><span>Recomendación: Render + Neon + Vercel (Render descartado: período de prueba vencido). Cambiarlo después cuesta una tarde; elegirlo ahora destraba el sprint 0.</span></div></div>
     <div><span class="n">D5</span><div><b>Alcance mobile del MVP.</b><span>Recomendación: login, dashboard, inventario, registrar movimiento. Onboarding e importación sólo en web.</span></div></div>
   </div>
 </section>
@@ -620,12 +620,12 @@ CREATE POLICY producto_por_comercio ON producto
   <p>Lo que se puede hacer esta semana sin esperar ninguna decisión externa. Cada punto es una tarea de una tarde como máximo.</p>
   <ul class="check">
     <li><i></i><span>Crear el repositorio <span class="id">inventariosmart</span> en GitHub con la estructura de §9 y el README de arranque.</span></li>
-    <li><i></i><span>Crear las cuentas y proyectos: Firebase (habilitar Google y email), Neon, Railway, Vercel, Resend. Guardar credenciales en un gestor, nunca en el repo.</span></li>
+    <li><i></i><span>Crear las cuentas y proyectos: Firebase (habilitar Google y email), Neon, Render, Vercel, Resend. Guardar credenciales en un gestor, nunca en el repo.</span></li>
     <li><i></i><span>Docker Compose con PostgreSQL 16 y <span class="id">.env.example</span>.</span></li>
     <li><i></i><span>Scaffold de NestJS con Prisma, primera migración (Comercio, Usuario), <span class="id">GET /health</span> y Swagger en <span class="id">/docs</span>.</span></li>
     <li><i></i><span>Scaffold de React + Vite con Tailwind, pantalla de login con Google y llamada autenticada a <span class="id">GET /me</span>.</span></li>
     <li><i></i><span><span class="id">flutter create</span> con <span class="id">firebase_auth</span> y una pantalla que muestre la respuesta de <span class="id">/health</span>.</span></li>
-    <li><i></i><span>GitHub Actions: <span class="id">ci.yml</span> (lint, test, build) y <span class="id">deploy.yml</span> (main → Railway y Vercel).</span></li>
+    <li><i></i><span>GitHub Actions: <span class="id">ci.yml</span> (lint, test, build) y <span class="id">deploy.yml</span> (main → Render y Vercel).</span></li>
     <li><i></i><span>Escribir los cinco ADR de §11 en <span class="id">docs/adr</span>, aunque sea con dos párrafos cada uno.</span></li>
     <li><i></i><span>Pasar a Trello las tarjetas del sprint 0 y mover HU-11 a «En curso».</span></li>
     <li><i></i><span>Enviar a la cátedra la consulta de D1 con las tres alternativas del Gantt y la recomendación.</span></li>

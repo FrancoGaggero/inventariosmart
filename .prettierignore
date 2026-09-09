@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+coverage
+pnpm-lock.yaml
+apps/mobile
+packages/api-client/src/generated
+apps/api/src/generated
+apps/api/prisma/migrations
+docs/openapi.json
+docs/arquitectura.html
+openspec
+.claude
+CHANGELOG.md

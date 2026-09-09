@@ -1,0 +1,64 @@
+// InventarioSmart — esquema de datos.
+// Sprint 0: sólo Comercio (tenant) y Usuario. El resto de las entidades del DER
+// (Producto, Proveedor, PrecioProveedor, Movimiento, Gasto, …) llegan con sus HU.
+// Convención: nombres de tabla y columna en snake_case, en español; modelos en PascalCase.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Plan contratado por el comercio (Propuesta v2.0 §4, RF-15).
+enum Plan {
+  FREE
+  PRO
+  PREMIUM
+
+  @@map("plan")
+}
+
+/// Rol del usuario dentro de su comercio (Propuesta v2.0 §2.4).
+enum Rol {
+  DUENIO
+  EMPLEADO
+  CONTADOR
+
+  @@map("rol")
+}
+
+/// Comercio: unidad de aislamiento multi-tenant (RNF-10).
+model Comercio {
+  id         String   @id @default(uuid()) @db.Uuid
+  nombre     String   @db.VarChar(120)
+  cuit       String?  @db.VarChar(13)
+  plan       Plan     @default(FREE)
+  /// Alícuota de IVA por defecto para productos nuevos (RN-03), en porcentaje.
+  ivaDefault Decimal  @default(21) @map("iva_default") @db.Decimal(5, 2)
+  moneda     String   @default("ARS") @db.Char(3)
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  usuarios Usuario[]
+
+  @@map("comercio")
+}
+
+/// Usuario autenticado por Firebase; pertenece a un único comercio (RN-10).
+model Usuario {
+  id          String   @id @default(uuid()) @db.Uuid
+  comercioId  String   @map("comercio_id") @db.Uuid
+  firebaseUid String   @unique @map("firebase_uid") @db.VarChar(128)
+  email       String   @db.VarChar(254)
+  nombre      String?  @db.VarChar(120)
+  rol         Rol      @default(DUENIO)
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+
+  @@index([comercioId])
+  @@map("usuario")
+}

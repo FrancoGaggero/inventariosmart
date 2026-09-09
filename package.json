@@ -1,0 +1,29 @@
+{
+  "name": "inventariosmart",
+  "version": "0.1.0",
+  "private": true,
+  "description": "InventarioSmart: gestión de inventario e inteligencia financiera para PyMEs (monorepo)",
+  "packageManager": "pnpm@12.3.4",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @inventariosmart/api --filter @inventariosmart/web dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "openapi": "pnpm --filter @inventariosmart/api openapi:export && pnpm --filter @inventariosmart/api-client build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.2",
+    "eslint": "^10.10.0",
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.70.0"
+  }
+}

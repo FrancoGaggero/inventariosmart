@@ -1,0 +1,29 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+# En Render: New → Blueprint → elegir este repositorio. Las variables con sync: false
+# se cargan a mano en el panel (valores en la carpeta de secretos, nunca en el repo).
+services:
+  - type: web
+    name: inventariosmart-api
+    runtime: docker
+    plan: free
+    region: ohio # misma región que Neon (us-east-2)
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '3000'
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false # Neon production, cadena pooled
+      - key: DIRECT_URL
+        sync: false # Neon production, cadena directa (migraciones)
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false # service account en base64
+      - key: CORS_ORIGINS
+        sync: false # https://<proyecto>.vercel.app,http://localhost:5173

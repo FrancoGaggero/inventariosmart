@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    name: API, web y paquetes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: inventariosmart_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/inventariosmart_test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/inventariosmart_test
+      CORS_ORIGINS: http://localhost:5173
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        # La versión sale del campo packageManager de package.json.
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Construir paquetes compartidos
+        run: |
+          pnpm --filter @inventariosmart/shared build
+          pnpm --filter @inventariosmart/api prisma:generate
+          pnpm --filter @inventariosmart/api-client build
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formato
+        run: pnpm format:check
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests unitarios
+        run: pnpm test
+
+      - name: Migraciones y tests e2e de la API
+        run: |
+          pnpm --filter @inventariosmart/api prisma:deploy
+          pnpm --filter @inventariosmart/api test:e2e
+
+      - name: Build
+        run: pnpm build
+
+      - name: El contrato OpenAPI está al día
+        run: |
+          pnpm --filter @inventariosmart/api openapi:export
+          git diff --exit-code -- docs/openapi.json \
+            || (echo "::error::docs/openapi.json está desactualizado. Corré 'pnpm openapi' y commiteá el resultado." && exit 1)
+
+  flutter:
+    name: Mobile (Flutter)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.3
+          cache: true
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Análisis estático
+        run: flutter analyze --fatal-infos
+
+      - name: Tests de widgets
+        run: flutter test

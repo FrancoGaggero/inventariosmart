@@ -1,0 +1,15 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^firebase-admin/app$": "<rootDir>/stubs/firebase-admin-app.ts",
+    "^firebase-admin/auth$": "<rootDir>/stubs/firebase-admin-auth.ts"
+  },
+  "setupFiles": ["<rootDir>/setup-env.ts"],
+  "testTimeout": 30000
+}

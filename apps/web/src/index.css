@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+/* Tokens de marca (mismos que los wireframes v3). */
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-bg: #080e1a;
+  --color-bg-2: #0d1525;
+  --color-navy: #0f1c30;
+  --color-navy-2: #152236;
+  --color-navy-3: #1c2e45;
+  --color-brand: #2563eb;
+  --color-brand-2: #3b82f6;
+  --color-brand-3: #60a5fa;
+  --color-ok: #10b981;
+  --color-warn: #f59e0b;
+  --color-crit: #ef4444;
+  --color-violet: #8b5cf6;
+  --color-t1: #f1f5f9;
+  --color-t2: #94a3b8;
+  --color-t3: #475569;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-t1);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 11px;
+  padding: 0.85rem 1.1rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: 0.15s;
+  border: 1px solid transparent;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--color-brand-3);
+  outline-offset: 2px;
+}
+.btn-primary {
+  background: var(--color-brand);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--color-brand-2);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--color-t1);
+}
+.btn-ghost:hover {
+  border-color: var(--color-brand-2);
+}

@@ -3,33 +3,69 @@
 Plataforma SaaS de gestión de inventario e inteligencia financiera para PyMEs.
 Trabajo final de carrera — Analista de Sistemas, Escuela Da Vinci. Franco Gaggero.
 
-## Estado
+| Componente | Tecnología                                            | Carpeta               |
+| ---------- | ----------------------------------------------------- | --------------------- |
+| API        | NestJS 11 · Prisma 7 · PostgreSQL 18 · Firebase Admin | `apps/api`            |
+| Web        | React 19 · Vite · Tailwind v4 · TanStack Query        | `apps/web`            |
+| Mobile     | Flutter 3.47 (Android) · Riverpod · dio · go_router   | `apps/mobile`         |
+| Compartido | Esquemas zod, roles, planes, errores                  | `packages/shared`     |
+| Cliente    | Tipos y cliente generados desde `docs/openapi.json`   | `packages/api-client` |
 
-Sprint 0 (esqueleto técnico). Todavía no hay código de aplicación: el repositorio
-arranca con la especificación y la documentación de diseño.
+## Arranque local en cinco comandos
+
+Requisitos: Node 22, pnpm 12 (`npm i -g pnpm`), PostgreSQL 16+ local, Flutter 3.47 (sólo para mobile).
+
+```bash
+pnpm install
+cp apps/api/.env.example apps/api/.env && cp apps/web/.env.example apps/web/.env   # completar valores
+createdb inventariosmart_dev
+pnpm --filter @inventariosmart/api prisma:migrate
+pnpm dev
+```
+
+- API: http://localhost:3000/api/v1 · Swagger: http://localhost:3000/docs
+- Web: http://localhost:5173
+- Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
+
+`pnpm dev` levanta API y web en paralelo. La primera vez, construí los paquetes compartidos: `pnpm --filter @inventariosmart/shared build && pnpm openapi`.
+
+## Variables de entorno
+
+| Archivo         | Variables                                                                                                   | Origen                                          |
+| --------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `apps/api/.env` | `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (base64), `CORS_ORIGINS`, `PORT`, `LOG_LEVEL` | Neon / Firebase → Cuentas de servicio           |
+| `apps/web/.env` | `VITE_API_URL`, `VITE_FIREBASE_*`                                                                           | Firebase → Configuración del proyecto → app web |
+| `apps/mobile`   | `android/app/google-services.json` (ignorado por git); `--dart-define=API_URL`                              | Firebase → app Android                          |
+
+Los valores reales viven fuera del repositorio (carpeta de secretos del desarrollador, panel de Render y de Vercel). Ningún `.env` se commitea.
+
+## Scripts
+
+| Comando                                       | Qué hace                                                          |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| `pnpm dev`                                    | API (`nest start --watch`) y web (`vite`) en paralelo             |
+| `pnpm lint`                                   | ESLint en todo el monorepo                                        |
+| `pnpm typecheck`                              | `tsc --noEmit` en cada paquete (regenera el cliente Prisma antes) |
+| `pnpm test`                                   | Vitest (shared) y Jest (API, unitarios)                           |
+| `pnpm --filter @inventariosmart/api test:e2e` | Tests e2e de la API contra la base de `DATABASE_URL`              |
+| `pnpm build`                                  | Compila todos los paquetes                                        |
+| `pnpm openapi`                                | Exporta `docs/openapi.json` y regenera `packages/api-client`      |
+| `pnpm format`                                 | Prettier                                                          |
 
 ## Cómo se trabaja
 
-Desarrollo guiado por especificación con [OpenSpec](https://github.com/Fission-AI/OpenSpec).
-Cada historia de usuario es una *change*:
+Desarrollo guiado por especificación con [OpenSpec](https://github.com/Fission-AI/OpenSpec). Cada historia de usuario es una _change_:
 
 1. `/opsx:propose <nombre>: <qué, HU, RF>` genera proposal, specs, design y tasks en `openspec/changes/<nombre>/`.
 2. Revisar los cuatro artefactos.
 3. `/opsx:apply` implementa las tareas.
 4. `openspec archive <nombre> --yes` fusiona los specs en `openspec/specs/`.
 
-Orden de las changes y nombres de capacidad: `openspec/CAPACIDADES.md`.
-Guía de arranque paso a paso: `docs/ARRANQUE.md`.
-Documento de arquitectura: `docs/arquitectura.html`.
+Orden de las changes y nombres de capacidad: `openspec/CAPACIDADES.md`. Guía de arranque: `docs/ARRANQUE.md`. Arquitectura: `docs/arquitectura.html`. Decisiones: `docs/adr/`. Despliegue: `docs/runbooks/deploy.md`.
 
-## Estructura prevista
+## Despliegue
 
-```
-apps/api        NestJS + Prisma (API REST /api/v1)
-apps/web        React + Vite
-apps/mobile     Flutter (Android)
-packages/shared esquemas zod y tipos compartidos
-packages/api-client cliente TypeScript generado desde OpenAPI
-docs/adr        decisiones de arquitectura
-openspec/       especificación viva
-```
+- **API:** Render (plan Free, Docker) desde `render.yaml`. Cada push a `main` redespliega y corre `prisma migrate deploy`.
+- **Web:** Vercel con root directory `apps/web`.
+- **Base:** Neon (rama `production` para la API, rama `dev` para previews y CI).
+- **CI:** GitHub Actions (`.github/workflows/ci.yml`): lint, formato, typecheck, tests, e2e contra PostgreSQL, build, verificación del contrato OpenAPI y análisis de Flutter.
