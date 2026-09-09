@@ -1,0 +1,638 @@
+<title>InventarioSmart Arquitectura</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#F6F8FB; --card:#FFFFFF; --ink:#0F1C30; --ink2:#34435A; --muted:#66748A;
+  --line:#D8DFE9; --line2:#C3CCD9; --accent:#2563EB; --accent-ink:#1D4ED8; --accent-soft:#E7EEFC;
+  --ok:#0E9F6E; --ok-soft:#E3F6EE; --warn:#C2700A; --warn-soft:#FCF0DC; --crit:#D02B2B; --crit-soft:#FBE7E7;
+  --violet:#6D3EE0; --violet-soft:#EFE8FC; --code-bg:#0F1C30; --code-ink:#E6EDF7;
+  --shadow:0 1px 2px rgba(15,28,48,.06), 0 8px 24px -12px rgba(15,28,48,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#080E1A; --card:#0F1C30; --ink:#F1F5F9; --ink2:#C6D0DE; --muted:#93A1B5;
+    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18); --accent:#60A5FA; --accent-ink:#93C5FD; --accent-soft:rgba(37,99,235,.20);
+    --ok:#34D399; --ok-soft:rgba(16,185,129,.16); --warn:#FBBF24; --warn-soft:rgba(245,158,11,.16); --crit:#F87171; --crit-soft:rgba(239,68,68,.16);
+    --violet:#A78BFA; --violet-soft:rgba(139,92,246,.18); --code-bg:#050A14; --code-ink:#DCE5F2;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080E1A; --card:#0F1C30; --ink:#F1F5F9; --ink2:#C6D0DE; --muted:#93A1B5;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18); --accent:#60A5FA; --accent-ink:#93C5FD; --accent-soft:rgba(37,99,235,.20);
+  --ok:#34D399; --ok-soft:rgba(16,185,129,.16); --warn:#FBBF24; --warn-soft:rgba(245,158,11,.16); --crit:#F87171; --crit-soft:rgba(239,68,68,.16);
+  --violet:#A78BFA; --violet-soft:rgba(139,92,246,.18); --code-bg:#050A14; --code-ink:#DCE5F2;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.mono,code,pre{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
+a{color:var(--accent-ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--line);background:var(--card)}
+.mast-in{max-width:1180px;margin:0 auto;padding:36px 28px 30px;display:grid;gap:14px}
+.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink)}
+h1{font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:800;letter-spacing:-.025em;line-height:1.12;margin:0;text-wrap:balance;max-width:26ch}
+.lede{font-size:1.05rem;color:var(--ink2);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.8rem;color:var(--muted)}
+.meta b{color:var(--ink2);font-weight:600}
+
+/* layout */
+.wrap{max-width:1180px;margin:0 auto;padding:28px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:44px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:20px}.toc{position:static!important}}
+.toc{position:sticky;top:20px;font-size:.84rem}
+.toc .t{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc a{display:flex;gap:10px;color:var(--ink2);text-decoration:none;padding:5px 8px;border-radius:6px;line-height:1.35}
+.toc a:hover{background:var(--accent-soft);color:var(--ink)}
+.toc .n{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);min-width:1.6em;padding-top:.12em}
+main{max-width:78ch;display:grid;gap:44px}
+main > section{display:grid;gap:16px}
+h2{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin:0;text-wrap:balance;display:flex;gap:12px;align-items:baseline}
+h2 .n{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:500;color:var(--accent-ink)}
+h3{font-size:1.05rem;font-weight:700;margin:8px 0 0;letter-spacing:-.01em}
+p{margin:0;max-width:68ch}
+ul,ol{margin:0;padding-left:1.25em;display:grid;gap:6px;max-width:68ch}
+li::marker{color:var(--muted)}
+.small{font-size:.86rem;color:var(--muted)}
+
+/* callouts */
+.verdict{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:18px 20px;display:grid;gap:10px;box-shadow:var(--shadow)}
+.verdict .t{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+.verdict p{max-width:none}
+.note{border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:.9rem;color:var(--ink2);background:var(--card)}
+.note b{color:var(--ink)}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:color-mix(in srgb,var(--paper) 60%,var(--card))}
+tr:last-child td{border-bottom:0}
+td.k{font-weight:600}
+td.id,td .id{font-family:'JetBrains Mono',monospace;font-size:.8rem}
+.num{font-variant-numeric:tabular-nums}
+
+/* pills */
+.pill{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:20px;white-space:nowrap;vertical-align:middle}
+.pill.f1{background:var(--accent-soft);color:var(--accent-ink)}
+.pill.f2{background:var(--warn-soft);color:var(--warn)}
+.pill.f3{background:var(--violet-soft);color:var(--violet)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.web{background:var(--accent-soft);color:var(--accent-ink)}
+.pill.mob{background:var(--ok-soft);color:var(--ok)}
+
+/* figures */
+figure{margin:0;display:grid;gap:10px}
+figure svg{max-width:100%;height:auto;display:block;color:var(--ink);min-width:640px}
+figcaption{font-size:.84rem;color:var(--muted);max-width:68ch}
+.fig-box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+
+/* code */
+pre{margin:0;background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;font-size:.8rem;line-height:1.55;overflow-x:auto}
+code{font-size:.85em;background:var(--accent-soft);padding:1px 5px;border-radius:4px;color:var(--ink)}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.cmt{color:#8FA3C0}
+
+/* sprint timeline */
+.sprints{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.sp{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.sp:last-child{border-bottom:0}
+.sp .when{font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--muted);line-height:1.5}
+.sp .when b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;color:var(--ink);font-weight:700}
+.sp .what{font-size:.9rem;color:var(--ink2)}
+.sp .what b{color:var(--ink)}
+.sp.hito{background:var(--accent-soft)}
+@media (max-width:600px){.sp{grid-template-columns:1fr;gap:6px}}
+
+/* checklist */
+.check{list-style:none;padding:0;display:grid;gap:8px;max-width:none}
+.check li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:.92rem}
+.check li i{width:18px;height:18px;border:1.5px solid var(--line2);border-radius:5px;margin-top:3px}
+
+/* decisions */
+.dec{display:grid;gap:10px;max-width:none}
+.dec > div{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:.92rem}
+.dec .n{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent-ink);padding-top:2px}
+.dec b{display:block;color:var(--ink);margin-bottom:2px}
+.dec span{color:var(--ink2)}
+
+footer{max-width:1180px;margin:0 auto;padding:10px 28px 50px;font-size:.8rem;color:var(--muted)}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="eyebrow">InventarioSmart · Etapa 3 · Diseño y modelado</div>
+    <h1>Arquitectura, stack y plan de arranque</h1>
+    <p class="lede">Un backend en la nube que expone una única API REST para la web (React) y la app Android (Flutter), sobre una base PostgreSQL compartida y aislada por comercio. Este documento concreta el stack comprometido en la Propuesta v2.0, propone el modelo de datos base y reordena el cronograma para que el MVP llegue a la entrega del 18/12/2026.</p>
+    <div class="meta">
+      <span><b>Autor</b> Franco Gaggero</span>
+      <span><b>Fuente</b> Propuesta v2.0 · Backlog v2 · Gantt v2 · PL03</span>
+      <span><b>Fecha</b> 09/09/2026</span>
+      <span><b>Alcance</b> Fase 1 – MVP (47 SP) · Fases 2 y 3 previstas en el diseño</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contenido">
+  <div class="t">Contenido</div>
+  <ol>
+    <li><a href="#s1"><span class="n">1</span>Decisiones clave</a></li>
+    <li><a href="#s2"><span class="n">2</span>Arquitectura lógica</a></li>
+    <li><a href="#s3"><span class="n">3</span>Stack tecnológico</a></li>
+    <li><a href="#s4"><span class="n">4</span>Multi-tenencia y seguridad</a></li>
+    <li><a href="#s5"><span class="n">5</span>Modelo de datos (DER base)</a></li>
+    <li><a href="#s6"><span class="n">6</span>API y módulos</a></li>
+    <li><a href="#s7"><span class="n">7</span>Web y mobile</a></li>
+    <li><a href="#s8"><span class="n">8</span>Infraestructura en la nube</a></li>
+    <li><a href="#s9"><span class="n">9</span>Repositorio y calidad</a></li>
+    <li><a href="#s10"><span class="n">10</span>Plan de arranque</a></li>
+    <li><a href="#s11"><span class="n">11</span>Riesgos y decisiones pendientes</a></li>
+    <li><a href="#s12"><span class="n">12</span>Próximos pasos</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="s1">
+  <h2><span class="n">1</span>Decisiones clave</h2>
+  <div class="verdict">
+    <div class="t">Respuesta corta</div>
+    <p>Sí: un solo backend NestJS en la nube, una sola API REST versionada y una sola base PostgreSQL sirven a la web y a la app mobile. No hace falta un backend por cliente ni microservicios. La modularidad que pide RNF-05 se resuelve con un <b>monolito modular</b> (un módulo NestJS por historia de usuario), que un desarrollador solo puede mantener y que se puede partir en servicios más adelante sin rehacer el modelo.</p>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Decisión</th><th>Elección</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Forma del backend</td><td>Monolito modular NestJS, una API REST <span class="id">/api/v1</span></td><td>Un solo despliegue, un solo contrato para web y mobile. Cumple RNF-05 y RNF-07 sin el costo operativo de microservicios.</td></tr>
+      <tr><td class="k">Base de datos</td><td>PostgreSQL única, esquema compartido, columna <span class="id">comercio_id</span> en cada tabla</td><td>Es el modelo multi-tenant más simple de operar y auditar. Se refuerza con Row Level Security (RLS) para RNF-10.</td></tr>
+      <tr><td class="k">Autenticación</td><td>Firebase Authentication (Google + email) verificada en la API; roles y comercio en la base propia</td><td>Login con Google relevado como preferencia; el backend no guarda contraseñas. Los roles viven en PostgreSQL para que un cambio de rol sea inmediato.</td></tr>
+      <tr><td class="k">Contrato web ↔ mobile</td><td>OpenAPI generado desde NestJS; clientes tipados para TypeScript y Dart</td><td>La app Flutter y la web consumen exactamente los mismos endpoints. Un cambio en el contrato rompe en compilación, no en producción.</td></tr>
+      <tr><td class="k">Stock</td><td>Almacenado en <span class="id">producto.stock_actual</span>, actualizado en la misma transacción que el movimiento</td><td>El dashboard responde en menos de 3 s (RNF-04) sin sumar todo el histórico. El histórico inmutable (RN-07) permite recalcular y verificar.</td></tr>
+      <tr><td class="k">Repositorio</td><td>Monorepo único (api, web, mobile, shared)</td><td>Tipos compartidos, una sola CI, un solo lugar para la documentación. El PL03 admite una URL por componente apuntando a carpetas.</td></tr>
+      <tr><td class="k">Cronograma</td><td>Adelantar el setup técnico (tarea 4.1) a septiembre, en paralelo a la Etapa 3</td><td>El Gantt asigna 8 semanas para 47 SP más la app Flutter. Un esqueleto desplegado en septiembre baja el riesgo de la Etapa 4.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s2">
+  <h2><span class="n">2</span>Arquitectura lógica</h2>
+  <p>Tres capas: clientes, API y datos. Los dos clientes hablan únicamente con la API por HTTPS y se autentican con el ID token que emite Firebase. La API verifica ese token, resuelve el comercio y el rol del usuario, y recién entonces toca la base. Los servicios externos (correo, LLM) se consumen sólo desde la API, nunca desde los clientes.</p>
+  <figure>
+    <div class="fig-box">
+    <svg viewBox="0 0 900 470" role="img" aria-label="Diagrama de arquitectura: web React y mobile Flutter llaman a la API NestJS por HTTPS con el token de Firebase; la API verifica el token, consulta PostgreSQL vía Prisma filtrando por comercio y usa Resend y una API de LLM como servicios externos." xmlns="http://www.w3.org/2000/svg" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="12">
+      <defs>
+        <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+      </defs>
+      <text x="20" y="42" fill="currentColor" opacity=".55" font-size="10" font-weight="700" letter-spacing="1.5">CLIENTES</text>
+      <text x="20" y="212" fill="currentColor" opacity=".55" font-size="10" font-weight="700" letter-spacing="1.5">API</text>
+      <text x="20" y="392" fill="currentColor" opacity=".55" font-size="10" font-weight="700" letter-spacing="1.5">DATOS</text>
+
+      <rect x="130" y="24" width="220" height="64" rx="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="240" y="50" text-anchor="middle" fill="currentColor" font-weight="700">Web · React + Vite</text>
+      <text x="240" y="70" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">Vercel · Dueño, Empleado, Contador</text>
+      <rect x="430" y="24" width="220" height="64" rx="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="540" y="50" text-anchor="middle" fill="currentColor" font-weight="700">Mobile · Flutter (Android)</text>
+      <text x="540" y="70" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">APK · Dueño, Empleado</text>
+
+      <rect x="720" y="24" width="160" height="64" rx="10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="800" y="50" text-anchor="middle" fill="currentColor" font-weight="700">Firebase Auth</text>
+      <text x="800" y="70" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">Google · email/contraseña</text>
+
+      <rect x="130" y="180" width="520" height="110" rx="12" fill="#2563EB" fill-opacity=".08" stroke="#2563EB" stroke-width="1.8"/>
+      <text x="150" y="204" fill="currentColor" font-weight="800" font-size="13">API NestJS · /api/v1</text>
+      <text x="150" y="222" fill="currentColor" opacity=".7" font-size="11">Railway · Linux · Node 22</text>
+      <g font-size="10" fill="currentColor">
+        <rect x="150" y="236" width="186" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="243" y="251" text-anchor="middle">Guards: auth · tenant · rol · plan</text>
+        <rect x="344" y="236" width="140" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="414" y="251" text-anchor="middle">Módulos por HU (01…14)</text>
+        <rect x="492" y="236" width="70" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="527" y="251" text-anchor="middle">Jobs cron</text>
+        <rect x="570" y="236" width="68" height="22" rx="5" fill="none" stroke="currentColor" opacity=".6"/><text x="604" y="251" text-anchor="middle">OpenAPI</text>
+      </g>
+      <text x="150" y="278" fill="currentColor" opacity=".7" font-size="10.5">Prisma ORM · validación zod · logs pino · rate limit</text>
+
+      <rect x="720" y="180" width="160" height="48" rx="10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="800" y="200" text-anchor="middle" fill="currentColor" font-weight="700">Resend</text>
+      <text x="800" y="217" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">correo transaccional · Fase 2</text>
+      <rect x="720" y="242" width="160" height="48" rx="10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="800" y="262" text-anchor="middle" fill="currentColor" font-weight="700">API de LLM</text>
+      <text x="800" y="279" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">asistente Premium · Fase 3</text>
+
+      <rect x="130" y="372" width="300" height="70" rx="10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="280" y="398" text-anchor="middle" fill="currentColor" font-weight="700">PostgreSQL 16 (Neon)</text>
+      <text x="280" y="418" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">esquema único · comercio_id + RLS · backup diario</text>
+      <rect x="470" y="372" width="180" height="70" rx="10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+      <text x="560" y="398" text-anchor="middle" fill="currentColor" font-weight="700">Bucket de respaldos</text>
+      <text x="560" y="418" text-anchor="middle" fill="currentColor" opacity=".7" font-size="11">pg_dump nocturno · 30 días</text>
+
+      <line x1="240" y1="88" x2="240" y2="180" stroke="currentColor" stroke-width="1.4" marker-end="url(#arw)"/>
+      <line x1="540" y1="88" x2="540" y2="180" stroke="currentColor" stroke-width="1.4" marker-end="url(#arw)"/>
+      <text x="390" y="128" text-anchor="middle" fill="currentColor" font-size="11">HTTPS · JSON · Authorization: Bearer &lt;ID token&gt;</text>
+      <text x="390" y="144" text-anchor="middle" fill="currentColor" opacity=".7" font-size="10.5">mismos endpoints para ambos clientes</text>
+      <line x1="650" y1="56" x2="720" y2="56" stroke="currentColor" stroke-width="1.2" marker-end="url(#arw)"/>
+      <text x="685" y="48" text-anchor="middle" fill="currentColor" font-size="10">login</text>
+      <line x1="650" y1="192" x2="740" y2="90" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arw)"/>
+      <text x="720" y="150" text-anchor="middle" fill="currentColor" font-size="10">verifica token</text>
+      <line x1="650" y1="204" x2="720" y2="204" stroke="currentColor" stroke-width="1.2" marker-end="url(#arw)"/>
+      <line x1="650" y1="266" x2="720" y2="266" stroke="currentColor" stroke-width="1.2" marker-end="url(#arw)"/>
+      <line x1="280" y1="290" x2="280" y2="372" stroke="currentColor" stroke-width="1.4" marker-end="url(#arw)"/>
+      <text x="292" y="322" fill="currentColor" font-size="11">Prisma · SET LOCAL app.comercio_id</text>
+      <text x="292" y="338" fill="currentColor" opacity=".7" font-size="10.5">transacciones para movimientos de stock</text>
+      <line x1="430" y1="407" x2="470" y2="407" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arw)"/>
+    </svg>
+    </div>
+    <figcaption>Figura 1. Web y mobile comparten la API y la base. Firebase sólo emite y verifica identidades; el comercio, el rol y el plan se resuelven en PostgreSQL.</figcaption>
+  </figure>
+  <h3>Por qué monolito modular y no microservicios</h3>
+  <ul>
+    <li><b>Un desarrollador, un despliegue.</b> Cada módulo NestJS (productos, movimientos, proveedores…) tiene su controlador, servicio y repositorio; se prueban y documentan por separado (RNF-07) pero corren en un proceso.</li>
+    <li><b>Transacciones simples.</b> Registrar una venta descuenta stock y crea el movimiento en una única transacción de PostgreSQL. Con servicios separados eso exige sagas o colas.</li>
+    <li><b>Camino de crecimiento.</b> Si un módulo necesita escalar solo (por ejemplo el asistente de IA), se extrae detrás del mismo contrato OpenAPI. RNF-05 queda satisfecho por diseño, no por infraestructura anticipada.</li>
+  </ul>
+</section>
+
+<section id="s3">
+  <h2><span class="n">3</span>Stack tecnológico</h2>
+  <p>Se respeta el stack de la Propuesta v2.0 (§2.5) y se completa con las librerías concretas de cada capa. Versiones: las estables al momento de crear los proyectos, fijadas en el lockfile.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Capa</th><th>Elección</th><th>Rol en InventarioSmart</th><th>Alternativa descartada</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Backend</td><td>NestJS + TypeScript sobre Node 22</td><td>Módulos por HU, guards de auth/tenant/rol/plan, jobs con <span class="id">@nestjs/schedule</span>.</td><td>Express a mano: sin estructura modular impuesta. Microservicios: sobredimensionado.</td></tr>
+      <tr><td class="k">ORM y migraciones</td><td>Prisma</td><td>Esquema tipado, migraciones versionadas, extensión de cliente que inyecta <span class="id">comercio_id</span>.</td><td>TypeORM: menos seguro en tipos. Drizzle: viable, menos tooling de migraciones.</td></tr>
+      <tr><td class="k">Base de datos</td><td>PostgreSQL 16 gestionado</td><td>Integridad transaccional de stock y movimientos; RLS por comercio; vistas para márgenes.</td><td>MySQL: sin RLS nativo. MongoDB: sin transacciones cómodas para stock.</td></tr>
+      <tr><td class="k">Autenticación</td><td>Firebase Authentication + <span class="id">firebase-admin</span></td><td>Login con Google y email. La API verifica el ID token en cada request y mapea <span class="id">uid</span> → usuario/comercio/rol.</td><td>Auth propio con JWT: más código y más riesgo. Supabase Auth: válido, pero implica cambiar la propuesta.</td></tr>
+      <tr><td class="k">Contrato de API</td><td>OpenAPI 3 con <span class="id">@nestjs/swagger</span> → <span class="id">openapi-typescript</span> (web) y <span class="id">openapi-generator</span> Dart (mobile)</td><td>Un único contrato para los dos clientes; documentación viva en <span class="id">/docs</span>.</td><td>GraphQL: flexible pero agrega complejidad de caché y permisos por campo.</td></tr>
+      <tr><td class="k">Validación</td><td><span class="id">zod</span> (DTOs compartidos en <span class="id">packages/shared</span>)</td><td>Mismos esquemas en API y web; mensajes de error en español.</td><td><span class="id">class-validator</span>: funciona, pero no se comparte con el frontend.</td></tr>
+      <tr><td class="k">Web</td><td>React + Vite + TypeScript, TanStack Query, React Router, Tailwind CSS v4, Recharts</td><td>Paneles, tablas y formularios del Dueño y el Contador. Mismo tooling que el landing ya construido.</td><td>Next.js: SSR innecesario para una app autenticada; complica el despliegue.</td></tr>
+      <tr><td class="k">Mobile</td><td>Flutter (Dart) para Android, Riverpod, <span class="id">dio</span>, <span class="id">go_router</span>, <span class="id">firebase_auth</span></td><td>Pantallas del MVP: login, dashboard, inventario, movimientos.</td><td>React Native: unificaría lenguaje, pero la propuesta compromete Flutter.</td></tr>
+      <tr><td class="k">Importación Excel</td><td>SheetJS (<span class="id">xlsx</span>) en la API</td><td>Lee .xlsx/.csv en memoria, valida, devuelve vista previa, confirma en transacción. El archivo no se persiste.</td><td>Procesar en el navegador: no sirve para validar contra la base.</td></tr>
+      <tr><td class="k">Correo</td><td>Resend</td><td>Alertas y reportes semanales (Fase 2). Plantillas en HTML simple.</td><td>SMTP propio: entregabilidad pobre.</td></tr>
+      <tr><td class="k">LLM</td><td>API de Anthropic u OpenAI (según §2.5), con <i>tool use</i> sobre consultas predefinidas</td><td>Asistente Premium (Fase 3). El modelo nunca ejecuta SQL libre: llama a herramientas acotadas (top productos, margen, redactar orden).</td><td>Modelo autoalojado: costo y operación fuera de alcance.</td></tr>
+      <tr><td class="k">Observabilidad</td><td><span class="id">pino</span> para logs estructurados, Sentry (plan gratuito)</td><td>Trazas por request con <span class="id">comercio_id</span>; errores con contexto.</td><td>—</td></tr>
+      <tr><td class="k">Pruebas</td><td>Jest (unitarias), Supertest (e2e de API), Postgres efímero en CI</td><td>Reglas RN-01 a RN-04 cubiertas por tests unitarios; cada HU con al menos un e2e.</td><td>—</td></tr>
+      <tr><td class="k">CI/CD</td><td>GitHub Actions</td><td>Lint, tests y build en cada PR; deploy automático de <span class="id">main</span>.</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s4">
+  <h2><span class="n">4</span>Multi-tenencia y seguridad</h2>
+  <p>El tenant es el Comercio (Propuesta §2.3). Se adopta el modelo <b>base única, esquema único, fila discriminada</b>: cada tabla de negocio lleva <code>comercio_id</code>. Es el modelo más barato de operar para cientos de comercios pequeños y el que mejor se lleva con Prisma. El aislamiento (RNF-10) se garantiza en dos capas, para que un error de programación no alcance para filtrar datos entre comercios.</p>
+  <h3>Capa 1 · Contexto de tenant en la API</h3>
+  <p>Cada request pasa por una cadena de guards. El orden importa: primero se sabe quién es, después a qué comercio pertenece, después qué puede hacer.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Guard</th><th>Qué hace</th><th>Requisito</th></tr></thead>
+    <tbody>
+      <tr><td class="k">FirebaseAuthGuard</td><td>Verifica el ID token con <span class="id">firebase-admin</span>. Si es válido, carga el usuario de PostgreSQL por <span class="id">firebase_uid</span>. Primer login: crea Comercio (plan Free) y Usuario con rol Dueño.</td><td>RF-11, RNF-03</td></tr>
+      <tr><td class="k">TenantContext</td><td>Fija <span class="id">comercio_id</span> en el contexto del request (AsyncLocalStorage). Toda consulta Prisma lo usa de forma automática.</td><td>RN-10, RNF-10</td></tr>
+      <tr><td class="k">RolesGuard</td><td>Decorador <span class="id">@Roles('DUENIO')</span> por endpoint. Empleado no ve costos ni márgenes; Contador sólo lectura.</td><td>§2.4</td></tr>
+      <tr><td class="k">PlanGuard</td><td>Decorador <span class="id">@RequierePlan('PRO')</span>. Bloquea alertas, reportes, asistente y aplica el límite de 50 productos del plan Free.</td><td>RF-15, RN-09</td></tr>
+    </tbody>
+  </table></div>
+  <pre><code><span class="cmt">// prisma/tenant.extension.ts — todo modelo con comercio_id se filtra solo</span>
+export const tenantPrisma = (comercioId: string) =>
+  prisma.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          if (TENANT_MODELS.has(model)) {
+            if (operation.startsWith('find') || operation === 'count')
+              args.where = { ...args.where, comercioId };
+            if (operation === 'create')
+              args.data = { ...args.data, comercioId };
+          }
+          return query(args);
+        },
+      },
+    },
+  });</code></pre>
+  <h3>Capa 2 · Row Level Security en PostgreSQL</h3>
+  <p>Defensa en profundidad: aunque una consulta olvide el filtro, la base no devuelve filas de otro comercio. La API abre cada transacción con <code>SET LOCAL app.comercio_id</code> y las políticas comparan contra ese valor.</p>
+  <pre><code>ALTER TABLE producto ENABLE ROW LEVEL SECURITY;
+CREATE POLICY producto_por_comercio ON producto
+  USING (comercio_id = current_setting('app.comercio_id')::uuid);
+<span class="cmt">-- la misma política se repite en movimiento, proveedor, gasto, alerta, orden_compra</span></code></pre>
+  <h3>Otras medidas de RNF-03</h3>
+  <ul>
+    <li><b>Cifrado:</b> TLS en tránsito (Vercel, Railway y Neon lo dan por defecto); cifrado en reposo del proveedor de base de datos. No se guardan contraseñas: las gestiona Firebase.</li>
+    <li><b>Superficie:</b> <span class="id">helmet</span>, CORS restringido a los orígenes de la web y la app, rate limit por IP y por comercio, tamaño máximo de archivo en la importación (5.000 filas, según wireframe).</li>
+    <li><b>Auditoría mínima:</b> cada movimiento guarda <span class="id">usuario_id</span> y fecha. Los movimientos no se borran (RN-07); una corrección es un ajuste que referencia al original.</li>
+    <li><b>Prueba obligatoria de aislamiento:</b> un test e2e crea dos comercios y verifica que ningún endpoint del catálogo devuelva datos cruzados. Es la evidencia de RNF-10 para la cátedra.</li>
+  </ul>
+</section>
+
+<section id="s5">
+  <h2><span class="n">5</span>Modelo de datos (DER base)</h2>
+  <p>Borrador para la tarea 3.4 del Gantt. Cubre la Fase 1 completa y deja las entidades de Fase 2 y 3 ya modeladas, porque agregarlas ahora cuesta poco y evita migraciones incómodas después. Sucursal queda como entidad prevista sin funcionalidad (§2.2.1).</p>
+  <figure>
+    <div class="fig-box">
+    <svg viewBox="0 0 960 560" role="img" aria-label="Diagrama entidad-relación base: Comercio contiene Usuarios, Productos, Proveedores, Gastos, Alertas y Órdenes de compra; PrecioProveedor vincula Producto y Proveedor con el costo vigente; Movimiento registra ventas, ingresos y ajustes por producto y usuario." xmlns="http://www.w3.org/2000/svg" font-family="Plus Jakarta Sans, system-ui, sans-serif" font-size="11">
+      <defs>
+        <marker id="dot" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="6" markerHeight="6"><circle cx="4" cy="4" r="3" fill="currentColor"/></marker>
+        <marker id="crow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,6 L11,1 M0,6 L11,6 M0,6 L11,11" fill="none" stroke="currentColor" stroke-width="1.3"/></marker>
+      </defs>
+      <g transform="translate(380,20)">
+        <rect width="200" height="96" rx="8" fill="#2563EB" fill-opacity=".08" stroke="#2563EB" stroke-width="1.6"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Comercio (tenant)</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="#2563EB" opacity=".6"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · nombre · cuit?</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">plan (FREE|PRO|PREMIUM)</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">iva_default 21 · moneda ARS</text>
+      </g>
+      <g transform="translate(40,20)">
+        <rect width="200" height="96" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Usuario</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">firebase_uid · email</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">rol (DUENIO|EMPLEADO|CONTADOR)</text>
+      </g>
+      <g transform="translate(720,20)">
+        <rect width="200" height="96" rx="8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Sucursal (prevista)</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · nombre</text>
+        <text x="10" y="62" fill="currentColor" opacity=".7" font-size="10.5">Fuera de alcance §2.2.1.</text>
+        <text x="10" y="78" fill="currentColor" opacity=".7" font-size="10.5">Sólo la tabla, sin UI.</text>
+      </g>
+      <g transform="translate(40,190)">
+        <rect width="200" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Producto</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · codigo*</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">nombre · categoria</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">precio_venta · alicuota_iva</text>
+        <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">stock_actual · stock_seguridad</text>
+        <text x="10" y="110" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">proveedor_principal_id · activo</text>
+      </g>
+      <g transform="translate(380,190)">
+        <rect width="200" height="112" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">PrecioProveedor</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · producto_id · proveedor_id</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">costo_neto · vigente_desde</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">origen (MANUAL|IMPORT)</text>
+        <text x="10" y="96" fill="currentColor" opacity=".7" font-size="10.5">Vigente = último costo (RN-08)</text>
+      </g>
+      <g transform="translate(720,190)">
+        <rect width="200" height="112" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Proveedor</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · nombre</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">email · telefono</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">lead_time_dias · confiabilidad</text>
+        <text x="10" y="96" fill="currentColor" opacity=".7" font-size="10.5">lead time alimenta RN-04</text>
+      </g>
+      <g transform="translate(40,400)">
+        <rect width="200" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Movimiento</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · producto_id</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">tipo (VENTA|INGRESO|AJUSTE)</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">cantidad · precio_unit · fecha</text>
+        <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">usuario_id · ajusta_a_id?</text>
+        <text x="10" y="112" fill="currentColor" opacity=".7" font-size="10.5">Inmutable (RN-07) · sin DELETE</text>
+      </g>
+      <g transform="translate(380,400)">
+        <rect width="200" height="112" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Gasto</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · concepto</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">tipo (FIJO|VARIABLE) · importe</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">periodo · periodicidad</text>
+        <text x="10" y="96" fill="currentColor" opacity=".7" font-size="10.5">Prorrateo por unidad vendida (RN-02)</text>
+      </g>
+      <g transform="translate(720,400)">
+        <rect width="200" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Fase 2 y 3</text>
+        <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">Alerta (producto, estado)</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">OrdenCompra + Item</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">ReporteSemanal</text>
+        <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">ConversacionIA · MensajeIA</text>
+        <text x="10" y="112" fill="currentColor" opacity=".7" font-size="10.5">Tablas creadas, sin UI en el MVP</text>
+      </g>
+
+      <line x1="380" y1="60" x2="240" y2="60" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="310" y="52" text-anchor="middle" fill="currentColor" font-size="10">1 · n</text>
+      <line x1="580" y1="60" x2="720" y2="60" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="650" y="52" text-anchor="middle" fill="currentColor" font-size="10">1 · n</text>
+      <path d="M400,116 L400,150 L140,150 L140,190" fill="none" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <path d="M560,116 L560,150 L820,150 L820,190" fill="none" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="480" y="144" text-anchor="middle" fill="currentColor" font-size="10">comercio_id en todas las entidades de negocio</text>
+      <line x1="240" y1="246" x2="380" y2="246" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="310" y="238" text-anchor="middle" fill="currentColor" font-size="10">1 · n</text>
+      <line x1="720" y1="246" x2="580" y2="246" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="650" y="238" text-anchor="middle" fill="currentColor" font-size="10">1 · n</text>
+      <line x1="140" y1="318" x2="140" y2="400" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="152" y="364" fill="currentColor" font-size="10">1 · n · actualiza stock_actual</text>
+      <path d="M40,60 L20,60 L20,470 L40,470" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="12" y="270" fill="currentColor" font-size="10" transform="rotate(-90 12,270)" text-anchor="middle">registra</text>
+      <path d="M240,500 L270,500 L270,470 L240,470" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#crow)"/>
+      <text x="278" y="490" fill="currentColor" font-size="10">ajusta_a (0..1)</text>
+      <path d="M480,116 L480,170 L340,170 L340,340 L480,340 L480,400" fill="none" stroke="currentColor" stroke-width="1.2" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <path d="M240,300 L300,300 L300,370 L700,370 L700,440 L720,440" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" marker-start="url(#dot)" marker-end="url(#crow)"/>
+      <text x="500" y="364" text-anchor="middle" fill="currentColor" font-size="10">genera alertas y órdenes (Fase 2)</text>
+    </svg>
+    </div>
+    <figcaption>Figura 2. Entidades de la Fase 1 en trazo continuo; las previstas para Fases 2 y 3 y la Sucursal en trazo discontinuo. El asterisco en <span class="mono">codigo</span> indica unicidad por comercio (RN-05).</figcaption>
+  </figure>
+  <h3>Reglas de negocio llevadas al modelo</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Regla</th><th>Cómo se implementa</th></tr></thead>
+    <tbody>
+      <tr><td class="id">RN-01 / RN-03</td><td>Vista SQL <span class="id">v_rentabilidad_producto</span>: margen bruto = precio neto − costo vigente neto; el neto se deriva de <span class="id">alicuota_iva</span> por producto (default 21 % desde Comercio).</td></tr>
+      <tr><td class="id">RN-02</td><td>Servicio <span class="id">ProfitabilityService</span>: suma gastos del período, divide por unidades vendidas del período (movimientos VENTA) y resta por unidad. Si no hay gastos, devuelve <span class="id">margen_neto: null</span> con motivo, no un valor igual al bruto (HU-13).</td></tr>
+      <tr><td class="id">RN-04</td><td>Consulta de velocidad: unidades VENTA de los últimos 30 días ÷ 30. Punto de reposición = velocidad × <span class="id">lead_time_dias</span> del proveedor principal + <span class="id">stock_seguridad</span>. Se calcula en un job diario (Fase 2) y bajo demanda en el dashboard.</td></tr>
+      <tr><td class="id">RN-05</td><td>Índice único compuesto <span class="id">(comercio_id, codigo)</span> en Producto.</td></tr>
+      <tr><td class="id">RN-07</td><td>Sin endpoint DELETE en movimientos; <span class="id">ajusta_a_id</span> apunta al original. Trigger de PostgreSQL que rechaza UPDATE y DELETE sobre la tabla.</td></tr>
+      <tr><td class="id">RN-08</td><td>Al importar una lista de precios se insertan filas nuevas en PrecioProveedor; el costo vigente es el de mayor <span class="id">vigente_desde</span>. Los márgenes se recalculan solos porque son una vista.</td></tr>
+      <tr><td class="id">RN-10 / RNF-10</td><td><span class="id">comercio_id</span> en todas las tablas de negocio más RLS (§4).</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Stock almacenado, histórico verificable.</b> <span class="id">producto.stock_actual</span> se actualiza en la misma transacción que inserta el movimiento (con bloqueo de fila para evitar que dos ventas simultáneas dejen stock negativo). Un job de consistencia recalcula stock desde el histórico y reporta diferencias: sirve como prueba de integridad ante la cátedra.</div>
+</section>
+
+<section id="s6">
+  <h2><span class="n">6</span>API y módulos</h2>
+  <p>Un módulo NestJS por historia de usuario, con nombres en inglés en el código y en español en la interfaz. Los endpoints de Fase 1 son los que deben existir para el hito H4; los de Fase 2 y 3 se listan para fijar el contrato ahora y no romperlo después.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Módulo</th><th>Endpoints principales (<span class="id">/api/v1</span>)</th><th>Roles</th><th>HU</th><th>Fase</th></tr></thead>
+    <tbody>
+      <tr><td class="k">auth</td><td class="id">GET /me · POST /me/onboarding</td><td>Todos</td><td class="id">HU-11</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">users</td><td class="id">GET/POST /users · PATCH /users/:id/role · DELETE /users/:id</td><td>Dueño</td><td class="id">HU-11</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">products</td><td class="id">GET/POST /products · GET/PATCH/DELETE /products/:id</td><td>Dueño, Empleado (sin costos)</td><td class="id">HU-01</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">movements</td><td class="id">GET /movements?tipo&amp;desde&amp;hasta · POST /movements · POST /movements/:id/ajuste</td><td>Dueño, Empleado</td><td class="id">HU-10</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">suppliers</td><td class="id">CRUD /suppliers · POST /suppliers/:id/price-list · GET /products/:id/prices</td><td>Dueño</td><td class="id">HU-02</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">expenses</td><td class="id">CRUD /expenses?periodo</td><td>Dueño</td><td class="id">HU-13</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">profitability</td><td class="id">GET /profitability/products · GET /profitability/summary?periodo</td><td>Dueño, Contador</td><td class="id">HU-03</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">dashboard</td><td class="id">GET /dashboard?periodo</td><td>Dueño, Contador</td><td class="id">HU-04</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">import</td><td class="id">POST /import/preview (multipart) · POST /import/commit</td><td>Dueño</td><td class="id">HU-05</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">alerts</td><td class="id">GET /alerts · PATCH /alerts/:id (atendida | pospuesta)</td><td>Dueño</td><td class="id">HU-06</td><td><span class="pill f2">2</span></td></tr>
+      <tr><td class="k">purchase-orders</td><td class="id">GET/POST /purchase-orders · PATCH /:id · POST /:id/confirm</td><td>Dueño (confirmar)</td><td class="id">HU-07</td><td><span class="pill f2">2</span></td></tr>
+      <tr><td class="k">reports</td><td class="id">GET /reports/weekly · PATCH /reports/settings</td><td>Dueño, Contador</td><td class="id">HU-09</td><td><span class="pill f2">2</span></td></tr>
+      <tr><td class="k">supplier-compare</td><td class="id">GET /products/:id/supplier-comparison</td><td>Dueño</td><td class="id">HU-12</td><td><span class="pill f2">2</span></td></tr>
+      <tr><td class="k">assistant</td><td class="id">POST /assistant/messages · GET /assistant/conversations</td><td>Dueño (Premium)</td><td class="id">HU-08</td><td><span class="pill f3">3</span></td></tr>
+      <tr><td class="k">plans</td><td class="id">GET /plan · POST /plan/change</td><td>Dueño</td><td class="id">HU-14</td><td><span class="pill f3">3</span></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Convenciones del contrato</h3>
+  <ul>
+    <li><b>Paginación</b> por cursor en listados (<span class="id">?cursor&amp;limit</span>), pensada para el scroll de la app mobile.</li>
+    <li><b>Errores</b> con forma fija <span class="id">{ code, message, details }</span>, mensaje en español apto para mostrar al usuario (RNF-01, RNF-08).</li>
+    <li><b>Montos</b> en pesos como <span class="id">decimal(14,2)</span> en la base y string en JSON, nunca float. Fechas en ISO 8601; períodos y reportes en zona <span class="id">America/Argentina/Buenos_Aires</span>.</li>
+    <li><b>Campos sensibles</b> (costo, margen) se omiten en la respuesta para el rol Empleado mediante un interceptor, no con un endpoint aparte.</li>
+    <li><b>Idempotencia</b> en <span class="id">POST /movements</span> con header <span class="id">Idempotency-Key</span>, para que un reintento desde el celular no duplique una venta.</li>
+  </ul>
+</section>
+
+<section id="s7">
+  <h2><span class="n">7</span>Web y mobile: un contrato, dos alcances</h2>
+  <p>Cubre la tarea 3.1 del Gantt (separación de requisitos Web / Mobile). La web es el puesto de administración; la app es la herramienta de mostrador. Ambas usan los mismos endpoints; lo que cambia es qué pantallas existen.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Funcionalidad</th><th>Web</th><th>Mobile</th><th>Nota</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Login / registro (Google, email)</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Mismo proyecto Firebase; SDK <span class="id">firebase_auth</span> en Flutter.</td></tr>
+      <tr><td class="k">Onboarding con importación Excel</td><td><span class="pill web">Web</span></td><td>—</td><td>El wireframe mobile lo muestra, pero la Propuesta lo asigna a Web. Mobile ofrece alta manual rápida.</td></tr>
+      <tr><td class="k">Dashboard financiero</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Mobile: 4 KPI y top 3 rentables; Web: completo. Mismo <span class="id">GET /dashboard</span>.</td></tr>
+      <tr><td class="k">Inventario (consulta, alta, edición)</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Mobile con búsqueda y chips de estado (OK / Bajo / Crítico).</td></tr>
+      <tr><td class="k">Movimientos (venta, ingreso, ajuste)</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Caso de uso principal del celular: registrar la venta desde el mostrador.</td></tr>
+      <tr><td class="k">Proveedores y listas de precios</td><td><span class="pill web">Web</span></td><td>—</td><td></td></tr>
+      <tr><td class="k">Gastos operativos</td><td><span class="pill web">Web</span></td><td>—</td><td></td></tr>
+      <tr><td class="k">Usuarios y roles</td><td><span class="pill web">Web</span></td><td>—</td><td></td></tr>
+      <tr><td class="k">Alertas de reposición</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Fase 2. Notificación in-app y correo; push queda como evolución.</td></tr>
+      <tr><td class="k">Órdenes de compra, reportes, comparador</td><td><span class="pill web">Web</span></td><td>—</td><td>Fase 2.</td></tr>
+      <tr><td class="k">Asistente IA</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Fase 3, plan Premium.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Alcance mobile del MVP: cuatro pantallas.</b> Login, dashboard, inventario y registrar movimiento. Es lo que entra en los 6 días de la tarea 4.10 si el cliente Dart ya está generado desde OpenAPI y la app se arranca en el sprint 0 (§10).</div>
+</section>
+
+<section id="s8">
+  <h2><span class="n">8</span>Infraestructura en la nube</h2>
+  <p>Criterios: costo cercano a cero durante la tesis, despliegue automático desde GitHub, cero servidores que administrar, y un procedimiento de respaldo verificable para RNF-09.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Componente</th><th>Servicio</th><th>Plan</th><th>Costo estimado / mes</th></tr></thead>
+    <tbody>
+      <tr><td class="k">API NestJS</td><td>Railway (contenedor Docker, Linux)</td><td>Hobby</td><td class="num">≈ USD 5</td></tr>
+      <tr><td class="k">PostgreSQL</td><td>Neon (Postgres gestionado, con ramas para dev/prod)</td><td>Free</td><td class="num">0</td></tr>
+      <tr><td class="k">Web React</td><td>Vercel (estático + CDN)</td><td>Hobby</td><td class="num">0</td></tr>
+      <tr><td class="k">Autenticación</td><td>Firebase Authentication</td><td>Spark</td><td class="num">0</td></tr>
+      <tr><td class="k">Correo</td><td>Resend</td><td>Free (3.000 envíos)</td><td class="num">0</td></tr>
+      <tr><td class="k">Respaldos</td><td>Cloudflare R2 o Backblaze B2 (bucket con retención de 30 días)</td><td>Free</td><td class="num">0</td></tr>
+      <tr><td class="k">Errores y logs</td><td>Sentry + logs de Railway</td><td>Developer</td><td class="num">0</td></tr>
+      <tr><td class="k">APK</td><td>Distribución directa (link) o Play Console interno</td><td>—</td><td class="num">0 · USD 25 único si se publica</td></tr>
+      <tr><td class="k">LLM (Fase 3)</td><td>API de Anthropic u OpenAI</td><td>Pago por uso</td><td class="num">variable, acotado por diseño (§4.1 Propuesta)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Los montos son orden de magnitud para dimensionar el modelo de negocio (§4.1 de la Propuesta); confirmar en cada proveedor al crear las cuentas. Alternativa todo-en-uno: Supabase (Postgres + Auth + Storage) reemplazaría a Neon y Firebase, pero implica modificar el stack comprometido.</p>
+  <h3>Entornos</h3>
+  <ul>
+    <li><b>Local:</b> Docker Compose con PostgreSQL 16; <span class="id">.env.example</span> documentado; seeds con el comercio de demostración «Repuestos Carlos».</li>
+    <li><b>Producción:</b> rama <span class="id">main</span> → Railway y Vercel. Rama Neon <span class="id">prod</span>.</li>
+    <li><b>Preview:</b> cada PR levanta un preview de Vercel contra una rama Neon <span class="id">dev</span>. Suficiente para una persona; no hace falta un staging permanente.</li>
+  </ul>
+  <h3>Respaldo y recuperación (RNF-09)</h3>
+  <ol>
+    <li>GitHub Actions con cron diario 03:00 ART ejecuta <span class="id">pg_dump</span> contra Neon y sube el archivo cifrado al bucket.</li>
+    <li>Regla de ciclo de vida del bucket: borrar objetos de más de 30 días.</li>
+    <li>Procedimiento de restauración documentado en <span class="id">docs/runbooks/restore.md</span> y ejecutado una vez en una rama Neon vacía, con captura como evidencia.</li>
+  </ol>
+</section>
+
+<section id="s9">
+  <h2><span class="n">9</span>Repositorio y calidad</h2>
+  <p>Monorepo con pnpm workspaces. Flutter vive en la misma raíz aunque no participe del workspace de Node: comparte la especificación OpenAPI y la documentación.</p>
+  <pre><code>inventariosmart/
+├─ apps/
+│  ├─ api/          <span class="cmt"># NestJS + Prisma</span>
+│  ├─ web/          <span class="cmt"># React + Vite</span>
+│  └─ mobile/       <span class="cmt"># Flutter (Android)</span>
+├─ packages/
+│  ├─ shared/       <span class="cmt"># esquemas zod, tipos, constantes (roles, planes)</span>
+│  └─ api-client/   <span class="cmt"># cliente TS generado desde openapi.json</span>
+├─ docs/
+│  ├─ adr/          <span class="cmt"># decisiones de arquitectura (una por archivo)</span>
+│  ├─ openapi.json  <span class="cmt"># contrato exportado en CI</span>
+│  └─ runbooks/     <span class="cmt"># restore, deploy, rotación de claves</span>
+├─ docker-compose.yml
+└─ .github/workflows/  <span class="cmt"># ci.yml · deploy.yml · backup.yml</span></code></pre>
+  <div class="tbl"><table>
+    <thead><tr><th>Práctica</th><th>Regla</th><th>Requisito</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Ramas</td><td>Trunk-based: <span class="id">main</span> siempre desplegable, una rama corta por HU (<span class="id">feat/hu-01-inventario</span>).</td><td>—</td></tr>
+      <tr><td class="k">Commits</td><td>Conventional Commits con el ID de la HU: <span class="id">feat(products): alta de producto (HU-01)</span>. Da trazabilidad gratis para la matriz §5.3.</td><td>RNF-07</td></tr>
+      <tr><td class="k">CI en cada PR</td><td>lint · typecheck · tests unitarios · e2e contra Postgres efímero · build de web · <span class="id">flutter analyze</span>.</td><td>RNF-07</td></tr>
+      <tr><td class="k">Cobertura mínima</td><td>Reglas RN-01 a RN-04 al 100 % con tests unitarios; cada HU con un e2e que replica un criterio de aceptación (base de los CP-xx.y).</td><td>§5.3</td></tr>
+      <tr><td class="k">Documentación</td><td>Swagger publicado en <span class="id">/docs</span>; un ADR por decisión de §1; README con arranque en 5 comandos.</td><td>RNF-07</td></tr>
+      <tr><td class="k">Rendimiento</td><td>Índices en <span class="id">(comercio_id, fecha)</span> de movimientos y <span class="id">(comercio_id, codigo)</span> de productos; prueba de carga simple del dashboard con 5.000 productos y 50.000 movimientos.</td><td>RNF-04</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="s10">
+  <h2><span class="n">10</span>Plan de arranque</h2>
+  <p>El Gantt v2 concentra todo el desarrollo entre el 12/10 y el 04/12: ocho semanas para 47 SP más la app Flutter. La propuesta es mantener las fechas de los hitos H3, H4 y H5 pero <b>adelantar el esqueleto técnico a septiembre</b>, solapado con la Etapa 3. Sprints de dos semanas, de lunes a viernes, velocidad objetivo de 9 a 10 SP por sprint.</p>
+  <div class="sprints">
+    <div class="sp"><div class="when"><b>Sprint 0</b>14/09 → 25/09</div><div class="what"><b>Esqueleto andante.</b> Monorepo, CI, Docker Compose, NestJS con <span class="id">/health</span> y Swagger desplegado en Railway, web desplegada en Vercel, login con Google funcionando de punta a punta (Firebase → API → usuario en Postgres), proyecto Flutter que llama a <span class="id">/health</span>. En paralelo: tareas 3.1 a 3.3 del Gantt (casos de uso).</div></div>
+    <div class="sp"><div class="when"><b>Sprint 1</b>28/09 → 09/10</div><div class="what"><b>HU-11 completa</b> (roles, guards, tenant, RLS, test de aislamiento) y <b>HU-01</b> inventario API + web. Cierre de DER, diagrama de clases, arquitectura y componentes (tareas 3.4 a 3.8). <span class="pill f1">11 SP</span></div></div>
+    <div class="sp hito"><div class="when"><b>H3</b>09/10</div><div class="what"><b>Cierre del diseño técnico.</b> Igual que en el Gantt, pero con la infraestructura ya desplegada y dos historias hechas.</div></div>
+    <div class="sp"><div class="when"><b>Sprint 2</b>12/10 → 23/10</div><div class="what"><b>HU-10</b> movimientos con transacción y stock, <b>HU-02</b> proveedores e importación de listas de precios. <span class="pill f1">13 SP</span></div></div>
+    <div class="sp"><div class="when"><b>Sprint 3</b>26/10 → 06/11</div><div class="what"><b>HU-13</b> gastos, <b>HU-03</b> motor de rentabilidad con tests de RN-01 a RN-03, <b>HU-04</b> dashboard web. <span class="pill f1">18 SP</span></div></div>
+    <div class="sp"><div class="when"><b>Sprint 4</b>09/11 → 20/11</div><div class="what"><b>HU-05</b> importación Excel y onboarding. Cliente Dart generado; mobile: login, dashboard e inventario. <span class="pill f1">5 SP + mobile</span></div></div>
+    <div class="sp"><div class="when"><b>Sprint 5</b>23/11 → 04/12</div><div class="what">Mobile: registrar movimiento y cierre. Endurecimiento: respaldo diario probado (RNF-09), rate limit, prueba de carga del dashboard (RNF-04), datos de demostración y usuarios de prueba (tarea 5.3).</div></div>
+    <div class="sp hito"><div class="when"><b>H4</b>04/12</div><div class="what"><b>MVP funcional en web y mobile.</b> Igual que en el Gantt.</div></div>
+    <div class="sp"><div class="when"><b>Sprint 6</b>07/12 → 18/12</div><div class="what">Casos de prueba formales, corrección de defectos, manual de usuario, video demo y formulario PL03 (tareas 5.1 a 5.6). Si sobra tiempo: <b>HU-06</b> alertas, la funcionalidad más validada por la encuesta (75 % sufre quiebres mensuales).</div></div>
+    <div class="sp hito"><div class="when"><b>H5</b>18/12</div><div class="what"><b>Entrega final.</b> Fecha a confirmar con la cátedra.</div></div>
+  </div>
+  <p class="small">Las fechas asumen la entrega del 18/12/2026 y no descuentan feriados (nota 3 del Gantt). Si la cátedra mueve la entrega, los sprints 2 a 6 se desplazan en bloque; el sprint 0 conviene hacerlo igual en septiembre.</p>
+</section>
+
+<section id="s11">
+  <h2><span class="n">11</span>Riesgos y decisiones pendientes</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Flutter al final del cronograma (6 días)</td><td><span class="pill crit">Alto</span></td><td>Arrancar la app en el sprint 0; generar el cliente Dart desde OpenAPI; limitar el MVP mobile a cuatro pantallas.</td></tr>
+      <tr><td class="k">Fases 2 y 3 fuera de plazo (39 SP)</td><td><span class="pill crit">Alto</span></td><td>Acordar con la cátedra la opción (a) del Gantt: declararlas evolución posterior. Dejar tablas y módulos vacíos creados para demostrar que el diseño las contempla.</td></tr>
+      <tr><td class="k">Fuga de datos entre comercios</td><td><span class="pill crit">Alto</span></td><td>Extensión Prisma + RLS + test e2e de aislamiento en CI (§4).</td></tr>
+      <tr><td class="k">Stock inconsistente por concurrencia</td><td><span class="pill f2">Medio</span></td><td>Transacción con <span class="id">SELECT … FOR UPDATE</span>, idempotencia en POST y job de verificación contra el histórico.</td></tr>
+      <tr><td class="k">Dependencia de servicios gratuitos</td><td><span class="pill f2">Medio</span></td><td>Todos tienen salida: Docker para la API, <span class="id">pg_dump</span> para los datos, Firebase exportable. Documentar en un ADR.</td></tr>
+      <tr><td class="k">Costo variable del LLM</td><td><span class="pill ok">Bajo (Fase 3)</span></td><td>Herramientas acotadas, límite de mensajes por comercio y día, caché de respuestas frecuentes.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Decisiones a cerrar esta semana</h3>
+  <div class="dec">
+    <div><span class="n">D1</span><div><b>Fecha de entrega y tratamiento de Fases 2 y 3 con la cátedra.</b><span>Recomendación: confirmar 18/12 y declarar Fases 2 y 3 como evolución, con HU-06 como objetivo opcional.</span></div></div>
+    <div><span class="n">D2</span><div><b>Monorepo o tres repositorios.</b><span>Recomendación: monorepo. En el PL03 se informa la misma URL con la carpeta de cada componente.</span></div></div>
+    <div><span class="n">D3</span><div><b>Firebase Auth o Supabase.</b><span>Recomendación: mantener Firebase, que es lo comprometido y lo que el wireframe muestra (login con Google).</span></div></div>
+    <div><span class="n">D4</span><div><b>Proveedor de nube.</b><span>Recomendación: Railway + Neon + Vercel. Cambiarlo después cuesta una tarde; elegirlo ahora destraba el sprint 0.</span></div></div>
+    <div><span class="n">D5</span><div><b>Alcance mobile del MVP.</b><span>Recomendación: login, dashboard, inventario, registrar movimiento. Onboarding e importación sólo en web.</span></div></div>
+  </div>
+</section>
+
+<section id="s12">
+  <h2><span class="n">12</span>Próximos pasos</h2>
+  <p>Lo que se puede hacer esta semana sin esperar ninguna decisión externa. Cada punto es una tarea de una tarde como máximo.</p>
+  <ul class="check">
+    <li><i></i><span>Crear el repositorio <span class="id">inventariosmart</span> en GitHub con la estructura de §9 y el README de arranque.</span></li>
+    <li><i></i><span>Crear las cuentas y proyectos: Firebase (habilitar Google y email), Neon, Railway, Vercel, Resend. Guardar credenciales en un gestor, nunca en el repo.</span></li>
+    <li><i></i><span>Docker Compose con PostgreSQL 16 y <span class="id">.env.example</span>.</span></li>
+    <li><i></i><span>Scaffold de NestJS con Prisma, primera migración (Comercio, Usuario), <span class="id">GET /health</span> y Swagger en <span class="id">/docs</span>.</span></li>
+    <li><i></i><span>Scaffold de React + Vite con Tailwind, pantalla de login con Google y llamada autenticada a <span class="id">GET /me</span>.</span></li>
+    <li><i></i><span><span class="id">flutter create</span> con <span class="id">firebase_auth</span> y una pantalla que muestre la respuesta de <span class="id">/health</span>.</span></li>
+    <li><i></i><span>GitHub Actions: <span class="id">ci.yml</span> (lint, test, build) y <span class="id">deploy.yml</span> (main → Railway y Vercel).</span></li>
+    <li><i></i><span>Escribir los cinco ADR de §11 en <span class="id">docs/adr</span>, aunque sea con dos párrafos cada uno.</span></li>
+    <li><i></i><span>Pasar a Trello las tarjetas del sprint 0 y mover HU-11 a «En curso».</span></li>
+    <li><i></i><span>Enviar a la cátedra la consulta de D1 con las tres alternativas del Gantt y la recomendación.</span></li>
+  </ul>
+  <div class="note"><b>Qué cubre este documento en la Etapa 3.</b> Es la base de la tarea 3.6 (diseño de arquitectura), aporta el borrador de 3.4 (DER), la lista de módulos para 3.7 (componentes) y la separación Web / Mobile de 3.1. Los diagramas de casos de uso y de clases (3.2, 3.3, 3.5) siguen pendientes.</div>
+</section>
+
+</main>
+</div>
+<footer>InventarioSmart · Documento de diseño técnico · Se deriva de la Propuesta v2.0 del 27/08/2026 y se actualiza junto con ella.</footer>

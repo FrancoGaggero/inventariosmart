@@ -1,0 +1,91 @@
+schema: spec-driven
+
+# Contexto que OpenSpec inyecta en cada proposal / specs / design / tasks.
+# Fuente: Propuesta v2.0 (27/08/2026) y documento de arquitectura (09/09/2026).
+context: |
+  Language: es
+  All artifacts must be written in es.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Proyecto: InventarioSmart — SaaS multi-tenant de gestión de inventario e
+  inteligencia financiera para PyMEs argentinas. Trabajo final de carrera
+  (Analista de Sistemas, Escuela Da Vinci). Desarrollador único: Franco Gaggero.
+  Idioma de specs, proposals, tasks y UI: español rioplatense. Código en inglés.
+
+  Arquitectura: monolito modular NestJS + Prisma + PostgreSQL 16, una API REST
+  versionada en /api/v1 que consumen la web (React + Vite + TanStack Query +
+  Tailwind v4) y la app Android (Flutter + Riverpod + dio). Contrato OpenAPI
+  generado con @nestjs/swagger; clientes tipados para TS y Dart.
+  Autenticación: Firebase Authentication (Google + email); la API verifica el
+  ID token con firebase-admin. Roles y comercio viven en PostgreSQL.
+  Monorepo pnpm: apps/api, apps/web, apps/mobile, packages/shared (zod),
+  packages/api-client, docs/adr, docs/openapi.json.
+  Nube: Railway (API), Neon (Postgres), Vercel (web), Resend (correo).
+
+  Multi-tenencia: el tenant es el Comercio. Toda tabla de negocio lleva
+  comercio_id; la API fija el tenant en el contexto del request y una
+  extensión de Prisma inyecta el filtro; PostgreSQL aplica Row Level Security
+  con SET LOCAL app.comercio_id. Ninguna consulta puede cruzar comercios (RNF-10).
+
+  Roles: DUENIO (acceso total, único que confirma órdenes de compra),
+  EMPLEADO (catálogo y movimientos; no ve costos, márgenes ni dashboard),
+  CONTADOR (sólo lectura de dashboard y reportes).
+  Planes: FREE (50 productos, 1 usuario, sin alertas ni reportes),
+  PRO (todo salvo IA y comparador), PREMIUM (todo).
+
+  Reglas de negocio vigentes (citar por código):
+  RN-01 margen bruto $ = precio venta neto − costo reposición neto; % sobre precio.
+  RN-02 margen neto = bruto − gastos operativos prorrateados por unidad vendida
+        del período. Sin gastos cargados, el margen neto es "no calculable".
+  RN-03 todo cálculo es neto de IVA; alícuota configurable por producto, default 21 %.
+  RN-04 punto de reposición = velocidad diaria (ventas últimos 30 días / 30)
+        × lead time del proveedor + stock de seguridad.
+  RN-05 código de producto único por comercio.
+  RN-06 ninguna orden de compra se envía sin confirmación explícita del DUENIO.
+  RN-07 los movimientos de stock no se eliminan ni modifican; una corrección es
+        un AJUSTE que referencia al original.
+  RN-08 el costo vigente es el de la última lista de precios importada; al
+        cambiar, los márgenes se recalculan.
+  RN-09 asistente IA sólo para comercios con plan PREMIUM activo.
+  RN-10 un usuario pertenece a un único comercio.
+
+  Convenciones de API: paginación por cursor; errores { code, message, details }
+  con message en español; montos decimal(14,2) como string en JSON; fechas ISO
+  8601, zona America/Argentina/Buenos_Aires; Idempotency-Key en POST /movements;
+  campos sensibles (costo, margen) filtrados por interceptor para EMPLEADO.
+
+  Trazabilidad: cada change referencia las HU (HU-01…HU-14) y RF (RF-01…RF-15)
+  que implementa. Alcance comprometido para la entrega del 18/12/2026: Fase 1
+  (HU-01, 02, 03, 04, 05, 10, 11, 13). Fases 2 y 3 se modelan pero no se
+  construyen salvo que sobre tiempo (HU-06 primero).
+
+rules:
+  proposal:
+    - Citar las HU y RF que cubre el change y la fase del backlog (1, 2 o 3).
+    - Declarar explícitamente qué queda fuera de alcance del change.
+    - Si el change no cambia comportamiento observable (tooling, infra, refactor), usar skip_specs y decirlo en el Why.
+  specs:
+    - Escribir requisitos y escenarios en español, con GIVEN / WHEN / THEN.
+    - Cada criterio de aceptación de la HU debe aparecer como al menos un escenario, con su código CP-xx.y en el nombre del escenario.
+    - Citar la regla de negocio (RN-xx) que el requisito implementa.
+    - Incluir siempre un escenario de aislamiento por comercio y uno por rol cuando el endpoint expone datos de negocio.
+    - No mencionar NestJS, Prisma ni nombres de clases en los specs; sólo comportamiento observable.
+  design:
+    - Indicar qué tablas nuevas o modificadas llevan comercio_id y política RLS.
+    - Listar los endpoints con método, ruta, roles permitidos y plan mínimo.
+    - Enumerar los módulos NestJS afectados y si se toca packages/shared o el contrato OpenAPI.
+    - Registrar toda decisión no trivial como ADR en docs/adr.
+  tasks:
+    - Cada tarea termina con "Listo cuando:" y un criterio verificable (test que pasa, comando, resultado observable).
+    - Incluir tareas de test unitario para reglas RN y un e2e por criterio de aceptación.
+    - Incluir la tarea de regenerar el contrato OpenAPI y los clientes TS/Dart si cambió la API.
+    - Cerrar con la tarea de mover la tarjeta de Trello y actualizar el estado en el backlog.
+
+operations:
+  apply:
+    guidance:
+      - Correr primero los tests del módulo tocado y después la suite completa.
+      - Respetar la extensión de tenant y la política RLS en toda consulta nueva.
+  archive:
+    guidance:
+      - Resumen de cierre en tres líneas con las HU completadas y los CP cubiertos.
