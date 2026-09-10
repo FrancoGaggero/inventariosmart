@@ -85,3 +85,5 @@ y ese directorio pasa a ser la especificación viva que se entrega con la tesis.
 
 Firebase (habilitar Google y email) · Neon · Railway · Vercel · Resend · GitHub (repo privado).
 Credenciales en un gestor de contraseñas y en variables de entorno; nunca en el repo.
+
+> Verificación de CI y preview de Vercel: pull request de prueba del sprint 0 (10/09/2026).
