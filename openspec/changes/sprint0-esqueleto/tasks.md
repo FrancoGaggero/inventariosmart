@@ -35,10 +35,10 @@
 
 ## 6. CI y despliegue
 
-- [ ] 6.1 Escribir `.github/workflows/ci.yml`: install con lockfile, lint, typecheck, test (PostgreSQL 16 como servicio), build, verificación de que `docs/openapi.json` está al día, y job `flutter analyze`; verificar que el workflow pasa en verde en un pull request de prueba (no hay `deploy.yml`: Render y Vercel despliegan `main` por su integración con GitHub)
+- [x] 6.1 Escribir `.github/workflows/ci.yml`: install con lockfile, lint, typecheck, test (PostgreSQL 16 como servicio), build, verificación de que `docs/openapi.json` está al día, y job `flutter analyze`; verificar que el workflow pasa en verde en un pull request de prueba (no hay `deploy.yml`: Render y Vercel despliegan `main` por su integración con GitHub)
 - [x] 6.2 Escribir `render.yaml` que declara el servicio web Free desde `apps/api/Dockerfile`, crear el servicio en Render desde ese blueprint y cargar `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` y `CORS_ORIGINS`; verificar que `https://<servicio>.onrender.com/api/v1/health` responde 200 y que un push a `main` redespliega solo
 - [x] 6.3 Configurar Vercel con root `apps/web`, comando de build de pnpm y variables `VITE_*`; agregar el dominio de Vercel a `CORS_ORIGINS` y a los dominios autorizados de Firebase; verificar que la web publicada completa el login con Google y muestra el email desde `GET /me`
-- [ ] 6.4 Configurar la rama `dev` de Neon para los previews de Vercel; verificar que un pull request obtiene un preview funcional
+- [x] 6.4 Previews de Vercel por pull request; verificado el 10/09/2026 con el PR #1: preview del proyecto `inventariosmart0` desplegado (protegido con autenticación de Vercel, comportamiento por defecto del plan Hobby). La API de preview es la misma de Render; la rama `dev` de Neon es la base de desarrollo y CI (decisión D2). Pendiente de Franco: eliminar el proyecto duplicado `inventariosmart` en Vercel (root `./`), que falla en cada PR
 
 ## 7. Documentación y cierre
 
