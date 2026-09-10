@@ -37,11 +37,11 @@
 
 - [ ] 6.1 Escribir `.github/workflows/ci.yml`: install con lockfile, lint, typecheck, test (PostgreSQL 16 como servicio), build, verificación de que `docs/openapi.json` está al día, y job `flutter analyze`; verificar que el workflow pasa en verde en un pull request de prueba (no hay `deploy.yml`: Render y Vercel despliegan `main` por su integración con GitHub)
 - [x] 6.2 Escribir `render.yaml` que declara el servicio web Free desde `apps/api/Dockerfile`, crear el servicio en Render desde ese blueprint y cargar `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` y `CORS_ORIGINS`; verificar que `https://<servicio>.onrender.com/api/v1/health` responde 200 y que un push a `main` redespliega solo
-- [ ] 6.3 Configurar Vercel con root `apps/web`, comando de build de pnpm y variables `VITE_*`; agregar el dominio de Vercel a `CORS_ORIGINS` y a los dominios autorizados de Firebase; verificar que la web publicada completa el login con Google y muestra el email desde `GET /me`
+- [x] 6.3 Configurar Vercel con root `apps/web`, comando de build de pnpm y variables `VITE_*`; agregar el dominio de Vercel a `CORS_ORIGINS` y a los dominios autorizados de Firebase; verificar que la web publicada completa el login con Google y muestra el email desde `GET /me`
 - [ ] 6.4 Configurar la rama `dev` de Neon para los previews de Vercel; verificar que un pull request obtiene un preview funcional
 
 ## 7. Documentación y cierre
 
 - [x] 7.1 Escribir los ADR 0001 a 0005 en `docs/adr` (monolito modular, multi-tenencia por comercio_id + RLS, Firebase Auth, OpenAPI como contrato, monorepo); verificar que cada uno tiene Contexto, Decisión, Alternativas y Consecuencias
-- [ ] 7.2 Actualizar `README.md` con el arranque local en cinco comandos y las variables de entorno; verificar siguiendo el README en una carpeta limpia que `pnpm dev` levanta API y web
+- [x] 7.2 Actualizar `README.md` con el arranque local en cinco comandos y las variables de entorno; verificar siguiendo el README en una carpeta limpia que `pnpm dev` levanta API y web
 - [ ] 7.3 Registrar el avance: tarea 4.1 del Gantt al 100 %, tarjeta "Sprint 0" en Trello a Hecho; verificar que el Gantt y Trello reflejan el estado

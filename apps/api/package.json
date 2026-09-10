@@ -5,7 +5,7 @@
   "description": "API REST de InventarioSmart (NestJS + Prisma + PostgreSQL)",
   "scripts": {
     "build": "prisma generate && nest build",
-    "dev": "nest start --watch",
+    "dev": "prisma generate && nest start --watch",
     "start": "node dist/main.js",
     "start:prod": "node node_modules/prisma/build/index.js migrate deploy && node dist/main.js",
     "typecheck": "prisma generate && tsc --noEmit -p tsconfig.json",
@@ -15,7 +15,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "openapi:export": "ts-node -r tsconfig-paths/register src/openapi-export.ts"
+    "openapi:export": "prisma generate && ts-node -r tsconfig-paths/register src/openapi-export.ts"
   },
   "dependencies": {
     "@inventariosmart/shared": "workspace:*",
