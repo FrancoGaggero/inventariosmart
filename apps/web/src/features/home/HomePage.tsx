@@ -1,4 +1,4 @@
-import { Activity, Settings, Users } from 'lucide-react';
+import { Activity, Package, Settings, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
@@ -16,6 +16,7 @@ export function HomePage() {
   if (!me.data) return null;
   const { comercio, usuario, rol, plan } = me.data;
   const esDuenio = rol === 'DUENIO';
+  const veInventario = rol === 'DUENIO' || rol === 'EMPLEADO';
 
   return (
     <div className="space-y-8">
@@ -31,6 +32,13 @@ export function HomePage() {
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
+        {veInventario && (
+          <Link to="/productos" className="card p-5 hover:border-brand-2/50 transition">
+            <Package className="w-5 h-5 text-brand-3 mb-3" aria-hidden />
+            <h2 className="font-bold">Inventario</h2>
+            <p className="text-t2 text-sm">Productos, precios y stock con su estado.</p>
+          </Link>
+        )}
         {esDuenio && (
           <>
             <Link
@@ -78,8 +86,8 @@ export function HomePage() {
       </section>
 
       <p className="text-xs text-t3">
-        El dashboard financiero, el inventario y los movimientos llegan con las próximas historias
-        (HU-01, HU-10, HU-04).
+        Los movimientos de stock y el dashboard financiero llegan con las próximas historias (HU-10,
+        HU-04).
       </p>
     </div>
   );

@@ -25,6 +25,8 @@ pnpm dev
 
 - API: http://localhost:3000/api/v1 · Swagger: http://localhost:3000/docs
   Rutas de HU-11: `GET /me`, `POST /me/onboarding`, `GET/PATCH /comercio`, `GET/POST /users`, `PATCH /users/:id`.
+  Rutas de HU-01: `GET/POST /products`, `GET/PATCH/DELETE /products/:id` (búsqueda `q`, filtro `estado`, `activo`).
+  Convención de listados: paginación por cursor, respuesta `{ items, siguienteCursor }`; `siguienteCursor` null en la última página.
 - Web: http://localhost:5173
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 

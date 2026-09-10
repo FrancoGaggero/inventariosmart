@@ -7,6 +7,8 @@ import { RequireRole } from '@/features/auth/RequireRole';
 import { ComercioPage } from '@/features/config/ComercioPage';
 import { UsuariosPage } from '@/features/config/UsuariosPage';
 import { HomePage } from '@/features/home/HomePage';
+import { ProductoFormPage } from '@/features/productos/ProductoFormPage';
+import { ProductosPage } from '@/features/productos/ProductosPage';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
@@ -21,8 +23,14 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <HomePage /> },
           {
+            element: <RequireRole roles={['DUENIO', 'EMPLEADO']} />,
+            children: [{ path: '/productos', element: <ProductosPage /> }],
+          },
+          {
             element: <RequireRole roles={['DUENIO']} />,
             children: [
+              { path: '/productos/nuevo', element: <ProductoFormPage /> },
+              { path: '/productos/:id', element: <ProductoFormPage /> },
               { path: '/configuracion/usuarios', element: <UsuariosPage /> },
               { path: '/configuracion/comercio', element: <ComercioPage /> },
             ],

@@ -367,9 +367,9 @@ CREATE POLICY producto_sistema ON producto
         <rect width="200" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
         <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Producto</text>
         <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
-        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · codigo*</text>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · codigo* (normalizado)</text>
         <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">nombre · categoria</text>
-        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">precio_venta · alicuota_iva</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">precio_venta · alicuota_iva · costo_reposicion</text>
         <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">stock_actual · stock_seguridad</text>
         <text x="10" y="110" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">proveedor_principal_id · activo</text>
       </g>
@@ -452,7 +452,7 @@ CREATE POLICY producto_sistema ON producto
       <tr><td class="id">RN-01 / RN-03</td><td>Vista SQL <span class="id">v_rentabilidad_producto</span>: margen bruto = precio neto − costo vigente neto; el neto se deriva de <span class="id">alicuota_iva</span> por producto (default 21 % desde Comercio).</td></tr>
       <tr><td class="id">RN-02</td><td>Servicio <span class="id">ProfitabilityService</span>: suma gastos del período, divide por unidades vendidas del período (movimientos VENTA) y resta por unidad. Si no hay gastos, devuelve <span class="id">margen_neto: null</span> con motivo, no un valor igual al bruto (HU-13).</td></tr>
       <tr><td class="id">RN-04</td><td>Consulta de velocidad: unidades VENTA de los últimos 30 días ÷ 30. Punto de reposición = velocidad × <span class="id">lead_time_dias</span> del proveedor principal + <span class="id">stock_seguridad</span>. Se calcula en un job diario (Fase 2) y bajo demanda en el dashboard.</td></tr>
-      <tr><td class="id">RN-05</td><td>Índice único compuesto <span class="id">(comercio_id, codigo)</span> en Producto.</td></tr>
+      <tr><td class="id">RN-05</td><td>Índice único compuesto <span class="id">(comercio_id, codigo_normalizado)</span> en Producto: el código se compara en mayúsculas y sin espacios, y queda reservado aunque el producto esté dado de baja (change <span class="id">product-catalog</span>).</td></tr>
       <tr><td class="id">RN-07</td><td>Sin endpoint DELETE en movimientos; <span class="id">ajusta_a_id</span> apunta al original. Trigger de PostgreSQL que rechaza UPDATE y DELETE sobre la tabla.</td></tr>
       <tr><td class="id">RN-08</td><td>Al importar una lista de precios se insertan filas nuevas en PrecioProveedor; el costo vigente es el de mayor <span class="id">vigente_desde</span>. Los márgenes se recalculan solos porque son una vista.</td></tr>
       <tr><td class="id">RN-10 / RNF-10</td><td><span class="id">comercio_id</span> en todas las tablas de negocio más RLS (§4).</td></tr>

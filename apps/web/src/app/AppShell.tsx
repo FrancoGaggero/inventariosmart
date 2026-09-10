@@ -1,4 +1,4 @@
-import { BarChart3, Home, LogOut, Settings, Users } from 'lucide-react';
+import { BarChart3, Home, LogOut, Package, Settings, Users } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '@/lib/auth';
 import { NOMBRE_ROL, useMe } from '@/lib/me';
@@ -9,6 +9,7 @@ export function AppShell() {
   const me = useMe();
   const rol = me.data?.rol;
   const esDuenio = rol === 'DUENIO';
+  const veInventario = rol === 'DUENIO' || rol === 'EMPLEADO';
 
   const enlace = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
@@ -31,6 +32,12 @@ export function AppShell() {
               <Home className="w-4 h-4" aria-hidden />
               Inicio
             </NavLink>
+            {veInventario && (
+              <NavLink to="/productos" className={enlace}>
+                <Package className="w-4 h-4" aria-hidden />
+                Inventario
+              </NavLink>
+            )}
             {esDuenio && (
               <>
                 <NavLink to="/configuracion/usuarios" className={enlace}>
