@@ -55,7 +55,7 @@ CREATE POLICY tabla_sistema ON "TABLA"
 4. El test e2e `rls.e2e-spec.ts` verifica `relforcerowsecurity = true` para cada modelo de
    `TENANT_MODELS`: falla si se olvida el paso 3.
 5. No hace falta `GRANT` a `app_api` en la migración: los privilegios por defecto (`ALTER DEFAULT
-   PRIVILEGES`) ya cubren las tablas nuevas en Neon y en CI. Si se agrega igual, el rol debe existir
+PRIVILEGES`) ya cubren las tablas nuevas en Neon y en CI. Si se agrega igual, el rol debe existir
    antes de migrar (en CI se crea en `.github/scripts/ci-app-role.sql`, antes de `prisma migrate deploy`).
 
 ## Verificación manual
