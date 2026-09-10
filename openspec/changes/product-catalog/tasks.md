@@ -21,7 +21,7 @@
 
 ## 4. Verificación y cierre
 
-- [ ] 4.1 `pnpm lint`, `pnpm typecheck`, `pnpm test`, e2e de la API y `pnpm format:check` en verde; CI en verde. Listo cuando: el push a `main` muestra los dos jobs en verde
+- [x] 4.1 `pnpm lint`, `pnpm typecheck`, `pnpm test`, e2e de la API y `pnpm format:check` en verde; CI en verde. Verificado el 10/09/2026: run 34539106304 (commit `a63d561`) con los dos jobs en verde, tras corregir el orden rol/migraciones en CI y el formato
 - [ ] 4.2 Desplegar y verificar en producción: migración aplicada en Neon production, `GET /products` con tu usuario, alta de un producto real desde la web publicada y su baja/reactivación. Listo cuando: el producto creado aparece en `https://inventariosmart0.vercel.app/productos`
 - [x] 4.3 Actualizar README (rutas nuevas y convención de paginación), `docs/arquitectura.html` (§5 DER: `Producto` con `codigo_normalizado`, `costo_reposicion`) y el runbook si hubo aprendizajes. Listo cuando: los documentos reflejan D1 a D5
 - [ ] 4.4 (manual, Franco) Mover HU-01 a Hecho en Trello, actualizar `Backlog_InventarioSmart_v2.xlsx` y la tarea 4.4 del Gantt. Listo cuando: Trello, backlog y Gantt coinciden
