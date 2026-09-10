@@ -24,6 +24,7 @@ pnpm dev
 ```
 
 - API: http://localhost:3000/api/v1 · Swagger: http://localhost:3000/docs
+  Rutas de HU-11: `GET /me`, `POST /me/onboarding`, `GET/PATCH /comercio`, `GET/POST /users`, `PATCH /users/:id`.
 - Web: http://localhost:5173
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 

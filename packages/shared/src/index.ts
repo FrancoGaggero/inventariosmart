@@ -133,11 +133,7 @@ export type ComercioPatch = z.infer<typeof ComercioPatchSchema>;
 
 /** Cuerpo de POST /api/v1/users (invitación). */
 export const InvitacionSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email('El email no tiene un formato válido.')),
+  email: z.string().trim().toLowerCase().pipe(z.email('El email no tiene un formato válido.')),
   rol: RolSchema,
 });
 export type Invitacion = z.infer<typeof InvitacionSchema>;

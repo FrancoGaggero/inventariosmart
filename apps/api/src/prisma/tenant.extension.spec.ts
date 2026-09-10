@@ -24,15 +24,29 @@ describe('prepararArgs (extensión de tenant)', () => {
   });
 
   it('createMany inyecta comercioId en cada elemento', () => {
-    expect(prepararArgs('Usuario', 'createMany', { data: [{ email: 'a' }, { email: 'b' }] }, C)).toEqual(
-      { data: [{ email: 'a', comercioId: C }, { email: 'b', comercioId: C }] },
-    );
+    expect(
+      prepararArgs('Usuario', 'createMany', { data: [{ email: 'a' }, { email: 'b' }] }, C),
+    ).toEqual({
+      data: [
+        { email: 'a', comercioId: C },
+        { email: 'b', comercioId: C },
+      ],
+    });
   });
 
   it('upsert filtra por comercio y lo inyecta en create', () => {
     expect(
-      prepararArgs('Usuario', 'upsert', { where: { id: 'x' }, create: { email: 'a' }, update: {} }, C),
-    ).toEqual({ where: { id: 'x', comercioId: C }, create: { email: 'a', comercioId: C }, update: {} });
+      prepararArgs(
+        'Usuario',
+        'upsert',
+        { where: { id: 'x' }, create: { email: 'a' }, update: {} },
+        C,
+      ),
+    ).toEqual({
+      where: { id: 'x', comercioId: C },
+      create: { email: 'a', comercioId: C },
+      update: {},
+    });
   });
 
   it('count, update y delete filtran por comercio', () => {

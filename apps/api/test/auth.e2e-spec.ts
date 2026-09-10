@@ -48,11 +48,7 @@ describe('auth-tenancy: identidad, alta del comercio, onboarding (e2e)', () => {
   });
 
   it('CP-11.2b dos ingresos simultáneos de una identidad nueva no duplican comercio', async () => {
-    const [r1, r2, r3] = await Promise.all([
-      me(google.token),
-      me(google.token),
-      me(google.token),
-    ]);
+    const [r1, r2, r3] = await Promise.all([me(google.token), me(google.token), me(google.token)]);
     for (const r of [r1, r2, r3]) expect(r.status).toBe(200);
     const ids = new Set([r1.body.comercio.id, r2.body.comercio.id, r3.body.comercio.id]);
     expect(ids.size).toBe(1);
@@ -94,7 +90,11 @@ describe('auth-tenancy: identidad, alta del comercio, onboarding (e2e)', () => {
       .set('Authorization', `Bearer ${carlos.token}`)
       .send({ cuit: '20123456789', ivaDefault: 10.5 })
       .expect(200);
-    expect(res.body).toMatchObject({ nombre: 'Repuestos Carlos', cuit: '20123456789', ivaDefault: '10.5' });
+    expect(res.body).toMatchObject({
+      nombre: 'Repuestos Carlos',
+      cuit: '20123456789',
+      ivaDefault: '10.5',
+    });
 
     const get = await t
       .http()

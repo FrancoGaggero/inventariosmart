@@ -70,13 +70,7 @@ jobs:
       - name: Migraciones y rol de aplicación
         run: |
           pnpm --filter @inventariosmart/api prisma:deploy
-          psql "$DIRECT_URL" -v ON_ERROR_STOP=1 <<'SQL'
-            CREATE ROLE app_api LOGIN PASSWORD 'app_api' NOBYPASSRLS NOSUPERUSER NOCREATEDB NOCREATEROLE;
-            GRANT USAGE ON SCHEMA public TO app_api;
-            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_api;
-            REVOKE ALL ON TABLE _prisma_migrations FROM app_api;
-            GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO app_api;
-          SQL
+          psql "$DIRECT_URL" -v ON_ERROR_STOP=1 -f .github/scripts/ci-app-role.sql
 
       - name: Tests e2e de la API
         run: pnpm --filter @inventariosmart/api test:e2e

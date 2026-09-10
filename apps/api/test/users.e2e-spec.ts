@@ -83,7 +83,12 @@ describe('user-roles: permisos, invitaciones y plan (e2e)', () => {
       .set(auth(ana))
       .send({ email: luis.email, rol: 'EMPLEADO' })
       .expect(403);
-    await t.http().patch(`/api/v1/users/${anaId}`).set(auth(ana)).send({ rol: 'DUENIO' }).expect(403);
+    await t
+      .http()
+      .patch(`/api/v1/users/${anaId}`)
+      .set(auth(ana))
+      .send({ rol: 'DUENIO' })
+      .expect(403);
   });
 
   it('CP-11.4b EMPLEADO no ve costos ni márgenes, ni anidados', async () => {

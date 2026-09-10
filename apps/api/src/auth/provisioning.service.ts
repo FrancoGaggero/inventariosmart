@@ -36,7 +36,10 @@ export class AuthProvisioningService {
       // único de firebase_uid (o email); basta con volver a leer.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         const usuario = await this.prisma.comoSistema((tx) =>
-          tx.usuario.findUnique({ where: { firebaseUid: identidad.uid }, include: incluirComercio }),
+          tx.usuario.findUnique({
+            where: { firebaseUid: identidad.uid },
+            include: incluirComercio,
+          }),
         );
         if (usuario) return this.aAuthUser(usuario, identidad.uid);
       }

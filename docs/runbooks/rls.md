@@ -13,10 +13,10 @@ Dos funciones auxiliares viven en la base (migración `20260911_auth_tenancy`):
 
 ## Dos roles de base
 
-| Rol            | Quién lo usa                           | Por qué                                                                                          |
-| -------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Rol            | Quién lo usa                           | Por qué                                                                                           |
+| -------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `neondb_owner` | `prisma migrate deploy` (`DIRECT_URL`) | Propietaria de las tablas. Es miembro de `neon_superuser`, que tiene `BYPASSRLS`: **ignora RLS**. |
-| `app_api`      | la API en runtime (`DATABASE_URL`)     | `NOBYPASSRLS`: las políticas se aplican. Sólo `SELECT/INSERT/UPDATE/DELETE` sobre las tablas.    |
+| `app_api`      | la API en runtime (`DATABASE_URL`)     | `NOBYPASSRLS`: las políticas se aplican. Sólo `SELECT/INSERT/UPDATE/DELETE` sobre las tablas.     |
 
 Crear el rol una vez por rama de Neon (dev y production), como `neondb_owner`:
 

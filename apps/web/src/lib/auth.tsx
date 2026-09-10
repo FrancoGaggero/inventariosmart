@@ -1,8 +1,10 @@
 import {
+  createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  updateProfile,
   type User,
 } from 'firebase/auth';
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
@@ -15,6 +17,7 @@ interface AuthState {
   cargando: boolean;
   loginConGoogle: () => Promise<void>;
   loginConEmail: (email: string, password: string) => Promise<void>;
+  registrarConEmail: (email: string, password: string, nombre?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -41,6 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginConEmail: async (email, password) => {
         await signInWithEmailAndPassword(firebaseAuth, email, password);
       },
+      registrarConEmail: async (email, password, nombre) => {
+        const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        if (nombre) await updateProfile(cred.user, { displayName: nombre });
+      },
       logout: () => signOut(firebaseAuth),
     }),
     [user, cargando],
@@ -59,4 +66,27 @@ export function useAuth(): AuthState {
 export async function obtenerIdToken(): Promise<string | null> {
   const u = firebaseAuth.currentUser;
   return u ? u.getIdToken() : null;
+}
+
+const MENSAJES_FIREBASE: Record<string, string> = {
+  'auth/invalid-credential': 'El email o la contraseña no son correctos.',
+  'auth/invalid-email': 'El email no tiene un formato válido.',
+  'auth/email-already-in-use': 'Ya existe una cuenta con ese email. Probá iniciar sesión.',
+  'auth/weak-password': 'La contraseña tiene que tener al menos 8 caracteres.',
+  'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.',
+  'auth/popup-blocked':
+    'El navegador bloqueó la ventana de Google. Permití las ventanas emergentes.',
+  'auth/unauthorized-domain': 'Este dominio no está autorizado en Firebase.',
+  'auth/too-many-requests': 'Demasiados intentos. Esperá unos minutos y volvé a probar.',
+  'auth/network-request-failed': 'Sin conexión. Revisá tu red e intentá de nuevo.',
+};
+
+/** Mensaje en español para un error de Firebase Auth. */
+export function mensajeFirebase(
+  err: unknown,
+  porDefecto = 'No pudimos completar la operación.',
+): string {
+  const code =
+    typeof err === 'object' && err && 'code' in err ? String((err as { code: unknown }).code) : '';
+  return MENSAJES_FIREBASE[code] ?? porDefecto;
 }

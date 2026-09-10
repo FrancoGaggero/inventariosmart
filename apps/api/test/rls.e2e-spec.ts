@@ -54,7 +54,9 @@ describe('aislamiento entre comercios (e2e)', () => {
   });
 
   it('CP-11.5c sin contexto de comercio la base no devuelve filas (RLS con rol app_api)', async () => {
-    const [sinContexto] = await t.prisma.raw.$queryRaw<{ n: bigint }[]>`SELECT count(*)::bigint AS n FROM usuario`;
+    const [sinContexto] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM usuario`;
     const comoSistema = await t.prisma.comoSistema((tx) => tx.usuario.count());
     expect(Number(sinContexto!.n)).toBe(0);
     expect(comoSistema).toBeGreaterThanOrEqual(2);

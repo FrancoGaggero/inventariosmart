@@ -311,11 +311,15 @@ export const tenantPrisma = (comercioId: string) =>
     },
   });</code></pre>
   <h3>Capa 2 · Row Level Security en PostgreSQL</h3>
-  <p>Defensa en profundidad: aunque una consulta olvide el filtro, la base no devuelve filas de otro comercio. La API abre cada transacción con <code>SET LOCAL app.comercio_id</code> y las políticas comparan contra ese valor.</p>
+  <p>Defensa en profundidad: aunque una consulta olvide el filtro, la base no devuelve filas de otro comercio. La API abre cada transacción con <code>set_config('app.comercio_id', …, true)</code> y las políticas comparan contra ese valor. Dos detalles aprendidos al implementarlo (change <span class="id">auth-tenancy</span>): el propietario de las tablas en Neon tiene <span class="id">BYPASSRLS</span>, así que la API se conecta con un rol propio <span class="id">app_api</span> sin ese privilegio y las migraciones siguen corriendo como propietaria; y el alta del comercio, que ocurre antes de que exista el tenant, usa una política de sistema (<span class="id">app.rol_sistema = 'provisioning'</span>) acotada a esa transacción.</p>
   <pre><code>ALTER TABLE producto ENABLE ROW LEVEL SECURITY;
-CREATE POLICY producto_por_comercio ON producto
-  USING (comercio_id = current_setting('app.comercio_id')::uuid);
-<span class="cmt">-- la misma política se repite en movimiento, proveedor, gasto, alerta, orden_compra</span></code></pre>
+ALTER TABLE producto FORCE ROW LEVEL SECURITY;
+CREATE POLICY producto_tenant ON producto
+  USING (comercio_id = app_comercio_actual())
+  WITH CHECK (comercio_id = app_comercio_actual());
+CREATE POLICY producto_sistema ON producto
+  USING (app_es_sistema()) WITH CHECK (app_es_sistema());
+<span class="cmt">-- la misma política se repite en movimiento, proveedor, gasto, alerta, orden_compra (docs/runbooks/rls.md)</span></code></pre>
   <h3>Otras medidas de RNF-03</h3>
   <ul>
     <li><b>Cifrado:</b> TLS en tránsito (Vercel, Render y Neon lo dan por defecto); cifrado en reposo del proveedor de base de datos. No se guardan contraseñas: las gestiona Firebase.</li>

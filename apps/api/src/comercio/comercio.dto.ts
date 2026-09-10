@@ -14,7 +14,10 @@ export class ComercioDto {
   @ApiProperty({ enum: PLANES })
   plan!: 'FREE' | 'PRO' | 'PREMIUM';
 
-  @ApiProperty({ description: 'Alícuota de IVA por defecto (%), decimal como string', example: '21' })
+  @ApiProperty({
+    description: 'Alícuota de IVA por defecto (%), decimal como string',
+    example: '21',
+  })
   ivaDefault!: string;
 
   @ApiProperty({ example: 'ARS' })
@@ -28,7 +31,11 @@ export class ComercioPatchBodyDto {
   @ApiPropertyOptional({ minLength: 2, maxLength: 120 })
   nombre?: string;
 
-  @ApiPropertyOptional({ nullable: true, type: String, description: '11 dígitos sin guiones, o null' })
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    description: '11 dígitos sin guiones, o null',
+  })
   cuit?: string | null;
 
   @ApiPropertyOptional({ minimum: 0, maximum: 100, example: 21 })

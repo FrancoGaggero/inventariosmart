@@ -28,4 +28,8 @@ export const planRequerido = (planMinimo: Plan, message?: string) =>
   });
 
 export const validacion = (message: string, details?: Record<string, string>) =>
-  new ApiHttpException(HttpStatus.BAD_REQUEST, { code: CODIGOS_ERROR.VALIDACION, message, details });
+  new ApiHttpException(HttpStatus.BAD_REQUEST, {
+    code: CODIGOS_ERROR.VALIDACION,
+    message,
+    details,
+  });

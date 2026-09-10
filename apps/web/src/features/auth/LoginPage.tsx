@@ -1,6 +1,6 @@
 import { BarChart3, LogIn } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
-import { Navigate, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { useAuth } from '@/lib/auth';
 
 const MENSAJES: Record<string, string> = {
@@ -115,8 +115,11 @@ export function LoginPage() {
           Continuar con Google
         </button>
 
-        <p className="text-xs text-t3 text-center mt-8">
-          Sprint 0 · el registro del comercio llega con la historia HU-11.
+        <p className="text-sm text-t2 text-center mt-8">
+          ¿No tenés cuenta?{' '}
+          <Link to="/registro" className="text-brand-3 font-semibold">
+            Creá una gratis
+          </Link>
         </p>
       </div>
     </main>
