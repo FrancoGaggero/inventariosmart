@@ -24,8 +24,8 @@
 ## 4. Web React
 
 - [x] 4.1 Generar `apps/web` con Vite, React, TypeScript, Tailwind CSS v4, React Router y TanStack Query, con la estructura `src/app`, `src/features`, `src/lib`; verificar que `pnpm --filter web build` produce `dist/`
-- [ ] 4.2 Integrar Firebase Web SDK con inicio de sesión con Google y cierre de sesión, configuración desde variables `VITE_FIREBASE_*`; verificar manualmente que el popup de Google completa el login y el usuario queda en el estado de la app
-- [ ] 4.3 Crear `src/lib/api.ts` que adjunta el ID token en `Authorization: Bearer` y una pantalla que muestra el resultado de `GET /api/v1/me`; verificar que muestra el email del usuario logueado y que sin sesión redirige al login
+- [x] 4.2 Integrar Firebase Web SDK con inicio de sesión con Google y cierre de sesión, configuración desde variables `VITE_FIREBASE_*`; verificar manualmente que el popup de Google completa el login y el usuario queda en el estado de la app
+- [x] 4.3 Crear `src/lib/api.ts` que adjunta el ID token en `Authorization: Bearer` y una pantalla que muestra el resultado de `GET /api/v1/me`; verificar que muestra el email del usuario logueado y que sin sesión redirige al login
 - [x] 4.4 Generar `packages/api-client` con `openapi-typescript` desde `docs/openapi.json` y usarlo en `api.ts`; verificar que `pnpm --filter api-client build` genera los tipos y que la web compila usándolos
 
 ## 5. Mobile Flutter
