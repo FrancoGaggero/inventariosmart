@@ -1,16 +1,16 @@
 ## 1. Contrato compartido y modelo de datos
 
-- [ ] 1.1 Agregar en `packages/shared`: `ESTADOS_STOCK`, `calcularEstadoStock()`, `ProductoSchema`, `ProductoCreateSchema`, `ProductoPatchSchema` (rechaza `stockActual` con mensaje propio), `ListaProductosSchema` y el formato genérico de lista paginada `{ items, siguienteCursor }`, con tests unitarios. Listo cuando: `pnpm --filter @inventariosmart/shared test` pasa con los casos de validación de CP-01.1c y CP-01.4b
-- [ ] 1.2 Modelo `Producto` en `schema.prisma` (D1), migración `product_catalog` con `pg_trgm`, índices, `ENABLE`/`FORCE ROW LEVEL SECURITY` y políticas `producto_tenant` / `producto_sistema`; agregar `Producto` a `TENANT_MODELS`. Listo cuando: `prisma migrate deploy` aplica en Neon dev, `rls.e2e-spec.ts` pasa incluyendo `producto`, y `psql` como `app_api` sin contexto devuelve 0 filas (CP-01.7b)
+- [x] 1.1 Agregar en `packages/shared`: `ESTADOS_STOCK`, `calcularEstadoStock()`, `ProductoSchema`, `ProductoCreateSchema`, `ProductoPatchSchema` (rechaza `stockActual` con mensaje propio), `ListaProductosSchema` y el formato genérico de lista paginada `{ items, siguienteCursor }`, con tests unitarios. Listo cuando: `pnpm --filter @inventariosmart/shared test` pasa con los casos de validación de CP-01.1c y CP-01.4b
+- [x] 1.2 Modelo `Producto` en `schema.prisma` (D1), migración `product_catalog` con `pg_trgm`, índices, `ENABLE`/`FORCE ROW LEVEL SECURITY` y políticas `producto_tenant` / `producto_sistema`; agregar `Producto` a `TENANT_MODELS`. Listo cuando: `prisma migrate deploy` aplica en Neon dev, `rls.e2e-spec.ts` pasa incluyendo `producto`, y `psql` como `app_api` sin contexto devuelve 0 filas (CP-01.7b)
 
 ## 2. API · módulo products
 
-- [ ] 2.1 `ProductsService.listar()` con búsqueda (`q`), filtros `estado` y `activo`, orden `(nombre, id)` y cursor base64url (D3, D4); mapeo a `Producto` con `estadoStock` derivado. Listo cuando: CP-01.3, CP-01.3b y CP-01.3e pasan
-- [ ] 2.2 `ProductsService.crear()`: alícuota por defecto del comercio, normalización del código, conflicto 409 (con sugerencia de reactivar si el existente está inactivo), límite del plan FREE con bloqueo de la fila de `comercio` (D6). Listo cuando: CP-01.1, CP-01.1b, CP-01.2, CP-01.2b, CP-01.2c, CP-01.6 y CP-01.6b pasan
-- [ ] 2.3 `ProductsService.obtener()`, `actualizar()` (rechaza `stockActual`; `activo: true` reactiva contando el límite) y `darDeBaja()` (baja lógica). Listo cuando: CP-01.4, CP-01.4b, CP-01.5 y CP-01.5b pasan
-- [ ] 2.4 `ProductsController` con `@Roles('DUENIO', 'EMPLEADO')` en lectura y `@Roles('DUENIO')` en escritura, DTOs Swagger (`ProductoDto`, `ProductoCreateBodyDto`, `ProductoPatchBodyDto`, `ListaProductosDto`) y `@ApiResponse` de 400/401/402/403/404/409. Listo cuando: CP-01.3c (EMPLEADO sin `costoReposicion`), CP-01.3d (CONTADOR 403) y CP-01.4c pasan
-- [ ] 2.5 Test e2e de aislamiento y rendimiento: dos comercios con el mismo código (CP-01.2c, CP-01.7); 300 productos en lote y búsqueda `q=` en menos de 500 ms. Listo cuando: `products.e2e-spec.ts` pasa completo junto con las suites existentes
-- [ ] 2.6 Regenerar el contrato y el cliente: `pnpm openapi`. Listo cuando: `docs/openapi.json` tiene las cinco rutas de D5 con sus esquemas de body y CI no reporta contrato desactualizado
+- [x] 2.1 `ProductsService.listar()` con búsqueda (`q`), filtros `estado` y `activo`, orden `(nombre, id)` y cursor base64url (D3, D4); mapeo a `Producto` con `estadoStock` derivado. Listo cuando: CP-01.3, CP-01.3b y CP-01.3e pasan
+- [x] 2.2 `ProductsService.crear()`: alícuota por defecto del comercio, normalización del código, conflicto 409 (con sugerencia de reactivar si el existente está inactivo), límite del plan FREE con bloqueo de la fila de `comercio` (D6). Listo cuando: CP-01.1, CP-01.1b, CP-01.2, CP-01.2b, CP-01.2c, CP-01.6 y CP-01.6b pasan
+- [x] 2.3 `ProductsService.obtener()`, `actualizar()` (rechaza `stockActual`; `activo: true` reactiva contando el límite) y `darDeBaja()` (baja lógica). Listo cuando: CP-01.4, CP-01.4b, CP-01.5 y CP-01.5b pasan
+- [x] 2.4 `ProductsController` con `@Roles('DUENIO', 'EMPLEADO')` en lectura y `@Roles('DUENIO')` en escritura, DTOs Swagger (`ProductoDto`, `ProductoCreateBodyDto`, `ProductoPatchBodyDto`, `ListaProductosDto`) y `@ApiResponse` de 400/401/402/403/404/409. Listo cuando: CP-01.3c (EMPLEADO sin `costoReposicion`), CP-01.3d (CONTADOR 403) y CP-01.4c pasan
+- [x] 2.5 Test e2e de aislamiento y rendimiento: dos comercios con el mismo código (CP-01.2c, CP-01.7); 300 productos en lote y búsqueda `q=` en menos de 500 ms. Listo cuando: `products.e2e-spec.ts` pasa completo junto con las suites existentes
+- [x] 2.6 Regenerar el contrato y el cliente: `pnpm openapi`. Listo cuando: `docs/openapi.json` tiene las cinco rutas de D5 con sus esquemas de body y CI no reporta contrato desactualizado
 
 ## 3. Web · inventario
 

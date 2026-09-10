@@ -2,7 +2,11 @@ import { TENANT_MODELS } from '../src/prisma/tenant.extension';
 import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
 
 /** Nombre de tabla en PostgreSQL de cada modelo (convención @@map en snake_case). */
-const TABLA: Record<string, string> = { Usuario: 'usuario', Comercio: 'comercio' };
+const TABLA: Record<string, string> = {
+  Usuario: 'usuario',
+  Comercio: 'comercio',
+  Producto: 'producto',
+};
 
 describe('aislamiento entre comercios (e2e)', () => {
   let t: AppDePrueba;

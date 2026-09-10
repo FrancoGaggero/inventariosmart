@@ -10,6 +10,7 @@ import { type Env, validateEnv } from './config/env';
 import { HealthModule } from './health/health.module';
 import { MeModule } from './me/me.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module';
     MeModule,
     ComercioModule,
     UsersModule,
+    ProductsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

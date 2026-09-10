@@ -148,3 +148,5 @@ export const UsuarioPatchSchema = z
     message: 'Indicá el rol o el estado a cambiar.',
   });
 export type UsuarioPatch = z.infer<typeof UsuarioPatchSchema>;
+
+export * from './productos';

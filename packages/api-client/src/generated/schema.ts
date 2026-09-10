@@ -114,6 +114,49 @@ export interface paths {
         patch: operations["UsersController_actualizar"];
         trace?: never;
     };
+    "/api/v1/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar productos del comercio
+         * @description Búsqueda por código (prefijo) o nombre (contiene), filtro por estado de stock y por activo, orden alfabético y paginación por cursor. El rol EMPLEADO no recibe costoReposicion.
+         */
+        get: operations["ProductsController_listar"];
+        put?: never;
+        /** Crear un producto con su stock inicial */
+        post: operations["ProductsController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de un producto */
+        get: operations["ProductsController_obtener"];
+        put?: never;
+        post?: never;
+        /** Dar de baja (baja lógica: conserva código e historial) */
+        delete: operations["ProductsController_darDeBaja"];
+        options?: never;
+        head?: never;
+        /**
+         * Editar un producto o reactivarlo
+         * @description El stock actual no se edita por esta vía: se ajusta con movimientos (RN-07).
+         */
+        patch: operations["ProductsController_actualizar"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -212,6 +255,83 @@ export interface components {
             /** @enum {string} */
             rol?: "DUENIO" | "EMPLEADO" | "CONTADOR";
             /** @description false = dar de baja; true = reactivar */
+            activo?: boolean;
+        };
+        ProductoDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+            /** @example Repuestos */
+            categoria: string | null;
+            /**
+             * @description Precio de venta con IVA incluido, decimal como string
+             * @example 3900.00
+             */
+            precioVenta: string;
+            /**
+             * @description Alícuota de IVA (%)
+             * @example 21
+             */
+            alicuotaIva: string;
+            /**
+             * @description Costo de reposición sin IVA. Omitido para el rol EMPLEADO.
+             * @example 2340.00
+             */
+            costoReposicion?: string;
+            /** @example 47 */
+            stockActual: number;
+            /** @example 10 */
+            stockSeguridad: number;
+            /** @enum {string} */
+            estadoStock: "SIN_STOCK" | "BAJO" | "OK";
+            activo: boolean;
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            actualizadoEn: string;
+        };
+        ListaProductosDto: {
+            items: components["schemas"]["ProductoDto"][];
+            /** @description Cursor de la página siguiente o null */
+            siguienteCursor: string | null;
+        };
+        ProductoCreateBodyDto: {
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+            categoria?: string | null;
+            /**
+             * @description Con IVA incluido; número o string decimal
+             * @example 3900.00
+             */
+            precioVenta: string;
+            /** @description Default: IVA del comercio */
+            alicuotaIva?: number;
+            /**
+             * @description Sin IVA; número o string decimal
+             * @example 2340.00
+             */
+            costoReposicion: string;
+            /** @default 0 */
+            stockInicial: number;
+            /** @default 0 */
+            stockSeguridad: number;
+        };
+        ProductoPatchBodyDto: {
+            codigo?: string;
+            nombre?: string;
+            categoria?: string | null;
+            /** @example 3990.00 */
+            precioVenta?: string;
+            alicuotaIva?: number;
+            /** @example 2400.00 */
+            costoReposicion?: string;
+            stockSeguridad?: number;
+            /** @description true reactiva un producto dado de baja */
             activo?: boolean;
         };
     };
@@ -564,6 +684,294 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_listar: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description siguienteCursor de la página anterior */
+                cursor?: unknown;
+                /** @description Default true */
+                activo?: "true" | "false";
+                estado?: "SIN_STOCK" | "BAJO" | "OK";
+                /** @description Texto a buscar en código o nombre */
+                q?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaProductosDto"];
+                };
+            };
+            /** @description Parámetros o cursor inválidos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductoCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductoDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Límite de productos del plan (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Código repetido en el comercio (CONFLICTO) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_darDeBaja: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductoPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductoDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Reactivar supera el límite del plan */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

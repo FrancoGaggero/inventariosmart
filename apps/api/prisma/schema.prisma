@@ -43,9 +43,39 @@ model Comercio {
   onboardingPendiente Boolean @default(true) @map("onboarding_pendiente")
   creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  usuarios Usuario[]
+  usuarios  Usuario[]
+  productos Producto[]
 
   @@map("comercio")
+}
+
+/// Producto del catálogo (HU-01). El stock sólo cambia por movimientos (RN-07).
+/// costoReposicion es el costo vigente sin IVA; HU-02 lo actualiza desde listas de proveedores (RN-08).
+model Producto {
+  id                String   @id @default(uuid()) @db.Uuid
+  comercioId        String   @map("comercio_id") @db.Uuid
+  codigo            String   @db.VarChar(64)
+  /// upper(trim(codigo)): unicidad por comercio sin distinguir mayúsculas (RN-05).
+  codigoNormalizado String   @map("codigo_normalizado") @db.VarChar(64)
+  nombre            String   @db.VarChar(120)
+  categoria         String?  @db.VarChar(60)
+  /// Precio de venta al público, con IVA incluido.
+  precioVenta       Decimal  @map("precio_venta") @db.Decimal(14, 2)
+  /// Alícuota de IVA en porcentaje (RN-03).
+  alicuotaIva       Decimal  @map("alicuota_iva") @db.Decimal(5, 2)
+  /// Costo de reposición vigente, sin IVA.
+  costoReposicion   Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
+  stockActual       Int      @default(0) @map("stock_actual")
+  stockSeguridad    Int      @default(0) @map("stock_seguridad")
+  activo            Boolean  @default(true)
+  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn     DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+
+  @@unique([comercioId, codigoNormalizado])
+  @@index([comercioId, activo, nombre])
+  @@map("producto")
 }
 
 /// Usuario autenticado por Firebase; pertenece a un único comercio (RN-10).

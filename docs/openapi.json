@@ -471,6 +471,436 @@
           "usuarios"
         ]
       }
+    },
+    "/api/v1/products": {
+      "get": {
+        "description": "Búsqueda por código (prefijo) o nombre (contiene), filtro por estado de stock y por activo, orden alfabético y paginación por cursor. El rol EMPLEADO no recibe costoReposicion.",
+        "operationId": "ProductsController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "siguienteCursor de la página anterior",
+            "schema": {}
+          },
+          {
+            "name": "activo",
+            "required": false,
+            "in": "query",
+            "description": "Default true",
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "estado",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "SIN_STOCK",
+                "BAJO",
+                "OK"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Texto a buscar en código o nombre",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaProductosDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros o cursor inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar productos del comercio",
+        "tags": [
+          "productos"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_crear",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductoCreateBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Límite de productos del plan (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Código repetido en el comercio (CONFLICTO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear un producto con su stock inicial",
+        "tags": [
+          "productos"
+        ]
+      }
+    },
+    "/api/v1/products/{id}": {
+      "get": {
+        "operationId": "ProductsController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de un producto",
+        "tags": [
+          "productos"
+        ]
+      },
+      "patch": {
+        "description": "El stock actual no se edita por esta vía: se ajusta con movimientos (RN-07).",
+        "operationId": "ProductsController_actualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductoPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Reactivar supera el límite del plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar un producto o reactivarlo",
+        "tags": [
+          "productos"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_darDeBaja",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dar de baja (baja lógica: conserva código e historial)",
+        "tags": [
+          "productos"
+        ]
+      }
     }
   },
   "info": {
@@ -765,6 +1195,197 @@
           "activo": {
             "type": "boolean",
             "description": "false = dar de baja; true = reactivar"
+          }
+        }
+      },
+      "ProductoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          },
+          "categoria": {
+            "type": "string",
+            "nullable": true,
+            "example": "Repuestos"
+          },
+          "precioVenta": {
+            "type": "string",
+            "description": "Precio de venta con IVA incluido, decimal como string",
+            "example": "3900.00"
+          },
+          "alicuotaIva": {
+            "type": "string",
+            "description": "Alícuota de IVA (%)",
+            "example": "21"
+          },
+          "costoReposicion": {
+            "type": "string",
+            "description": "Costo de reposición sin IVA. Omitido para el rol EMPLEADO.",
+            "example": "2340.00"
+          },
+          "stockActual": {
+            "type": "number",
+            "example": 47
+          },
+          "stockSeguridad": {
+            "type": "number",
+            "example": 10
+          },
+          "estadoStock": {
+            "type": "string",
+            "enum": [
+              "SIN_STOCK",
+              "BAJO",
+              "OK"
+            ]
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre",
+          "categoria",
+          "precioVenta",
+          "alicuotaIva",
+          "stockActual",
+          "stockSeguridad",
+          "estadoStock",
+          "activo",
+          "creadoEn",
+          "actualizadoEn"
+        ]
+      },
+      "ListaProductosDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor de la página siguiente o null"
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ProductoCreateBodyDto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Filtro Aire FA-220"
+          },
+          "categoria": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 60
+          },
+          "precioVenta": {
+            "type": "string",
+            "description": "Con IVA incluido; número o string decimal",
+            "example": "3900.00"
+          },
+          "alicuotaIva": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Default: IVA del comercio"
+          },
+          "costoReposicion": {
+            "type": "string",
+            "description": "Sin IVA; número o string decimal",
+            "example": "2340.00"
+          },
+          "stockInicial": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          },
+          "stockSeguridad": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "precioVenta",
+          "costoReposicion"
+        ]
+      },
+      "ProductoPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "categoria": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 60
+          },
+          "precioVenta": {
+            "type": "string",
+            "example": "3990.00"
+          },
+          "alicuotaIva": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "costoReposicion": {
+            "type": "string",
+            "example": "2400.00"
+          },
+          "stockSeguridad": {
+            "type": "number",
+            "minimum": 0
+          },
+          "activo": {
+            "type": "boolean",
+            "description": "true reactiva un producto dado de baja"
           }
         }
       }
