@@ -39,6 +39,8 @@ model Comercio {
   /// Alícuota de IVA por defecto para productos nuevos (RN-03), en porcentaje.
   ivaDefault Decimal  @default(21) @map("iva_default") @db.Decimal(5, 2)
   moneda     String   @default("ARS") @db.Char(3)
+  /// true hasta que el dueño confirma el nombre del comercio (POST /me/onboarding).
+  onboardingPendiente Boolean @default(true) @map("onboarding_pendiente")
   creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
   usuarios Usuario[]
@@ -47,11 +49,12 @@ model Comercio {
 }
 
 /// Usuario autenticado por Firebase; pertenece a un único comercio (RN-10).
+/// firebaseUid nulo = invitación pendiente: se vincula cuando la persona inicia sesión con ese email.
 model Usuario {
   id          String   @id @default(uuid()) @db.Uuid
   comercioId  String   @map("comercio_id") @db.Uuid
-  firebaseUid String   @unique @map("firebase_uid") @db.VarChar(128)
-  email       String   @db.VarChar(254)
+  firebaseUid String?  @unique @map("firebase_uid") @db.VarChar(128)
+  email       String   @unique @db.VarChar(254)
   nombre      String?  @db.VarChar(120)
   rol         Rol      @default(DUENIO)
   activo      Boolean  @default(true)

@@ -25,6 +25,7 @@
     },
     "/api/v1/me": {
       "get": {
+        "description": "En el primer ingreso de una identidad crea el comercio (plan FREE) y el usuario DUENIO; si el email tenía una invitación pendiente, la vincula.",
         "operationId": "MeController_me",
         "parameters": [],
         "responses": {
@@ -39,7 +40,24 @@
             }
           },
           "401": {
-            "description": "Sin token o token inválido: { code: \"NO_AUTENTICADO\" }"
+            "description": "Sin token o token inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Usuario dado de baja",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -47,9 +65,410 @@
             "bearer": []
           }
         ],
-        "summary": "Identidad del usuario autenticado",
+        "summary": "Usuario autenticado, su comercio, rol y plan",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/me/onboarding": {
+      "post": {
+        "operationId": "MeController_onboarding",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sin token o token inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar el nombre del comercio elegido en el registro",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/comercio": {
+      "get": {
+        "operationId": "ComercioController_obtener",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComercioDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Datos del comercio del usuario autenticado",
+        "tags": [
+          "comercio"
+        ]
+      },
+      "patch": {
+        "operationId": "ComercioController_actualizar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComercioPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComercioDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Actualizar nombre, CUIT o IVA por defecto del comercio",
+        "tags": [
+          "comercio"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "operationId": "UsersController_listar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el DUENIO administra usuarios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Usuarios del comercio (dueños, invitados, activos e inactivos)",
+        "tags": [
+          "usuarios"
+        ]
+      },
+      "post": {
+        "description": "La persona invitada inicia sesión con ese email (Google o contraseña) y queda vinculada al comercio. Cuenta para el límite de usuarios del plan.",
+        "operationId": "UsersController_invitar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitacionBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Límite de usuarios del plan (PLAN_REQUERIDO, details.planMinimo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el DUENIO administra usuarios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email ya en uso (CONFLICTO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invitar a un usuario por email",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "patch": {
+        "operationId": "UsersController_actualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION, incluido \"el comercio necesita al menos un dueño activo\"",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el DUENIO administra usuarios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar el rol o dar de baja / reactivar a un usuario",
+        "tags": [
+          "usuarios"
         ]
       }
     }
@@ -109,22 +528,245 @@
           "timestamp"
         ]
       },
-      "MeDto": {
+      "ApiErrorDto": {
         "type": "object",
         "properties": {
-          "uid": {
+          "code": {
             "type": "string",
-            "description": "Identificador del usuario en Firebase"
+            "example": "SIN_PERMISO",
+            "enum": [
+              "NO_AUTENTICADO",
+              "SIN_PERMISO",
+              "PLAN_REQUERIDO",
+              "NO_ENCONTRADO",
+              "CONFLICTO",
+              "VALIDACION",
+              "ERROR_INTERNO"
+            ]
           },
-          "email": {
+          "message": {
             "type": "string",
-            "nullable": true
+            "example": "No tenés permiso para realizar esta acción."
+          },
+          "details": {
+            "type": "object",
+            "description": "Detalle adicional: campo → mensaje, o planMinimo."
           }
         },
         "required": [
-          "uid",
-          "email"
+          "code",
+          "message"
         ]
+      },
+      "UsuarioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "example": "ana@repuestoscarlos.com.ar"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          },
+          "rol": {
+            "type": "string",
+            "enum": [
+              "DUENIO",
+              "EMPLEADO",
+              "CONTADOR"
+            ]
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "INVITADO",
+              "ACTIVO",
+              "INACTIVO"
+            ],
+            "description": "INVITADO: todavía no inició sesión; ACTIVO; INACTIVO: dado de baja"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "nombre",
+          "rol",
+          "activo",
+          "estado",
+          "creadoEn"
+        ]
+      },
+      "ComercioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Repuestos Carlos"
+          },
+          "cuit": {
+            "type": "string",
+            "nullable": true,
+            "example": "20123456789"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ]
+          },
+          "ivaDefault": {
+            "type": "string",
+            "description": "Alícuota de IVA por defecto (%), decimal como string",
+            "example": "21"
+          },
+          "moneda": {
+            "type": "string",
+            "example": "ARS"
+          },
+          "onboardingPendiente": {
+            "type": "boolean",
+            "description": "true hasta que el dueño confirma el nombre del comercio"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "cuit",
+          "plan",
+          "ivaDefault",
+          "moneda",
+          "onboardingPendiente"
+        ]
+      },
+      "MeDto": {
+        "type": "object",
+        "properties": {
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioDto"
+          },
+          "comercio": {
+            "$ref": "#/components/schemas/ComercioDto"
+          },
+          "rol": {
+            "type": "string",
+            "enum": [
+              "DUENIO",
+              "EMPLEADO",
+              "CONTADOR"
+            ]
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ]
+          },
+          "onboardingPendiente": {
+            "type": "boolean",
+            "description": "true si falta confirmar el nombre del comercio"
+          }
+        },
+        "required": [
+          "usuario",
+          "comercio",
+          "rol",
+          "plan",
+          "onboardingPendiente"
+        ]
+      },
+      "OnboardingBodyDto": {
+        "type": "object",
+        "properties": {
+          "nombreComercio": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Repuestos Carlos"
+          }
+        },
+        "required": [
+          "nombreComercio"
+        ]
+      },
+      "ComercioPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "cuit": {
+            "type": "string",
+            "nullable": true,
+            "description": "11 dígitos sin guiones, o null"
+          },
+          "ivaDefault": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 21
+          }
+        }
+      },
+      "InvitacionBodyDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ana@repuestoscarlos.com.ar"
+          },
+          "rol": {
+            "type": "string",
+            "enum": [
+              "DUENIO",
+              "EMPLEADO",
+              "CONTADOR"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "rol"
+        ]
+      },
+      "UsuarioPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "rol": {
+            "type": "string",
+            "enum": [
+              "DUENIO",
+              "EMPLEADO",
+              "CONTADOR"
+            ]
+          },
+          "activo": {
+            "type": "boolean",
+            "description": "false = dar de baja; true = reactivar"
+          }
+        }
       }
     }
   }

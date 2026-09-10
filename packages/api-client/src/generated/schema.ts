@@ -28,7 +28,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Identidad del usuario autenticado */
+        /**
+         * Usuario autenticado, su comercio, rol y plan
+         * @description En el primer ingreso de una identidad crea el comercio (plan FREE) y el usuario DUENIO; si el email tenía una invitación pendiente, la vincula.
+         */
         get: operations["MeController_me"];
         put?: never;
         post?: never;
@@ -36,6 +39,79 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirmar el nombre del comercio elegido en el registro */
+        post: operations["MeController_onboarding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/comercio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Datos del comercio del usuario autenticado */
+        get: operations["ComercioController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Actualizar nombre, CUIT o IVA por defecto del comercio */
+        patch: operations["ComercioController_actualizar"];
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Usuarios del comercio (dueños, invitados, activos e inactivos) */
+        get: operations["UsersController_listar"];
+        put?: never;
+        /**
+         * Invitar a un usuario por email
+         * @description La persona invitada inicia sesión con ese email (Google o contraseña) y queda vinculada al comercio. Cuenta para el límite de usuarios del plan.
+         */
+        post: operations["UsersController_invitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cambiar el rol o dar de baja / reactivar a un usuario */
+        patch: operations["UsersController_actualizar"];
         trace?: never;
     };
 }
@@ -55,10 +131,88 @@ export interface components {
             /** Format: date-time */
             timestamp: string;
         };
+        ApiErrorDto: {
+            /**
+             * @example SIN_PERMISO
+             * @enum {string}
+             */
+            code: "NO_AUTENTICADO" | "SIN_PERMISO" | "PLAN_REQUERIDO" | "NO_ENCONTRADO" | "CONFLICTO" | "VALIDACION" | "ERROR_INTERNO";
+            /** @example No tenés permiso para realizar esta acción. */
+            message: string;
+            /** @description Detalle adicional: campo → mensaje, o planMinimo. */
+            details?: Record<string, never>;
+        };
+        UsuarioDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example ana@repuestoscarlos.com.ar */
+            email: string;
+            nombre: string | null;
+            /** @enum {string} */
+            rol: "DUENIO" | "EMPLEADO" | "CONTADOR";
+            activo: boolean;
+            /**
+             * @description INVITADO: todavía no inició sesión; ACTIVO; INACTIVO: dado de baja
+             * @enum {string}
+             */
+            estado: "INVITADO" | "ACTIVO" | "INACTIVO";
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        ComercioDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Repuestos Carlos */
+            nombre: string;
+            /** @example 20123456789 */
+            cuit: string | null;
+            /** @enum {string} */
+            plan: "FREE" | "PRO" | "PREMIUM";
+            /**
+             * @description Alícuota de IVA por defecto (%), decimal como string
+             * @example 21
+             */
+            ivaDefault: string;
+            /** @example ARS */
+            moneda: string;
+            /** @description true hasta que el dueño confirma el nombre del comercio */
+            onboardingPendiente: boolean;
+        };
         MeDto: {
-            /** @description Identificador del usuario en Firebase */
-            uid: string;
-            email: string | null;
+            usuario: components["schemas"]["UsuarioDto"];
+            comercio: components["schemas"]["ComercioDto"];
+            /** @enum {string} */
+            rol: "DUENIO" | "EMPLEADO" | "CONTADOR";
+            /** @enum {string} */
+            plan: "FREE" | "PRO" | "PREMIUM";
+            /** @description true si falta confirmar el nombre del comercio */
+            onboardingPendiente: boolean;
+        };
+        OnboardingBodyDto: {
+            /** @example Repuestos Carlos */
+            nombreComercio: string;
+        };
+        ComercioPatchBodyDto: {
+            nombre?: string;
+            /** @description 11 dígitos sin guiones, o null */
+            cuit?: string | null;
+            /** @example 21 */
+            ivaDefault?: number;
+        };
+        InvitacionBodyDto: {
+            /**
+             * Format: email
+             * @example ana@repuestoscarlos.com.ar
+             */
+            email: string;
+            /** @enum {string} */
+            rol: "DUENIO" | "EMPLEADO" | "CONTADOR";
+        };
+        UsuarioPatchBodyDto: {
+            /** @enum {string} */
+            rol?: "DUENIO" | "EMPLEADO" | "CONTADOR";
+            /** @description false = dar de baja; true = reactivar */
+            activo?: boolean;
         };
     };
     responses: never;
@@ -105,12 +259,317 @@ export interface operations {
                     "application/json": components["schemas"]["MeDto"];
                 };
             };
-            /** @description Sin token o token inválido: { code: "NO_AUTENTICADO" } */
+            /** @description Sin token o token inválido */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Usuario dado de baja */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MeController_onboarding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OnboardingBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sin token o token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ComercioController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComercioDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ComercioController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComercioPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComercioDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    UsersController_listar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"][];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO administra usuarios */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    UsersController_invitar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitacionBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Límite de usuarios del plan (PLAN_REQUERIDO, details.planMinimo) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO administra usuarios */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Email ya en uso (CONFLICTO) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    UsersController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UsuarioPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioDto"];
+                };
+            };
+            /** @description VALIDACION, incluido "el comercio necesita al menos un dueño activo" */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO administra usuarios */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
             };
         };
     };

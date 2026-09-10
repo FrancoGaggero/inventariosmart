@@ -29,7 +29,9 @@ jobs:
           --health-retries 10
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/inventariosmart_test
+      # La API corre como app_api (sin BYPASSRLS) para que los tests de aislamiento sean reales;
+      # postgres (superusuario) sólo aplica migraciones. Ver docs/runbooks/rls.md.
+      DATABASE_URL: postgresql://app_api:app_api@localhost:5432/inventariosmart_test
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/inventariosmart_test
       CORS_ORIGINS: http://localhost:5173
       LOG_LEVEL: error
@@ -65,10 +67,19 @@ jobs:
       - name: Tests unitarios
         run: pnpm test
 
-      - name: Migraciones y tests e2e de la API
+      - name: Migraciones y rol de aplicación
         run: |
           pnpm --filter @inventariosmart/api prisma:deploy
-          pnpm --filter @inventariosmart/api test:e2e
+          psql "$DIRECT_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            CREATE ROLE app_api LOGIN PASSWORD 'app_api' NOBYPASSRLS NOSUPERUSER NOCREATEDB NOCREATEROLE;
+            GRANT USAGE ON SCHEMA public TO app_api;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_api;
+            REVOKE ALL ON TABLE _prisma_migrations FROM app_api;
+            GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO app_api;
+          SQL
+
+      - name: Tests e2e de la API
+        run: pnpm --filter @inventariosmart/api test:e2e
 
       - name: Build
         run: pnpm build

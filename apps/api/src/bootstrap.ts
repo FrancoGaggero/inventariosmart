@@ -5,6 +5,7 @@ import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swag
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { TenantContext } from './auth/tenant-context';
 import type { Env } from './config/env';
 
 export const API_PREFIX = 'api/v1';
@@ -21,6 +22,7 @@ export async function crearApp(): Promise<INestApplication> {
 export function configurarApp(app: INestApplication): void {
   const config = app.get(ConfigService<Env, true>);
   app.setGlobalPrefix(API_PREFIX);
+  app.use(TenantContext.middleware);
   app.use(helmet());
   app.enableCors({
     origin: config.get('CORS_ORIGINS', { infer: true }),

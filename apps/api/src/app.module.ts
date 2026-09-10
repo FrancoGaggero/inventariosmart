@@ -4,11 +4,13 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
+import { ComercioModule } from './comercio/comercio.module';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { type Env, validateEnv } from './config/env';
 import { HealthModule } from './health/health.module';
 import { MeModule } from './me/me.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     HealthModule,
     MeModule,
+    ComercioModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

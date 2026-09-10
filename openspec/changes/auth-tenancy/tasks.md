@@ -1,25 +1,25 @@
 ## 1. Modelo de datos y RLS
 
-- [ ] 1.1 Actualizar `schema.prisma`: `usuario.firebaseUid` opcional (único), `usuario.email` único global, `comercio.onboardingPendiente` (default true); generar la migración `auth_tenancy` con `prisma migrate dev --create-only`. Listo cuando: la migración contiene las tres alteraciones y `prisma migrate deploy` la aplica en la rama `dev` de Neon sin errores
-- [ ] 1.2 Agregar al SQL de la migración las políticas RLS de `comercio` y `usuario` con `ENABLE` + `FORCE ROW LEVEL SECURITY`, políticas por `app.comercio_id` y política de bypass por `app.rol_sistema = 'provisioning'`. Listo cuando: `psql` como `neondb_owner` sin `set_config` devuelve 0 filas de `usuario` aunque existan (CP-11.5c), y con `set_config('app.comercio_id', …)` devuelve sólo las de ese comercio
-- [ ] 1.3 Escribir `docs/runbooks/rls.md` con el patrón de políticas para tablas futuras y el script de rollback. Listo cuando: el runbook incluye el SQL completo y un checklist "tabla nueva"
+- [x] 1.1 Actualizar `schema.prisma`: `usuario.firebaseUid` opcional (único), `usuario.email` único global, `comercio.onboardingPendiente` (default true); generar la migración `auth_tenancy` con `prisma migrate dev --create-only`. Listo cuando: la migración contiene las tres alteraciones y `prisma migrate deploy` la aplica en la rama `dev` de Neon sin errores
+- [x] 1.2 Agregar al SQL de la migración las políticas RLS de `comercio` y `usuario` con `ENABLE` + `FORCE ROW LEVEL SECURITY`, políticas por `app.comercio_id` y política de bypass por `app.rol_sistema = 'provisioning'`. Listo cuando: `psql` como `neondb_owner` sin `set_config` devuelve 0 filas de `usuario` aunque existan (CP-11.5c), y con `set_config('app.comercio_id', …)` devuelve sólo las de ese comercio
+- [x] 1.3 Escribir `docs/runbooks/rls.md` con el patrón de políticas para tablas futuras y el script de rollback. Listo cuando: el runbook incluye el SQL completo y un checklist "tabla nueva"
 
 ## 2. API · contexto de tenant y provisioning
 
-- [ ] 2.1 Implementar `TenantContext` (AsyncLocalStorage) y la extensión `prisma.tenant` que inyecta `comercioId` en lecturas, escrituras y creates de `TENANT_MODELS`, ejecutando cada operación en una transacción con `set_config('app.comercio_id', …, true)`. Listo cuando: un test unitario verifica que `findMany` sin `where` llega a la base con `comercioId` y que `create` lo inyecta
-- [ ] 2.2 Implementar `AuthProvisioningService.resolver()` (buscar por uid → vincular invitación por email → crear comercio FREE + DUENIO) usando `prisma.raw` bajo `app.rol_sistema = 'provisioning'`, con reintento ante violación del índice único. Listo cuando: tests e2e CP-11.2, CP-11.2b (dos requests en paralelo) y CP-11.3b pasan
-- [ ] 2.3 Extender `FirebaseAuthGuard` para llenar `req.user` con usuario, comercio, rol, plan y bloquear inactivos con 403. Listo cuando: CP-11.6 pasa y `GET /me` devuelve la forma nueva
-- [ ] 2.4 Agregar `RolesGuard` (`@Roles`), `PlanGuard` (`@RequierePlan`, usa `planCumple`) y `SensitiveFieldsInterceptor` (omite `costo*` y `margen*` para EMPLEADO), registrados globalmente en el orden Throttler → Auth → Roles → Plan. Listo cuando: un controlador de prueba en los e2e demuestra CP-11.4, CP-11.4b y CP-11.7
-- [ ] 2.5 Agregar en `packages/shared` el código `CONFLICTO`, los esquemas `OnboardingSchema`, `ComercioPatchSchema`, `InvitacionSchema`, `UsuarioPatchSchema` y los tipos `Me`, `Usuario`, `Comercio`; crear `ZodValidationPipe` en la API que responde 400 `VALIDACION` con `details` por campo. Listo cuando: tests unitarios de los esquemas pasan y un body inválido responde con el formato del contrato
-- [ ] 2.6 Prohibir `prisma.raw` fuera de `apps/api/src/auth` con una regla de ESLint. Listo cuando: un uso fuera de `auth/` hace fallar `pnpm lint`
+- [x] 2.1 Implementar `TenantContext` (AsyncLocalStorage) y la extensión `prisma.tenant` que inyecta `comercioId` en lecturas, escrituras y creates de `TENANT_MODELS`, ejecutando cada operación en una transacción con `set_config('app.comercio_id', …, true)`. Listo cuando: un test unitario verifica que `findMany` sin `where` llega a la base con `comercioId` y que `create` lo inyecta
+- [x] 2.2 Implementar `AuthProvisioningService.resolver()` (buscar por uid → vincular invitación por email → crear comercio FREE + DUENIO) usando `prisma.raw` bajo `app.rol_sistema = 'provisioning'`, con reintento ante violación del índice único. Listo cuando: tests e2e CP-11.2, CP-11.2b (dos requests en paralelo) y CP-11.3b pasan
+- [x] 2.3 Extender `FirebaseAuthGuard` para llenar `req.user` con usuario, comercio, rol, plan y bloquear inactivos con 403. Listo cuando: CP-11.6 pasa y `GET /me` devuelve la forma nueva
+- [x] 2.4 Agregar `RolesGuard` (`@Roles`), `PlanGuard` (`@RequierePlan`, usa `planCumple`) y `SensitiveFieldsInterceptor` (omite `costo*` y `margen*` para EMPLEADO), registrados globalmente en el orden Throttler → Auth → Roles → Plan. Listo cuando: un controlador de prueba en los e2e demuestra CP-11.4, CP-11.4b y CP-11.7
+- [x] 2.5 Agregar en `packages/shared` el código `CONFLICTO`, los esquemas `OnboardingSchema`, `ComercioPatchSchema`, `InvitacionSchema`, `UsuarioPatchSchema` y los tipos `Me`, `Usuario`, `Comercio`; crear `ZodValidationPipe` en la API que responde 400 `VALIDACION` con `details` por campo. Listo cuando: tests unitarios de los esquemas pasan y un body inválido responde con el formato del contrato
+- [x] 2.6 Prohibir `prisma.raw` fuera de `apps/api/src/auth` con una regla de ESLint. Listo cuando: un uso fuera de `auth/` hace fallar `pnpm lint`
 
 ## 3. API · endpoints
 
-- [ ] 3.1 `GET /me` (forma nueva) y `POST /me/onboarding`. Listo cuando: CP-11.1, CP-11.1b (verificador simulado con dos identidades), CP-11.1c y CP-11.2c pasan
-- [ ] 3.2 `GET /comercio` y `PATCH /comercio` con validación de nombre, CUIT (11 dígitos, opcional) e IVA (0 a 100). Listo cuando: CP-11.2d pasa, incluido el 403 para EMPLEADO y CONTADOR
-- [ ] 3.3 Módulo `users`: `GET /users`, `POST /users` (invitación, 409 `CONFLICTO`, 402 `PLAN_REQUERIDO` en FREE) y `PATCH /users/:id` (rol, activo, regla del último dueño con `FOR UPDATE`). Listo cuando: CP-11.3, CP-11.3c, CP-11.3d, CP-11.3e, CP-11.3f, CP-11.7 y CP-11.7b pasan
-- [ ] 3.4 Test e2e de aislamiento: dos comercios, lectura y escritura cruzadas (CP-11.5, CP-11.5b) y verificación de `relforcerowsecurity` para cada modelo de `TENANT_MODELS`. Listo cuando: el test pasa y falla al quitar `FORCE` de una tabla en un entorno de prueba
-- [ ] 3.5 Actualizar Swagger (DTOs, `@ApiResponse` de 401/402/403/404/409) y regenerar el contrato: `pnpm openapi`. Listo cuando: `docs/openapi.json` contiene las siete rutas de D6 y CI no reporta contrato desactualizado
+- [x] 3.1 `GET /me` (forma nueva) y `POST /me/onboarding`. Listo cuando: CP-11.1, CP-11.1b (verificador simulado con dos identidades), CP-11.1c y CP-11.2c pasan
+- [x] 3.2 `GET /comercio` y `PATCH /comercio` con validación de nombre, CUIT (11 dígitos, opcional) e IVA (0 a 100). Listo cuando: CP-11.2d pasa, incluido el 403 para EMPLEADO y CONTADOR
+- [x] 3.3 Módulo `users`: `GET /users`, `POST /users` (invitación, 409 `CONFLICTO`, 402 `PLAN_REQUERIDO` en FREE) y `PATCH /users/:id` (rol, activo, regla del último dueño con `FOR UPDATE`). Listo cuando: CP-11.3, CP-11.3c, CP-11.3d, CP-11.3e, CP-11.3f, CP-11.7 y CP-11.7b pasan
+- [x] 3.4 Test e2e de aislamiento: dos comercios, lectura y escritura cruzadas (CP-11.5, CP-11.5b) y verificación de `relforcerowsecurity` para cada modelo de `TENANT_MODELS`. Listo cuando: el test pasa y falla al quitar `FORCE` de una tabla en un entorno de prueba
+- [x] 3.5 Actualizar Swagger (DTOs, `@ApiResponse` de 401/402/403/404/409) y regenerar el contrato: `pnpm openapi`. Listo cuando: `docs/openapi.json` contiene las siete rutas de D6 y CI no reporta contrato desactualizado
 
 ## 4. Web
 

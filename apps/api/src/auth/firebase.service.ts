@@ -10,11 +10,11 @@ import {
 } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import type { Env } from '../config/env';
-import type { AuthUser } from '../common/decorators/current-user.decorator';
+import type { Identidad } from './provisioning.service';
 
 /** Contrato del verificador de tokens; los tests lo reemplazan por un doble. */
 export abstract class TokenVerifier {
-  abstract verificar(idToken: string): Promise<AuthUser>;
+  abstract verificar(idToken: string): Promise<Identidad>;
 }
 
 /**
@@ -47,11 +47,12 @@ export class FirebaseService extends TokenVerifier implements OnModuleInit {
     );
   }
 
-  async verificar(idToken: string): Promise<AuthUser> {
+  async verificar(idToken: string): Promise<Identidad> {
     if (!this.app) {
       throw new Error('Firebase Admin no inicializado');
     }
     const decoded = await getAuth(this.app).verifyIdToken(idToken);
-    return { uid: decoded.uid, email: decoded.email ?? null };
+    const nombre = typeof decoded['name'] === 'string' ? decoded['name'] : null;
+    return { uid: decoded.uid, email: decoded.email ?? null, nombre };
   }
 }

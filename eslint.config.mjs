@@ -34,4 +34,20 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'off',
     },
   },
+  {
+    // Los módulos de negocio usan `prisma.tenant` (filtra por comercio y activa RLS).
+    // `prisma.raw` queda reservado a auth/ (provisioning), al propio servicio y a los tests.
+    files: ['apps/api/src/**/*.ts'],
+    ignores: ['apps/api/src/auth/**', 'apps/api/src/prisma/**', 'apps/api/src/health/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[property.name="raw"][object.property.name="prisma"]',
+          message:
+            'Usá prisma.tenant (filtra por comercio y respeta RLS). prisma.raw sólo se permite en auth/.',
+        },
+      ],
+    },
+  },
 );

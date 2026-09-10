@@ -1,10 +1,28 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
+import type { Plan, Rol } from '@inventariosmart/shared';
 
-/** Identidad verificada por Firebase que el guard adjunta al request. */
+/** Datos del comercio que viajan con el usuario autenticado. */
+export interface ComercioAuth {
+  id: string;
+  nombre: string;
+  cuit: string | null;
+  plan: Plan;
+  ivaDefault: string;
+  moneda: string;
+  onboardingPendiente: boolean;
+}
+
+/** Usuario autenticado y resuelto contra la base (identidad + comercio + rol + plan). */
 export interface AuthUser {
   uid: string;
-  email: string | null;
+  email: string;
+  usuarioId: string;
+  nombre: string | null;
+  rol: Rol;
+  activo: boolean;
+  creadoEn: Date;
+  comercio: ComercioAuth;
 }
 
 export type RequestWithUser = Request & { user?: AuthUser };
