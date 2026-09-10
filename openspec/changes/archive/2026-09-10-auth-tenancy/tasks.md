@@ -23,15 +23,15 @@
 
 ## 4. Web
 
-- [ ] 4.1 `useMe()` con TanStack Query y `AuthGate` que redirige a `/onboarding` cuando `onboardingPendiente` y guarda comercio, rol y plan en contexto. Listo cuando: al entrar con Google por primera vez la web muestra el onboarding y, tras completarlo, el inicio
-- [ ] 4.2 Pantalla `/registro` (nombre del comercio, email, contraseña, aceptación de términos) que crea el usuario en Firebase y llama a `POST /me/onboarding`; enlaces cruzados con `/login`. Listo cuando: un registro nuevo termina en el inicio con el nombre del comercio elegido y los errores de Firebase se muestran en español
-- [ ] 4.3 Inicio mínimo (reemplaza la pantalla del sprint 0): nombre del comercio, rol, plan y accesos según rol; `RequireRole` para rutas de DUENIO. Listo cuando: un EMPLEADO no ve el acceso a Usuarios ni a Configuración y, si escribe la URL, ve "No tenés permiso"
-- [ ] 4.4 Página `/configuracion/usuarios`: listado con estado (dueño, invitado, activo, inactivo), formulario de invitación (email, rol), cambio de rol y baja/reactivación, con manejo de 402 ("Disponible en el plan PRO"), 409 y 400. Listo cuando: invitar, cambiar rol y desactivar se reflejan en el listado sin recargar, y en plan FREE la invitación muestra el aviso de plan
-- [ ] 4.5 Página `/configuracion/comercio` (nombre, CUIT, IVA por defecto) para DUENIO. Listo cuando: guardar actualiza los datos y `GET /comercio` los devuelve
+- [x] 4.1 `useMe()` con TanStack Query y `AuthGate` que redirige a `/onboarding` cuando `onboardingPendiente` y guarda comercio, rol y plan en contexto. Listo cuando: al entrar con Google por primera vez la web muestra el onboarding y, tras completarlo, el inicio
+- [ ] 4.2 (implementada, compila y el flujo de onboarding está probado en producción; falta la prueba manual de crear una cuenta con email desde /registro) Pantalla `/registro` (nombre del comercio, email, contraseña, aceptación de términos) que crea el usuario en Firebase y llama a `POST /me/onboarding`; enlaces cruzados con `/login`. Listo cuando: un registro nuevo termina en el inicio con el nombre del comercio elegido y los errores de Firebase se muestran en español
+- [x] 4.3 Inicio mínimo (reemplaza la pantalla del sprint 0): nombre del comercio, rol, plan y accesos según rol; `RequireRole` para rutas de DUENIO. Listo cuando: un EMPLEADO no ve el acceso a Usuarios ni a Configuración y, si escribe la URL, ve "No tenés permiso"
+- [x] 4.4 Página `/configuracion/usuarios`: listado con estado (dueño, invitado, activo, inactivo), formulario de invitación (email, rol), cambio de rol y baja/reactivación, con manejo de 402 ("Disponible en el plan PRO"), 409 y 400. Listo cuando: invitar, cambiar rol y desactivar se reflejan en el listado sin recargar, y en plan FREE la invitación muestra el aviso de plan
+- [x] 4.5 Página `/configuracion/comercio` (nombre, CUIT, IVA por defecto) para DUENIO. Listo cuando: guardar actualiza los datos y `GET /comercio` los devuelve
 
 ## 5. Verificación y cierre
 
 - [x] 5.1 Correr `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm --filter @inventariosmart/api test:e2e` en verde; CI en verde. Verificado el 10/09/2026: commit `8c87a45` en `main`, jobs "API, web y paquetes" (con rol app_api y 29 e2e) y "Mobile (Flutter)" en verde (se trabajó sobre `main` directamente, sin PR)
-- [ ] 5.2 Desplegar: merge a `main`, verificar en Render que la migración se aplicó y que `GET /me` en producción devuelve comercio, rol y plan para tu usuario; verificar con `psql` en Neon production que `usuario` tiene `FORCE ROW LEVEL SECURITY`. Listo cuando: la web publicada muestra tu comercio y rol DUENIO
+- [x] 5.2 Desplegar: merge a `main`, verificar en Render que la migración se aplicó y que `GET /me` en producción devuelve comercio, rol y plan para tu usuario; verificar con `psql` en Neon production que `usuario` tiene `FORCE ROW LEVEL SECURITY`. Listo cuando: la web publicada muestra tu comercio y rol DUENIO
 - [x] 5.3 Actualizar `docs/arquitectura.html` (§4 multi-tenencia: FORCE RLS y bypass de provisioning), `docs/adr/0002` y el README (rutas nuevas). Listo cuando: los tres documentos reflejan D1 a D6
-- [ ] 5.4 Mover HU-11 a Hecho en Trello, actualizar el estado en `Backlog_InventarioSmart_v2.xlsx` y la tarea 4.3 del Gantt al 100 %. Listo cuando: Trello, backlog y Gantt coinciden
+- [ ] 5.4 (manual, Franco) Mover HU-11 a Hecho en Trello, actualizar el estado en `Backlog_InventarioSmart_v2.xlsx` y la tarea 4.3 del Gantt al 100 %. Listo cuando: Trello, backlog y Gantt coinciden
