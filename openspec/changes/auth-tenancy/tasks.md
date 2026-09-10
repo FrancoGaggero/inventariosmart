@@ -31,7 +31,7 @@
 
 ## 5. Verificación y cierre
 
-- [ ] 5.1 Correr `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm --filter @inventariosmart/api test:e2e` en verde; abrir PR y confirmar CI en verde. Listo cuando: el PR muestra los dos jobs en verde
+- [x] 5.1 Correr `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm --filter @inventariosmart/api test:e2e` en verde; CI en verde. Verificado el 10/09/2026: commit `8c87a45` en `main`, jobs "API, web y paquetes" (con rol app_api y 29 e2e) y "Mobile (Flutter)" en verde (se trabajó sobre `main` directamente, sin PR)
 - [ ] 5.2 Desplegar: merge a `main`, verificar en Render que la migración se aplicó y que `GET /me` en producción devuelve comercio, rol y plan para tu usuario; verificar con `psql` en Neon production que `usuario` tiene `FORCE ROW LEVEL SECURITY`. Listo cuando: la web publicada muestra tu comercio y rol DUENIO
-- [ ] 5.3 Actualizar `docs/arquitectura.html` (§4 multi-tenencia: FORCE RLS y bypass de provisioning), `docs/adr/0002` y el README (rutas nuevas). Listo cuando: los tres documentos reflejan D1 a D6
+- [x] 5.3 Actualizar `docs/arquitectura.html` (§4 multi-tenencia: FORCE RLS y bypass de provisioning), `docs/adr/0002` y el README (rutas nuevas). Listo cuando: los tres documentos reflejan D1 a D6
 - [ ] 5.4 Mover HU-11 a Hecho en Trello, actualizar el estado en `Backlog_InventarioSmart_v2.xlsx` y la tarea 4.3 del Gantt al 100 %. Listo cuando: Trello, backlog y Gantt coinciden
