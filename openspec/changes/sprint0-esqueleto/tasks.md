@@ -15,7 +15,7 @@
 ## 3. API NestJS
 
 - [x] 3.1 Generar `apps/api` con NestJS, prefijo global `/api/v1`, `helmet`, CORS desde `CORS_ORIGINS` y filtro global de excepciones con formato `{ code, message, details }`; verificar que `GET /api/v1/ruta-inexistente` responde 404 con ese formato
-- [ ] 3.2 Configurar Prisma con `DATABASE_URL`, crear la base local `inventariosmart_dev` con `createdb`, y escribir la migración inicial con `comercio` y `usuario` (índice único en `firebase_uid`); verificar que `pnpm --filter api prisma migrate dev` aplica sin errores y `psql` lista las dos tablas
+- [x] 3.2 Configurar Prisma con `DATABASE_URL` apuntando a la rama `dev` de Neon como base de desarrollo (decisión D2, 10/09/2026: sin base local) y escribir la migración inicial con `comercio` y `usuario` (índice único en `firebase_uid`); verificado: `prisma migrate deploy` aplicada en las ramas `dev` y `production`, y `psql` lista las dos tablas
 - [x] 3.3 Implementar `GET /api/v1/health` (estado de la API y de la conexión a la base) marcado `@Public()`; verificar con un test e2e que responde 200 y `{ status: "ok", db: "ok" }`
 - [x] 3.4 Configurar `@nestjs/swagger` en `/docs` y el script `openapi:export` que escribe `docs/openapi.json`; verificar que el archivo contiene las rutas `health` y `me`
 - [x] 3.5 Implementar el guard global de Firebase con `firebase-admin` (credencial desde `FIREBASE_SERVICE_ACCOUNT_JSON` en base64) y `GET /api/v1/me` que devuelve `{ uid, email }` del token; verificar con tests e2e que sin token responde 401 `{ code: "NO_AUTENTICADO" }` y con un token válido simulado responde 200

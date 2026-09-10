@@ -20,8 +20,8 @@ Repositorio recién creado, sin código: sólo `openspec/`, `docs/` (arquitectur
 **D1 · Monorepo pnpm con workspaces, sin Turborepo ni Nx.**
 Tres apps y dos paquetes no justifican un orquestador; los scripts raíz encadenan `pnpm -r`. Alternativa descartada: Turborepo (caché útil recién con varios desarrolladores).
 
-**D2 · Base local nativa en PostgreSQL 18, Neon en producción.**
-La máquina ya tiene PostgreSQL 18 y no tiene Docker. Se crea `inventariosmart_dev` con `createdb`; `docker-compose.yml` se agrega sólo si otro entorno lo necesita. Verificado el 09/09/2026: el proyecto de Neon corre PostgreSQL 18.6, misma versión mayor que la local, así que no hay restricción de funciones. Ramas: `production` (API en Railway) y `dev` (previews y CI).
+**D2 · Base de desarrollo en la rama `dev` de Neon, producción en la rama `production`.**
+Decidido el 10/09/2026: la máquina tiene PostgreSQL 18 instalado pero sin contraseña conocida, y no tiene Docker. En lugar de restablecerla, el desarrollo local usa la rama `dev` de Neon (base propia, aislada de producción, misma versión 18.6). Ventajas: cero servicios locales, misma configuración que CI y previews, y `neon branches reset` devuelve la rama al estado de producción cuando hace falta. Si algún día se quiere una base local, alcanza con cambiar `DATABASE_URL` en `.env`. Verificado el 09/09/2026: el proyecto de Neon corre PostgreSQL 18.6, misma versión mayor que la local, así que no hay restricción de funciones. Ramas: `production` (API en Railway) y `dev` (previews y CI).
 
 **D3 · Prisma con `prisma migrate` desde el día uno.**
 La migración inicial crea `comercio` (id, nombre, plan, iva_default, moneda, created_at) y `usuario` (id, comercio_id, firebase_uid único, email, rol, created_at). Se crean ahora para que `GET /me` tenga dónde persistir en el change siguiente, pero este change no las llena.

@@ -13,13 +13,13 @@ Trabajo final de carrera — Analista de Sistemas, Escuela Da Vinci. Franco Gagg
 
 ## Arranque local en cinco comandos
 
-Requisitos: Node 22, pnpm 12 (`npm i -g pnpm`), PostgreSQL 16+ local, Flutter 3.47 (sólo para mobile).
+Requisitos: Node 22, pnpm 12 (`npm i -g pnpm`), acceso a la rama `dev` de Neon (no hace falta PostgreSQL local), Flutter 3.47 (sólo para mobile).
 
 ```bash
 pnpm install
 cp apps/api/.env.example apps/api/.env && cp apps/web/.env.example apps/web/.env   # completar valores
-createdb inventariosmart_dev
-pnpm --filter @inventariosmart/api prisma:migrate
+pnpm --filter @inventariosmart/shared build && pnpm openapi
+pnpm --filter @inventariosmart/api prisma:deploy
 pnpm dev
 ```
 
@@ -27,7 +27,7 @@ pnpm dev
 - Web: http://localhost:5173
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 
-`pnpm dev` levanta API y web en paralelo. La primera vez, construí los paquetes compartidos: `pnpm --filter @inventariosmart/shared build && pnpm openapi`.
+`pnpm dev` levanta API y web en paralelo. La base de desarrollo es la rama `dev` de Neon (decisión D2 del sprint 0); las migraciones nuevas se crean con `pnpm --filter @inventariosmart/api prisma:migrate`.
 
 ## Variables de entorno
 
