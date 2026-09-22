@@ -12,6 +12,7 @@ import {
 import { TenantContext } from '../auth/tenant-context';
 import { conflicto, noEncontrado, planRequerido, validacion } from '../common/errors';
 import { Prisma, type Producto as ProductoRow } from '../generated/prisma/client';
+import { MovementsService } from '../movements/movements.service';
 import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
 
 /** Código normalizado para la unicidad por comercio sin distinguir mayúsculas (RN-05). */
@@ -83,7 +84,10 @@ const COLUMNAS = Prisma.sql`
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly movements: MovementsService,
+  ) {}
 
   /** Listado con búsqueda, filtros y paginación por cursor (CP-01.3). */
   async listar(q: ProductosQuery): Promise<ListaProductos> {
@@ -152,6 +156,8 @@ export class ProductsService {
       const codigoNormalizado = normalizarCodigo(dto.codigo);
       await this.verificarCodigoLibre(tx, comercioId, codigoNormalizado);
 
+      // El stock inicial entra como un INGRESO (STOCK_INICIAL) en la misma transacción,
+      // así el historial de todo producto empieza en su primer movimiento (HU-10, CP-10.9).
       const creado = await tx.producto.create({
         data: {
           comercioId,
@@ -162,10 +168,19 @@ export class ProductsService {
           precioVenta: dto.precioVenta,
           alicuotaIva: dto.alicuotaIva ?? ivaDefault,
           costoReposicion: dto.costoReposicion,
-          stockActual: dto.stockInicial,
+          stockActual: 0,
           stockSeguridad: dto.stockSeguridad,
         },
       });
+      if (dto.stockInicial > 0) {
+        const ingreso = await this.movements.registrarEnTransaccion(tx, {
+          productoId: creado.id,
+          tipo: 'INGRESO',
+          cantidad: dto.stockInicial,
+          motivo: 'STOCK_INICIAL',
+        });
+        return aProducto({ ...creado, stockActual: ingreso.stockResultante });
+      }
       return aProducto(creado);
     });
   }

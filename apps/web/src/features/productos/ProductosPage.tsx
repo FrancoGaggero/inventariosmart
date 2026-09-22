@@ -141,27 +141,27 @@ export function ProductosPage() {
               <th className="text-right px-3 py-3">Stock</th>
               <th className="text-right px-3 py-3">Precio</th>
               {esDuenio && <th className="text-right px-3 py-3">Costo</th>}
-              {esDuenio && <th className="px-5 py-3" />}
+              <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody>
             {productos.isPending && (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-t2 text-center">
+                <td colSpan={6} className="px-5 py-8 text-t2 text-center">
                   Cargando…
                 </td>
               </tr>
             )}
             {productos.isError && (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-crit">
+                <td colSpan={6} className="px-5 py-8 text-crit">
                   {mensajeDe(productos.error)}
                 </td>
               </tr>
             )}
             {productos.isSuccess && items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-t2">
+                <td colSpan={6} className="px-5 py-10 text-center text-t2">
                   <Package className="w-8 h-8 mx-auto mb-2 text-t3" aria-hidden />
                   {q || chip !== 'TODOS'
                     ? 'No hay productos que coincidan.'
@@ -216,9 +216,31 @@ export function ProductosPage() {
                       {formatearPesos(p.costoReposicion)}
                     </td>
                   )}
-                  {esDuenio && (
-                    <td className="px-5 py-3 text-right whitespace-nowrap">
-                      {p.activo ? (
+                  <td className="px-5 py-3 text-right whitespace-nowrap space-x-3">
+                    {p.activo && (
+                      <>
+                        <Link
+                          to={`/movimientos/nuevo?productoId=${p.id}&tipo=VENTA`}
+                          className="text-xs font-semibold text-brand-3 hover:underline"
+                        >
+                          Vender
+                        </Link>
+                        <Link
+                          to={`/movimientos/nuevo?productoId=${p.id}&tipo=INGRESO`}
+                          className="text-xs font-semibold text-brand-3 hover:underline"
+                        >
+                          Ingresar
+                        </Link>
+                      </>
+                    )}
+                    <Link
+                      to={`/movimientos?productoId=${p.id}`}
+                      className="text-xs font-semibold text-t2 hover:text-t1 hover:underline"
+                    >
+                      Historial
+                    </Link>
+                    {esDuenio &&
+                      (p.activo ? (
                         <button
                           type="button"
                           className="text-xs font-semibold text-crit hover:underline"
@@ -236,9 +258,8 @@ export function ProductosPage() {
                         >
                           Reactivar
                         </button>
-                      )}
-                    </td>
-                  )}
+                      ))}
+                  </td>
                 </tr>
               );
             })}

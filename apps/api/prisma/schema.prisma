@@ -1,6 +1,6 @@
 // InventarioSmart — esquema de datos.
-// Sprint 0: sólo Comercio (tenant) y Usuario. El resto de las entidades del DER
-// (Producto, Proveedor, PrecioProveedor, Movimiento, Gasto, …) llegan con sus HU.
+// Comercio (tenant), Usuario, Producto (HU-01) y Movimiento (HU-10). El resto de las entidades
+// del DER (Proveedor, PrecioProveedor, Gasto, …) llegan con sus HU.
 // Convención: nombres de tabla y columna en snake_case, en español; modelos en PascalCase.
 
 generator client {
@@ -32,19 +32,20 @@ enum Rol {
 
 /// Comercio: unidad de aislamiento multi-tenant (RNF-10).
 model Comercio {
-  id         String   @id @default(uuid()) @db.Uuid
-  nombre     String   @db.VarChar(120)
-  cuit       String?  @db.VarChar(13)
-  plan       Plan     @default(FREE)
+  id                  String   @id @default(uuid()) @db.Uuid
+  nombre              String   @db.VarChar(120)
+  cuit                String?  @db.VarChar(13)
+  plan                Plan     @default(FREE)
   /// Alícuota de IVA por defecto para productos nuevos (RN-03), en porcentaje.
-  ivaDefault Decimal  @default(21) @map("iva_default") @db.Decimal(5, 2)
-  moneda     String   @default("ARS") @db.Char(3)
+  ivaDefault          Decimal  @default(21) @map("iva_default") @db.Decimal(5, 2)
+  moneda              String   @default("ARS") @db.Char(3)
   /// true hasta que el dueño confirma el nombre del comercio (POST /me/onboarding).
-  onboardingPendiente Boolean @default(true) @map("onboarding_pendiente")
-  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  onboardingPendiente Boolean  @default(true) @map("onboarding_pendiente")
+  creadoEn            DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  usuarios  Usuario[]
-  productos Producto[]
+  usuarios    Usuario[]
+  productos   Producto[]
+  movimientos Movimiento[]
 
   @@map("comercio")
 }
@@ -71,7 +72,8 @@ model Producto {
   creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
   actualizadoEn     DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
 
-  comercio Comercio @relation(fields: [comercioId], references: [id])
+  comercio    Comercio     @relation(fields: [comercioId], references: [id])
+  movimientos Movimiento[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
@@ -90,8 +92,77 @@ model Usuario {
   activo      Boolean  @default(true)
   creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  comercio Comercio @relation(fields: [comercioId], references: [id])
+  comercio    Comercio     @relation(fields: [comercioId], references: [id])
+  movimientos Movimiento[]
 
   @@index([comercioId])
   @@map("usuario")
+}
+
+/// Tipo de movimiento de stock (HU-10, RF-13).
+enum TipoMovimiento {
+  VENTA
+  INGRESO
+  AJUSTE
+
+  @@map("tipo_movimiento")
+}
+
+/// Motivo del movimiento. STOCK_INICIAL y ANULACION los asigna el sistema.
+enum MotivoMovimiento {
+  STOCK_INICIAL
+  COMPRA
+  DEVOLUCION
+  INVENTARIO
+  ROTURA
+  VENCIMIENTO
+  ROBO
+  USO_INTERNO
+  ANULACION
+  OTRO
+
+  @@map("motivo_movimiento")
+}
+
+/// Movimiento de stock: inmutable (RN-07). El rol de la API sólo puede insertar y
+/// completar `anulado_por_id`; una corrección es un AJUSTE que referencia al original.
+model Movimiento {
+  id                String            @id @default(uuid()) @db.Uuid
+  comercioId        String            @map("comercio_id") @db.Uuid
+  productoId        String            @map("producto_id") @db.Uuid
+  /// Quién lo registró (auditoría mínima).
+  usuarioId         String            @map("usuario_id") @db.Uuid
+  tipo              TipoMovimiento
+  /// Como se registró: > 0 en VENTA e INGRESO; con signo en AJUSTE.
+  cantidad          Int
+  /// Delta aplicado a producto.stock_actual (nunca 0).
+  efectoStock       Int               @map("efecto_stock")
+  /// Stock del producto después de aplicar el movimiento (>= 0).
+  stockResultante   Int               @map("stock_resultante")
+  /// Sólo VENTA: precio de venta vigente (con IVA) al momento de vender.
+  precioUnitario    Decimal?          @map("precio_unitario") @db.Decimal(14, 2)
+  motivo            MotivoMovimiento?
+  observacion       String?           @db.VarChar(200)
+  /// Fecha del hecho; puede ser anterior a creado_en, nunca futura.
+  fecha             DateTime          @default(now()) @db.Timestamptz(3)
+  /// AJUSTE de anulación: id del movimiento que corrige.
+  corrigeAId        String?           @unique @map("corrige_a_id") @db.Uuid
+  /// Movimiento original: id del AJUSTE que lo anuló.
+  anuladoPorId      String?           @unique @map("anulado_por_id") @db.Uuid
+  /// Idempotency-Key del cliente, única por comercio.
+  claveIdempotencia String?           @map("clave_idempotencia") @db.VarChar(64)
+  creadoEn          DateTime          @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio     Comercio    @relation(fields: [comercioId], references: [id])
+  producto     Producto    @relation(fields: [productoId], references: [id])
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
+  corrigeA     Movimiento? @relation("Correccion", fields: [corrigeAId], references: [id])
+  corregidoPor Movimiento? @relation("Correccion")
+  anuladoPor   Movimiento? @relation("Anulacion", fields: [anuladoPorId], references: [id])
+  anula        Movimiento? @relation("Anulacion")
+
+  @@unique([comercioId, claveIdempotencia])
+  @@index([comercioId, fecha(sort: Desc), id(sort: Desc)])
+  @@index([comercioId, productoId, fecha(sort: Desc), id(sort: Desc)])
+  @@map("movimiento")
 }

@@ -395,11 +395,11 @@ CREATE POLICY producto_sistema ON producto
         <rect width="200" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
         <text x="100" y="20" text-anchor="middle" fill="currentColor" font-weight="800" font-size="12.5">Movimiento</text>
         <line x1="0" y1="28" x2="200" y2="28" stroke="currentColor" opacity=".4"/>
-        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · producto_id</text>
-        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">tipo (VENTA|INGRESO|AJUSTE)</text>
-        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">cantidad · precio_unit · fecha</text>
-        <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">usuario_id · ajusta_a_id?</text>
-        <text x="10" y="112" fill="currentColor" opacity=".7" font-size="10.5">Inmutable (RN-07) · sin DELETE</text>
+        <text x="10" y="46" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">id · comercio_id · producto_id · usuario_id</text>
+        <text x="10" y="62" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">tipo (VENTA|INGRESO|AJUSTE) · motivo</text>
+        <text x="10" y="78" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">cantidad · efecto_stock · stock_resultante</text>
+        <text x="10" y="94" fill="currentColor" font-family="JetBrains Mono, monospace" font-size="9.8">precio_unitario? · fecha · corrige_a_id? · anulado_por_id?</text>
+        <text x="10" y="112" fill="currentColor" opacity=".7" font-size="10.5">Inmutable (RN-07): app_api sin UPDATE/DELETE</text>
       </g>
       <g transform="translate(380,400)">
         <rect width="200" height="112" rx="8" fill="none" stroke="currentColor" stroke-width="1.3"/>
@@ -453,12 +453,12 @@ CREATE POLICY producto_sistema ON producto
       <tr><td class="id">RN-02</td><td>Servicio <span class="id">ProfitabilityService</span>: suma gastos del período, divide por unidades vendidas del período (movimientos VENTA) y resta por unidad. Si no hay gastos, devuelve <span class="id">margen_neto: null</span> con motivo, no un valor igual al bruto (HU-13).</td></tr>
       <tr><td class="id">RN-04</td><td>Consulta de velocidad: unidades VENTA de los últimos 30 días ÷ 30. Punto de reposición = velocidad × <span class="id">lead_time_dias</span> del proveedor principal + <span class="id">stock_seguridad</span>. Se calcula en un job diario (Fase 2) y bajo demanda en el dashboard.</td></tr>
       <tr><td class="id">RN-05</td><td>Índice único compuesto <span class="id">(comercio_id, codigo_normalizado)</span> en Producto: el código se compara en mayúsculas y sin espacios, y queda reservado aunque el producto esté dado de baja (change <span class="id">product-catalog</span>).</td></tr>
-      <tr><td class="id">RN-07</td><td>Sin endpoint DELETE en movimientos; <span class="id">ajusta_a_id</span> apunta al original. Trigger de PostgreSQL que rechaza UPDATE y DELETE sobre la tabla.</td></tr>
+      <tr><td class="id">RN-07</td><td>Sin PATCH ni DELETE en movimientos; la anulación es un AJUSTE con <span class="id">corrige_a_id</span> al original, que recibe <span class="id">anulado_por_id</span>. El rol de la API sólo tiene SELECT, INSERT y UPDATE de <span class="id">anulado_por_id</span> sobre la tabla (change <span class="id">stock-movements</span>, ADR 0006).</td></tr>
       <tr><td class="id">RN-08</td><td>Al importar una lista de precios se insertan filas nuevas en PrecioProveedor; el costo vigente es el de mayor <span class="id">vigente_desde</span>. Los márgenes se recalculan solos porque son una vista.</td></tr>
       <tr><td class="id">RN-10 / RNF-10</td><td><span class="id">comercio_id</span> en todas las tablas de negocio más RLS (§4).</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>Stock almacenado, histórico verificable.</b> <span class="id">producto.stock_actual</span> se actualiza en la misma transacción que inserta el movimiento (con bloqueo de fila para evitar que dos ventas simultáneas dejen stock negativo). Un job de consistencia recalcula stock desde el histórico y reporta diferencias: sirve como prueba de integridad ante la cátedra.</div>
+  <div class="note"><b>Stock almacenado, histórico verificable.</b> <span class="id">producto.stock_actual</span> se actualiza en la misma transacción que inserta el movimiento (con bloqueo de fila para evitar que dos ventas simultáneas dejen stock negativo). Cada movimiento guarda además <span class="id">stock_resultante</span>, así el histórico se audita fila por fila. Un job de consistencia que recalcule el stock desde el histórico queda previsto para HU-04 como prueba de integridad ante la cátedra.</div>
 </section>
 
 <section id="s6">
@@ -470,7 +470,7 @@ CREATE POLICY producto_sistema ON producto
       <tr><td class="k">auth</td><td class="id">GET /me · POST /me/onboarding</td><td>Todos</td><td class="id">HU-11</td><td><span class="pill f1">1</span></td></tr>
       <tr><td class="k">users</td><td class="id">GET/POST /users · PATCH /users/:id/role · DELETE /users/:id</td><td>Dueño</td><td class="id">HU-11</td><td><span class="pill f1">1</span></td></tr>
       <tr><td class="k">products</td><td class="id">GET/POST /products · GET/PATCH/DELETE /products/:id</td><td>Dueño, Empleado (sin costos)</td><td class="id">HU-01</td><td><span class="pill f1">1</span></td></tr>
-      <tr><td class="k">movements</td><td class="id">GET /movements?tipo&amp;desde&amp;hasta · POST /movements · POST /movements/:id/ajuste</td><td>Dueño, Empleado</td><td class="id">HU-10</td><td><span class="pill f1">1</span></td></tr>
+      <tr><td class="k">movements</td><td class="id">GET /movements?productoId&amp;tipo&amp;desde&amp;hasta · GET /movements/:id · POST /movements · POST /movements/:id/anular</td><td>Dueño, Empleado (Contador sólo lectura; anular sólo Dueño)</td><td class="id">HU-10</td><td><span class="pill f1">1</span></td></tr>
       <tr><td class="k">suppliers</td><td class="id">CRUD /suppliers · POST /suppliers/:id/price-list · GET /products/:id/prices</td><td>Dueño</td><td class="id">HU-02</td><td><span class="pill f1">1</span></td></tr>
       <tr><td class="k">expenses</td><td class="id">CRUD /expenses?periodo</td><td>Dueño</td><td class="id">HU-13</td><td><span class="pill f1">1</span></td></tr>
       <tr><td class="k">profitability</td><td class="id">GET /profitability/products · GET /profitability/summary?periodo</td><td>Dueño, Contador</td><td class="id">HU-03</td><td><span class="pill f1">1</span></td></tr>

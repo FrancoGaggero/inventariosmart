@@ -57,6 +57,19 @@ CREATE POLICY tabla_sistema ON "TABLA"
 5. No hace falta `GRANT` a `app_api` en la migración: los privilegios por defecto (`ALTER DEFAULT
 PRIVILEGES`) ya cubren las tablas nuevas en Neon y en CI. Si se agrega igual, el rol debe existir
    antes de migrar (en CI se crea en `.github/scripts/ci-app-role.sql`, antes de `prisma migrate deploy`).
+6. **Tablas de sólo inserción** (historial inmutable, RN-07): los privilegios por defecto dan
+   `UPDATE` y `DELETE`, así que la migración los recorta explícitamente. Ejemplo de `movimiento`
+   (ADR 0006):
+
+```sql
+GRANT SELECT, INSERT ON "movimiento" TO app_api;
+REVOKE UPDATE, DELETE ON "movimiento" FROM app_api;
+GRANT UPDATE ("anulado_por_id") ON "movimiento" TO app_api;  -- única columna que la API escribe
+```
+
+El test `rls.e2e-spec.ts` (CP-10.7c) verifica esos privilegios. Los tests limpian datos con la
+conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede
+borrar el historial.
 
 ## Verificación manual
 

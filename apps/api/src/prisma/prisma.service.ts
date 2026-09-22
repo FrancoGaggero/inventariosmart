@@ -51,11 +51,18 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  /**
+   * Los movimientos de stock se serializan por producto con `FOR UPDATE` (HU-10, D3): una
+   * transacción puede esperar a las anteriores, así que el tope supera el default de 5 s.
+   */
   async transaccionTenant<T>(fn: (tx: TransaccionRaw) => Promise<T>): Promise<T> {
     const { comercioId } = TenantContext.requerido();
-    return this.raw.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioId}, true)`;
-      return fn(tx);
-    });
+    return this.raw.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioId}, true)`;
+        return fn(tx);
+      },
+      { maxWait: 10_000, timeout: 20_000 },
+    );
   }
 }

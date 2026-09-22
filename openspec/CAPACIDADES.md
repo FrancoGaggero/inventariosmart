@@ -9,8 +9,8 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | (sin spec, tooling)     | —     | —             | 0    | 1 · `sprint0-esqueleto` (skip_specs) |
 | `auth-tenancy`          | HU-11 | RF-11         | 1    | 2 · `auth-tenancy`               |
 | `user-roles`            | HU-11 | RF-11         | 1    | 2 · `auth-tenancy` (misma change) |
-| `product-catalog`       | HU-01 | RF-01, RF-02  | 1    | 3 · `product-catalog`            |
-| `stock-movements`       | HU-10 | RF-13, RF-02  | 1    | 4 · `stock-movements`            |
+| `product-catalog`       | HU-01 | RF-01, RF-02  | 1    | 3 · `product-catalog` (10/09/2026) |
+| `stock-movements`       | HU-10 | RF-13, RF-02  | 1    | 4 · `stock-movements` (22/09/2026) |
 | `suppliers-price-lists` | HU-02 | RF-03         | 1    | 5 · `suppliers-price-lists`      |
 | `operating-expenses`    | HU-13 | RF-14         | 1    | 6 · `operating-expenses`         |
 | `profitability`         | HU-03 | RF-04         | 1    | 7 · `profitability-engine`       |

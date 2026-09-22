@@ -901,6 +901,377 @@
           "productos"
         ]
       }
+    },
+    "/api/v1/movements": {
+      "get": {
+        "description": "Del más reciente al más antiguo, con filtros por producto, tipo y rango de fechas, y paginación por cursor. CONTADOR sólo consulta.",
+        "operationId": "MovementsController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "siguienteCursor de la página anterior",
+            "schema": {}
+          },
+          {
+            "name": "hasta",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601, inclusive",
+            "schema": {}
+          },
+          {
+            "name": "desde",
+            "required": false,
+            "in": "query",
+            "description": "ISO 8601, inclusive",
+            "schema": {}
+          },
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "VENTA",
+                "INGRESO",
+                "AJUSTE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "productoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaMovimientosDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros, fechas o cursor inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historial de movimientos del comercio",
+        "tags": [
+          "movimientos"
+        ]
+      },
+      "post": {
+        "description": "Actualiza el stock del producto en la misma transacción; el stock nunca queda negativo (409). Con Idempotency-Key, repetir la misma clave devuelve 200 con el movimiento original.",
+        "operationId": "MovementsController_registrar",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Clave única por intento (hasta 64 caracteres) para no duplicar ante un reintento",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovimientoCreateBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Idempotency-Key repetida: movimiento ya registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimientoDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimientoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Producto inexistente en el comercio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Stock insuficiente (details.stockActual, details.cantidad) o producto dado de baja",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar una venta, un ingreso o un ajuste",
+        "tags": [
+          "movimientos"
+        ]
+      }
+    },
+    "/api/v1/movements/{id}": {
+      "get": {
+        "operationId": "MovementsController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimientoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de un movimiento",
+        "tags": [
+          "movimientos"
+        ]
+      }
+    },
+    "/api/v1/movements/{id}/anular": {
+      "post": {
+        "description": "No borra nada: registra un AJUSTE inverso con motivo ANULACION que referencia al original (RN-07) y devuelve el stock al valor previo.",
+        "operationId": "MovementsController_anular",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnulacionBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El AJUSTE de anulación",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimientoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ya anulado, es una anulación, o dejaría el stock negativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Anular un movimiento",
+        "tags": [
+          "movimientos"
+        ]
+      }
     }
   },
   "info": {
@@ -1386,6 +1757,245 @@
           "activo": {
             "type": "boolean",
             "description": "true reactiva un producto dado de baja"
+          }
+        }
+      },
+      "ProductoResumenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "UsuarioResumenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true,
+            "example": "Ana Pérez"
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "MovimientoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VENTA",
+              "INGRESO",
+              "AJUSTE"
+            ]
+          },
+          "producto": {
+            "$ref": "#/components/schemas/ProductoResumenDto"
+          },
+          "usuario": {
+            "description": "Quién registró el movimiento",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioResumenDto"
+              }
+            ]
+          },
+          "cantidad": {
+            "type": "number",
+            "description": "Como se registró: positiva en VENTA e INGRESO; con signo en AJUSTE",
+            "example": 2
+          },
+          "efectoStock": {
+            "type": "number",
+            "description": "Delta aplicado al stock del producto",
+            "example": -2
+          },
+          "stockResultante": {
+            "type": "number",
+            "description": "Stock del producto después del movimiento",
+            "example": 45
+          },
+          "estadoStock": {
+            "type": "string",
+            "enum": [
+              "SIN_STOCK",
+              "BAJO",
+              "OK"
+            ],
+            "description": "Estado del producto con el stock resultante y su stock de seguridad"
+          },
+          "precioUnitario": {
+            "type": "string",
+            "nullable": true,
+            "description": "Sólo VENTA: precio de venta vigente (con IVA) al momento de vender",
+            "example": "3900.00"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "STOCK_INICIAL",
+              "COMPRA",
+              "DEVOLUCION",
+              "INVENTARIO",
+              "ROTURA",
+              "VENCIMIENTO",
+              "ROBO",
+              "USO_INTERNO",
+              "ANULACION",
+              "OTRO"
+            ]
+          },
+          "observacion": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 200
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha del hecho (puede ser retroactiva)"
+          },
+          "corrigeAId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "AJUSTE de anulación: id del movimiento que corrige"
+          },
+          "anuladoPorId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Id del AJUSTE que anuló este movimiento"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "producto",
+          "usuario",
+          "cantidad",
+          "efectoStock",
+          "stockResultante",
+          "estadoStock",
+          "precioUnitario",
+          "motivo",
+          "observacion",
+          "fecha",
+          "corrigeAId",
+          "anuladoPorId",
+          "creadoEn"
+        ]
+      },
+      "ListaMovimientosDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovimientoDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor de la página siguiente o null"
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "MovimientoCreateBodyDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "VENTA",
+              "INGRESO",
+              "AJUSTE"
+            ]
+          },
+          "productoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cantidad": {
+            "type": "number",
+            "description": "Entero > 0 en VENTA e INGRESO; entero distinto de 0 (con signo) en AJUSTE",
+            "example": 2
+          },
+          "motivo": {
+            "type": "string",
+            "enum": [
+              "COMPRA",
+              "DEVOLUCION",
+              "OTRO",
+              "INVENTARIO",
+              "ROTURA",
+              "VENCIMIENTO",
+              "ROBO",
+              "USO_INTERNO",
+              "OTRO"
+            ],
+            "description": "Obligatorio en AJUSTE; opcional en INGRESO; no aplica a VENTA"
+          },
+          "observacion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha del hecho. Por defecto, ahora. No puede ser futura."
+          }
+        },
+        "required": [
+          "tipo",
+          "productoId",
+          "cantidad"
+        ]
+      },
+      "AnulacionBodyDto": {
+        "type": "object",
+        "properties": {
+          "observacion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
           }
         }
       }

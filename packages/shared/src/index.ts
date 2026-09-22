@@ -150,3 +150,4 @@ export const UsuarioPatchSchema = z
 export type UsuarioPatch = z.infer<typeof UsuarioPatchSchema>;
 
 export * from './productos';
+export * from './movimientos';

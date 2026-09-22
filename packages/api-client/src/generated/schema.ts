@@ -157,6 +157,67 @@ export interface paths {
         patch: operations["ProductsController_actualizar"];
         trace?: never;
     };
+    "/api/v1/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de movimientos del comercio
+         * @description Del más reciente al más antiguo, con filtros por producto, tipo y rango de fechas, y paginación por cursor. CONTADOR sólo consulta.
+         */
+        get: operations["MovementsController_listar"];
+        put?: never;
+        /**
+         * Registrar una venta, un ingreso o un ajuste
+         * @description Actualiza el stock del producto en la misma transacción; el stock nunca queda negativo (409). Con Idempotency-Key, repetir la misma clave devuelve 200 con el movimiento original.
+         */
+        post: operations["MovementsController_registrar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/movements/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de un movimiento */
+        get: operations["MovementsController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/movements/{id}/anular": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anular un movimiento
+         * @description No borra nada: registra un AJUSTE inverso con motivo ANULACION que referencia al original (RN-07) y devuelve el stock al valor previo.
+         */
+        post: operations["MovementsController_anular"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -333,6 +394,104 @@ export interface components {
             stockSeguridad?: number;
             /** @description true reactiva un producto dado de baja */
             activo?: boolean;
+        };
+        ProductoResumenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        UsuarioResumenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Ana Pérez */
+            nombre: string | null;
+        };
+        MovimientoDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            tipo: "VENTA" | "INGRESO" | "AJUSTE";
+            producto: components["schemas"]["ProductoResumenDto"];
+            /** @description Quién registró el movimiento */
+            usuario: components["schemas"]["UsuarioResumenDto"];
+            /**
+             * @description Como se registró: positiva en VENTA e INGRESO; con signo en AJUSTE
+             * @example 2
+             */
+            cantidad: number;
+            /**
+             * @description Delta aplicado al stock del producto
+             * @example -2
+             */
+            efectoStock: number;
+            /**
+             * @description Stock del producto después del movimiento
+             * @example 45
+             */
+            stockResultante: number;
+            /**
+             * @description Estado del producto con el stock resultante y su stock de seguridad
+             * @enum {string}
+             */
+            estadoStock: "SIN_STOCK" | "BAJO" | "OK";
+            /**
+             * @description Sólo VENTA: precio de venta vigente (con IVA) al momento de vender
+             * @example 3900.00
+             */
+            precioUnitario: string | null;
+            /** @enum {string|null} */
+            motivo: "STOCK_INICIAL" | "COMPRA" | "DEVOLUCION" | "INVENTARIO" | "ROTURA" | "VENCIMIENTO" | "ROBO" | "USO_INTERNO" | "ANULACION" | "OTRO" | null;
+            observacion: string | null;
+            /**
+             * Format: date-time
+             * @description Fecha del hecho (puede ser retroactiva)
+             */
+            fecha: string;
+            /**
+             * Format: uuid
+             * @description AJUSTE de anulación: id del movimiento que corrige
+             */
+            corrigeAId: string | null;
+            /**
+             * Format: uuid
+             * @description Id del AJUSTE que anuló este movimiento
+             */
+            anuladoPorId: string | null;
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        ListaMovimientosDto: {
+            items: components["schemas"]["MovimientoDto"][];
+            /** @description Cursor de la página siguiente o null */
+            siguienteCursor: string | null;
+        };
+        MovimientoCreateBodyDto: {
+            /** @enum {string} */
+            tipo: "VENTA" | "INGRESO" | "AJUSTE";
+            /** Format: uuid */
+            productoId: string;
+            /**
+             * @description Entero > 0 en VENTA e INGRESO; entero distinto de 0 (con signo) en AJUSTE
+             * @example 2
+             */
+            cantidad: number;
+            /**
+             * @description Obligatorio en AJUSTE; opcional en INGRESO; no aplica a VENTA
+             * @enum {string}
+             */
+            motivo?: "COMPRA" | "DEVOLUCION" | "OTRO" | "INVENTARIO" | "ROTURA" | "VENCIMIENTO" | "ROBO" | "USO_INTERNO" | "OTRO";
+            observacion?: string | null;
+            /**
+             * Format: date-time
+             * @description Fecha del hecho. Por defecto, ahora. No puede ser futura.
+             */
+            fecha?: string;
+        };
+        AnulacionBodyDto: {
+            observacion?: string | null;
         };
     };
     responses: never;
@@ -971,6 +1130,246 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorDto"];
                 };
             };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MovementsController_listar: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description siguienteCursor de la página anterior */
+                cursor?: unknown;
+                /** @description ISO 8601, inclusive */
+                hasta?: unknown;
+                /** @description ISO 8601, inclusive */
+                desde?: unknown;
+                tipo?: "VENTA" | "INGRESO" | "AJUSTE";
+                productoId?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaMovimientosDto"];
+                };
+            };
+            /** @description Parámetros, fechas o cursor inválidos */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MovementsController_registrar: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Clave única por intento (hasta 64 caracteres) para no duplicar ante un reintento */
+                "Idempotency-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovimientoCreateBodyDto"];
+            };
+        };
+        responses: {
+            /** @description Idempotency-Key repetida: movimiento ya registrado */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimientoDto"];
+                };
+            };
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimientoDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Producto inexistente en el comercio */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Stock insuficiente (details.stockActual, details.cantidad) o producto dado de baja */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MovementsController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimientoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    MovementsController_anular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["AnulacionBodyDto"];
+            };
+        };
+        responses: {
+            /** @description El AJUSTE de anulación */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovimientoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Ya anulado, es una anulación, o dejaría el stock negativo */
             409: {
                 headers: {
                     [name: string]: unknown;

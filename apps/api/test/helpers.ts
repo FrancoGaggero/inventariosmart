@@ -6,6 +6,8 @@ import { AppModule } from '../src/app.module';
 import { TokenVerifier } from '../src/auth/firebase.service';
 import type { Identidad } from '../src/auth/provisioning.service';
 import { configurarApp } from '../src/bootstrap';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 /**
@@ -58,18 +60,23 @@ export async function crearAppDePrueba(controllers: Type[] = []): Promise<AppDeP
   await app.init();
   const prisma = app.get(PrismaService);
 
+  /**
+   * Limpieza como propietaria de la base: `app_api` no puede borrar `movimiento`
+   * (inmutabilidad, RN-07) y RLS no aplica a la propietaria.
+   */
   const limpiar = async () => {
-    await prisma.comoSistema(async (tx) => {
-      const usuarios = await tx.usuario.findMany({
+    await comoPropietaria(async (owner) => {
+      const usuarios = await owner.usuario.findMany({
         where: { email: { endsWith: `@${DOMINIO}` } },
         select: { comercioId: true },
       });
       const comercios = [...new Set(usuarios.map((u) => u.comercioId))];
       // Tablas de negocio primero (FK a comercio), después usuarios y comercios.
-      await tx.producto.deleteMany({ where: { comercioId: { in: comercios } } });
-      await tx.usuario.deleteMany({ where: { email: { endsWith: `@${DOMINIO}` } } });
-      await tx.usuario.deleteMany({ where: { comercioId: { in: comercios } } });
-      await tx.comercio.deleteMany({ where: { id: { in: comercios } } });
+      await owner.movimiento.deleteMany({ where: { comercioId: { in: comercios } } });
+      await owner.producto.deleteMany({ where: { comercioId: { in: comercios } } });
+      await owner.usuario.deleteMany({ where: { email: { endsWith: `@${DOMINIO}` } } });
+      await owner.usuario.deleteMany({ where: { comercioId: { in: comercios } } });
+      await owner.comercio.deleteMany({ where: { id: { in: comercios } } });
     });
     await app.close();
   };
@@ -78,3 +85,17 @@ export async function crearAppDePrueba(controllers: Type[] = []): Promise<AppDeP
 }
 
 export const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Ejecuta `fn` con la conexión de la propietaria de la base (DIRECT_URL; en CI, el superusuario):
+ * sin RLS y con todos los privilegios. Sólo para preparar y limpiar datos de prueba.
+ */
+export async function comoPropietaria<T>(fn: (owner: PrismaClient) => Promise<T>): Promise<T> {
+  const url = process.env['DIRECT_URL']?.trim() || process.env['DATABASE_URL']?.trim() || '';
+  const owner = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
+  try {
+    return await fn(owner);
+  } finally {
+    await owner.$disconnect();
+  }
+}

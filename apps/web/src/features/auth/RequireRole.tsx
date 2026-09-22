@@ -14,8 +14,8 @@ export function RequireRole({ roles }: { roles: Rol[] }) {
           <ShieldOff className="w-8 h-8 text-warn mx-auto mb-3" aria-hidden />
           <h1 className="font-extrabold text-lg mb-1">No tenés permiso</h1>
           <p className="text-t2 text-sm mb-5">
-            Esta sección es sólo para el dueño del comercio. Tu rol actual es{' '}
-            <b className="text-t1">{me.data.rol.toLowerCase()}</b>.
+            Tu rol actual es <b className="text-t1">{me.data.rol.toLowerCase()}</b> y esta sección
+            es para {roles.map((r) => r.toLowerCase()).join(' o ')}.
           </p>
           <Link to="/" className="btn btn-ghost">
             Volver al inicio

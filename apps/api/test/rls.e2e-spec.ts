@@ -6,6 +6,7 @@ const TABLA: Record<string, string> = {
   Usuario: 'usuario',
   Comercio: 'comercio',
   Producto: 'producto',
+  Movimiento: 'movimiento',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -76,6 +77,39 @@ describe('aislamiento entre comercios (e2e)', () => {
       return tx.$queryRaw<{ email: string }[]>`SELECT email FROM usuario`;
     });
     expect(filas.map((f) => f.email)).toEqual([a.email]);
+  });
+
+  it('CP-10.7b sin contexto la base no devuelve movimientos', async () => {
+    const [sinContexto] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM movimiento`;
+    expect(Number(sinContexto!.n)).toBe(0);
+  });
+
+  it('CP-10.7c el rol de la aplicación no puede modificar ni borrar el historial (RN-07)', async () => {
+    const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'movimiento' AND grantee = current_user`;
+    const tipos = privilegios.map((p) => p.privilege_type).sort();
+    expect(tipos).toEqual(['INSERT', 'SELECT']);
+
+    const columnas = await t.prisma.raw.$queryRaw<{ column_name: string }[]>`
+      SELECT column_name FROM information_schema.column_privileges
+      WHERE table_name = 'movimiento' AND grantee = current_user AND privilege_type = 'UPDATE'`;
+    expect(columnas.map((c) => c.column_name)).toEqual(['anulado_por_id']);
+
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM movimiento WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`UPDATE movimiento SET cantidad = 1 WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
   });
 
   it('toda tabla de negocio tiene RLS activa y forzada (checklist de docs/runbooks/rls.md)', async () => {

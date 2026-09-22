@@ -12,9 +12,10 @@ export interface FiltrosProductos {
 }
 
 /** Listado paginado por cursor; cada página trae `siguienteCursor` (convención de la API). */
-export function useProductos(filtros: FiltrosProductos, limit = 25) {
+export function useProductos(filtros: FiltrosProductos, limit = 25, enabled = true) {
   return useInfiniteQuery({
     queryKey: [...PRODUCTOS_KEY, filtros, limit],
+    enabled,
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) =>
       desenvolver(
