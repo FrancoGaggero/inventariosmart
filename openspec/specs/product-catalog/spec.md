@@ -70,7 +70,7 @@ El sistema SHALL listar los productos del comercio con búsqueda por código o n
 - **THEN** sólo obtiene los activos; con `?activo=false` obtiene los dados de baja
 
 ### Requirement: Modificación de producto
-El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio de venta, alícuota, costo de reposición y stock de seguridad, con las mismas validaciones del alta, y SHALL rechazar cambios directos al stock actual, que sólo se modifica por movimientos (RF-02, RN-07).
+El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio de venta, alícuota, costo de reposición, stock de seguridad y proveedor principal, con las mismas validaciones del alta, y SHALL rechazar cambios directos al stock actual, que sólo se modifica por movimientos (RF-02, RN-07). El producto SHALL exponer `proveedorPrincipal` (id y nombre, o null); al cambiar el proveedor principal el costo de reposición SHALL pasar al último costo informado por ese proveedor, si existe (RN-08, ver `suppliers-price-lists`).
 
 #### Scenario: CP-01.4 Edición reflejada de inmediato
 - **GIVEN** un producto existente
@@ -86,6 +86,11 @@ El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio d
 - **GIVEN** un usuario con rol EMPLEADO
 - **WHEN** intenta crear, editar o dar de baja un producto
 - **THEN** la API responde 403 `SIN_PERMISO`
+
+#### Scenario: CP-01.4d Proveedor principal del producto
+- **GIVEN** un producto sin proveedor principal y un proveedor "Norte" del comercio
+- **WHEN** el DUENIO envía `PATCH /api/v1/products/:id` con `proveedorPrincipalId` de "Norte", y luego con `proveedorPrincipalId` de un proveedor de otro comercio
+- **THEN** la primera responde 200 con `proveedorPrincipal: { id, nombre: "Norte" }` y la segunda 404 `NO_ENCONTRADO`
 
 ### Requirement: Baja lógica y reactivación
 El sistema SHALL dar de baja un producto marcándolo inactivo sin borrarlo, conservando su código y su historial, y SHALL permitir reactivarlo; el producto dado de baja no aparece en el listado por defecto (HU-01 criterio 4).
