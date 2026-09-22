@@ -5,6 +5,8 @@ import { OnboardingPage } from '@/features/auth/OnboardingPage';
 import { RegistroPage } from '@/features/auth/RegistroPage';
 import { RequireRole } from '@/features/auth/RequireRole';
 import { ComercioPage } from '@/features/config/ComercioPage';
+import { GastoFormPage } from '@/features/gastos/GastoFormPage';
+import { GastosPage } from '@/features/gastos/GastosPage';
 import { UsuariosPage } from '@/features/config/UsuariosPage';
 import { HomePage } from '@/features/home/HomePage';
 import { MovimientoFormPage } from '@/features/movimientos/MovimientoFormPage';
@@ -30,6 +32,10 @@ export const router = createBrowserRouter([
           { path: '/', element: <HomePage /> },
           { path: '/movimientos', element: <MovimientosPage /> },
           {
+            element: <RequireRole roles={['DUENIO', 'CONTADOR']} />,
+            children: [{ path: '/gastos', element: <GastosPage /> }],
+          },
+          {
             element: <RequireRole roles={['DUENIO', 'EMPLEADO']} />,
             children: [
               { path: '/productos', element: <ProductosPage /> },
@@ -46,6 +52,8 @@ export const router = createBrowserRouter([
               { path: '/proveedores/:id', element: <ProveedorDetallePage /> },
               { path: '/proveedores/:id/editar', element: <ProveedorFormPage /> },
               { path: '/proveedores/:id/importar', element: <ImportarListaPage /> },
+              { path: '/gastos/nuevo', element: <GastoFormPage /> },
+              { path: '/gastos/:id', element: <GastoFormPage /> },
               { path: '/configuracion/usuarios', element: <UsuariosPage /> },
               { path: '/configuracion/comercio', element: <ComercioPage /> },
             ],

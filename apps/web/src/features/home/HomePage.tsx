@@ -1,4 +1,4 @@
-import { Activity, ArrowLeftRight, Package, Settings, Truck, Users } from 'lucide-react';
+import { Activity, ArrowLeftRight, Package, Receipt, Settings, Truck, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
@@ -28,6 +28,7 @@ export function HomePage() {
   if (!me.data) return null;
   const { comercio, usuario, rol, plan } = me.data;
   const esDuenio = rol === 'DUENIO';
+  const veGastos = rol === 'DUENIO' || rol === 'CONTADOR';
 
   return (
     <div className="space-y-8">
@@ -66,6 +67,15 @@ export function HomePage() {
               : 'Historial de ventas, ingresos y ajustes del comercio.'}
           </p>
         </Link>
+        {veGastos && (
+          <Link to="/gastos" className="card p-5 hover:border-brand-2/50 transition">
+            <Receipt className="w-5 h-5 text-brand-3 mb-3" aria-hidden />
+            <h2 className="font-bold">Gastos</h2>
+            <p className="text-t2 text-sm">
+              Fijos y variables del mes, prorrateados por unidad vendida.
+            </p>
+          </Link>
+        )}
         {esDuenio && (
           <>
             <Link to="/proveedores" className="card p-5 hover:border-brand-2/50 transition">
@@ -120,7 +130,8 @@ export function HomePage() {
       </section>
 
       <p className="text-xs text-t3">
-        El dashboard financiero llega con las próximas historias (HU-03, HU-04).
+        La rentabilidad por producto y el dashboard llegan con las próximas historias (HU-03,
+        HU-04).
       </p>
     </div>
   );

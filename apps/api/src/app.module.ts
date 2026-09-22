@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AuthModule } from './auth/auth.module';
 import { ComercioModule } from './comercio/comercio.module';
+import { ExpensesModule } from './expenses/expenses.module';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { type Env, validateEnv } from './config/env';
 import { HealthModule } from './health/health.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './users/users.module';
     ProductsModule,
     MovementsModule,
     SuppliersModule,
+    ExpensesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

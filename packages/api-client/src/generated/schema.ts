@@ -339,6 +339,69 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gastos que aplican a un mes, con totales
+         * @description Incluye los únicos del mes, los mensuales vigentes y los anuales prorrateados en doceavos. Sin periodo, el mes actual.
+         */
+        get: operations["ExpensesController_listarMes"];
+        put?: never;
+        /**
+         * Cargar un gasto
+         * @description Periodicidad: UNICO, MENSUAL, ANUAL.
+         */
+        post: operations["ExpensesController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Prorrateo del mes (RN-02)
+         * @description Total de gastos, unidades vendidas (ventas no anuladas del mes) y gasto por unidad; null con motivo SIN_GASTOS o SIN_VENTAS.
+         */
+        get: operations["ExpensesController_resumen"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/expenses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de un gasto */
+        get: operations["ExpensesController_obtener"];
+        put?: never;
+        post?: never;
+        /** Eliminar un gasto */
+        delete: operations["ExpensesController_eliminar"];
+        options?: never;
+        head?: never;
+        /** Editar un gasto */
+        patch: operations["ExpensesController_actualizar"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -801,6 +864,143 @@ export interface components {
             insertados: number;
             /** @description Productos cuyo costo vigente cambió (RN-08) */
             productosActualizados: number;
+        };
+        UsuarioResumenGastoDto: {
+            /** Format: uuid */
+            id: string;
+            nombre: string | null;
+        };
+        GastoDelMesDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Alquiler */
+            concepto: string;
+            /** @enum {string} */
+            tipo: "FIJO" | "VARIABLE";
+            /**
+             * @description Importe neto sin IVA, decimal como string
+             * @example 250000.00
+             */
+            importe: string;
+            /**
+             * @description Mes de inicio, YYYY-MM
+             * @example 2026-09
+             */
+            periodo: string;
+            /** @enum {string} */
+            periodicidad: "UNICO" | "MENSUAL" | "ANUAL";
+            /** @description Último mes en que aplica (sólo recurrentes), YYYY-MM */
+            fin: string | null;
+            notas: string | null;
+            usuario: components["schemas"]["UsuarioResumenGastoDto"];
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            actualizadoEn: string;
+            /**
+             * @description Lo que aporta al mes consultado: completo, o un doceavo si es ANUAL
+             * @example 250000.00
+             */
+            importeMes: string;
+        };
+        TotalesGastosDto: {
+            /** @example 260000.00 */
+            fijos: string;
+            /** @example 30000.00 */
+            variables: string;
+            /** @example 290000.00 */
+            total: string;
+        };
+        ListaGastosMesDto: {
+            /** @example 2026-09 */
+            periodo: string;
+            items: components["schemas"]["GastoDelMesDto"][];
+            totales: components["schemas"]["TotalesGastosDto"];
+        };
+        ResumenGastosDto: {
+            /** @example 2026-09 */
+            periodo: string;
+            /** @example 260000.00 */
+            totalFijos: string;
+            /** @example 30000.00 */
+            totalVariables: string;
+            /** @example 290000.00 */
+            total: string;
+            /**
+             * @description Ventas no anuladas con fecha en el mes
+             * @example 145
+             */
+            unidadesVendidas: number;
+            /**
+             * @description total / unidadesVendidas (RN-02), o null con motivo
+             * @example 2000.00
+             */
+            gastoPorUnidad: string | null;
+            /** @enum {string|null} */
+            motivo: "SIN_GASTOS" | "SIN_VENTAS" | null;
+        };
+        GastoDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Alquiler */
+            concepto: string;
+            /** @enum {string} */
+            tipo: "FIJO" | "VARIABLE";
+            /**
+             * @description Importe neto sin IVA, decimal como string
+             * @example 250000.00
+             */
+            importe: string;
+            /**
+             * @description Mes de inicio, YYYY-MM
+             * @example 2026-09
+             */
+            periodo: string;
+            /** @enum {string} */
+            periodicidad: "UNICO" | "MENSUAL" | "ANUAL";
+            /** @description Último mes en que aplica (sólo recurrentes), YYYY-MM */
+            fin: string | null;
+            notas: string | null;
+            usuario: components["schemas"]["UsuarioResumenGastoDto"];
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            actualizadoEn: string;
+        };
+        GastoCreateBodyDto: {
+            /** @example Alquiler */
+            concepto: string;
+            /** @enum {string} */
+            tipo: "FIJO" | "VARIABLE";
+            /**
+             * @description Neto sin IVA; número o string decimal, mayor a 0
+             * @example 250000
+             */
+            importe: string;
+            /**
+             * @description Mes de inicio, YYYY-MM
+             * @example 2026-09
+             */
+            periodo: string;
+            /** @enum {string} */
+            periodicidad: "UNICO" | "MENSUAL" | "ANUAL";
+            /** @description Último mes (YYYY-MM); sólo para MENSUAL o ANUAL */
+            fin?: string | null;
+            notas?: string | null;
+        };
+        GastoPatchBodyDto: {
+            concepto?: string;
+            /** @enum {string} */
+            tipo?: "FIJO" | "VARIABLE";
+            /** @example 260000 */
+            importe?: string;
+            /** @example 2026-09 */
+            periodo?: string;
+            /** @enum {string} */
+            periodicidad?: "UNICO" | "MENSUAL" | "ANUAL";
+            /** @description null quita el fin */
+            fin?: string | null;
+            notas?: string | null;
         };
     };
     responses: never;
@@ -2230,6 +2430,297 @@ export interface operations {
                 };
             };
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_listarMes: {
+        parameters: {
+            query?: {
+                tipo?: "FIJO" | "VARIABLE";
+                periodo?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaGastosMesDto"];
+                };
+            };
+            /** @description Mes inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GastoCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GastoDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_resumen: {
+        parameters: {
+            query?: {
+                periodo?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumenGastosDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GastoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_eliminar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ExpensesController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GastoPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GastoDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

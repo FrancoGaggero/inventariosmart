@@ -9,6 +9,7 @@ const TABLA: Record<string, string> = {
   Movimiento: 'movimiento',
   Proveedor: 'proveedor',
   PrecioProveedor: 'precio_proveedor',
+  Gasto: 'gasto',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -112,6 +113,13 @@ describe('aislamiento entre comercios (e2e)', () => {
         await tx.$executeRaw`UPDATE movimiento SET cantidad = 1 WHERE comercio_id = ${comercioA}::uuid`;
       }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-13.6b sin contexto la base no devuelve gastos', async () => {
+    const [g] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM gasto`;
+    expect(Number(g!.n)).toBe(0);
   });
 
   it('CP-02.6b sin contexto la base no devuelve proveedores ni precios', async () => {

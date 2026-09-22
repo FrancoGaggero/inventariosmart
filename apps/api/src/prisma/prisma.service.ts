@@ -21,7 +21,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   readonly tenant: ClienteTenant;
 
   constructor(config: ConfigService<Env, true>) {
-    const adapter = new PrismaPg({ connectionString: config.get('DATABASE_URL', { infer: true }) });
+    // Pool de 20: los movimientos de un mismo producto se serializan con FOR UPDATE (HU-10) y cada
+    // transacción en espera retiene su conexión; con el default (10) una ráfaga de ventas agota el pool.
+    const adapter = new PrismaPg({
+      connectionString: config.get('DATABASE_URL', { infer: true }),
+      max: 20,
+    });
     this.raw = new PrismaClient({ adapter });
     this.tenant = crearClienteTenant(this.raw);
   }
@@ -62,7 +67,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
         await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioId}, true)`;
         return fn(tx);
       },
-      { maxWait: 10_000, timeout: 20_000 },
+      { maxWait: 15_000, timeout: 30_000 },
     );
   }
 }

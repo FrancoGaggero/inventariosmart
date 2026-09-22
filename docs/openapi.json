@@ -2103,6 +2103,425 @@
           "proveedores"
         ]
       }
+    },
+    "/api/v1/expenses": {
+      "get": {
+        "description": "Incluye los únicos del mes, los mensuales vigentes y los anuales prorrateados en doceavos. Sin periodo, el mes actual.",
+        "operationId": "ExpensesController_listarMes",
+        "parameters": [
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "FIJO",
+                "VARIABLE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaGastosMesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Mes inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gastos que aplican a un mes, con totales",
+        "tags": [
+          "gastos"
+        ]
+      },
+      "post": {
+        "description": "Periodicidad: UNICO, MENSUAL, ANUAL.",
+        "operationId": "ExpensesController_crear",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GastoCreateBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cargar un gasto",
+        "tags": [
+          "gastos"
+        ]
+      }
+    },
+    "/api/v1/expenses/summary": {
+      "get": {
+        "description": "Total de gastos, unidades vendidas (ventas no anuladas del mes) y gasto por unidad; null con motivo SIN_GASTOS o SIN_VENTAS.",
+        "operationId": "ExpensesController_resumen",
+        "parameters": [
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenGastosDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Prorrateo del mes (RN-02)",
+        "tags": [
+          "gastos"
+        ]
+      }
+    },
+    "/api/v1/expenses/{id}": {
+      "get": {
+        "operationId": "ExpensesController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de un gasto",
+        "tags": [
+          "gastos"
+        ]
+      },
+      "patch": {
+        "operationId": "ExpensesController_actualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GastoPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar un gasto",
+        "tags": [
+          "gastos"
+        ]
+      },
+      "delete": {
+        "operationId": "ExpensesController_eliminar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Eliminar un gasto",
+        "tags": [
+          "gastos"
+        ]
+      }
     }
   },
   "info": {
@@ -3398,6 +3817,361 @@
           "insertados",
           "productosActualizados"
         ]
+      },
+      "UsuarioResumenGastoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "GastoDelMesDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "concepto": {
+            "type": "string",
+            "example": "Alquiler"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "FIJO",
+              "VARIABLE"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "description": "Importe neto sin IVA, decimal como string",
+            "example": "250000.00"
+          },
+          "periodo": {
+            "type": "string",
+            "description": "Mes de inicio, YYYY-MM",
+            "example": "2026-09"
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "UNICO",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          },
+          "fin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Último mes en que aplica (sólo recurrentes), YYYY-MM"
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResumenGastoDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "importeMes": {
+            "type": "string",
+            "description": "Lo que aporta al mes consultado: completo, o un doceavo si es ANUAL",
+            "example": "250000.00"
+          }
+        },
+        "required": [
+          "id",
+          "concepto",
+          "tipo",
+          "importe",
+          "periodo",
+          "periodicidad",
+          "fin",
+          "notas",
+          "usuario",
+          "creadoEn",
+          "actualizadoEn",
+          "importeMes"
+        ]
+      },
+      "TotalesGastosDto": {
+        "type": "object",
+        "properties": {
+          "fijos": {
+            "type": "string",
+            "example": "260000.00"
+          },
+          "variables": {
+            "type": "string",
+            "example": "30000.00"
+          },
+          "total": {
+            "type": "string",
+            "example": "290000.00"
+          }
+        },
+        "required": [
+          "fijos",
+          "variables",
+          "total"
+        ]
+      },
+      "ListaGastosMesDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GastoDelMesDto"
+            }
+          },
+          "totales": {
+            "$ref": "#/components/schemas/TotalesGastosDto"
+          }
+        },
+        "required": [
+          "periodo",
+          "items",
+          "totales"
+        ]
+      },
+      "ResumenGastosDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "totalFijos": {
+            "type": "string",
+            "example": "260000.00"
+          },
+          "totalVariables": {
+            "type": "string",
+            "example": "30000.00"
+          },
+          "total": {
+            "type": "string",
+            "example": "290000.00"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "description": "Ventas no anuladas con fecha en el mes",
+            "example": 145
+          },
+          "gastoPorUnidad": {
+            "type": "string",
+            "nullable": true,
+            "description": "total / unidadesVendidas (RN-02), o null con motivo",
+            "example": "2000.00"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_GASTOS",
+              "SIN_VENTAS"
+            ]
+          }
+        },
+        "required": [
+          "periodo",
+          "totalFijos",
+          "totalVariables",
+          "total",
+          "unidadesVendidas",
+          "gastoPorUnidad",
+          "motivo"
+        ]
+      },
+      "GastoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "concepto": {
+            "type": "string",
+            "example": "Alquiler"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "FIJO",
+              "VARIABLE"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "description": "Importe neto sin IVA, decimal como string",
+            "example": "250000.00"
+          },
+          "periodo": {
+            "type": "string",
+            "description": "Mes de inicio, YYYY-MM",
+            "example": "2026-09"
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "UNICO",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          },
+          "fin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Último mes en que aplica (sólo recurrentes), YYYY-MM"
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResumenGastoDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "concepto",
+          "tipo",
+          "importe",
+          "periodo",
+          "periodicidad",
+          "fin",
+          "notas",
+          "usuario",
+          "creadoEn",
+          "actualizadoEn"
+        ]
+      },
+      "GastoCreateBodyDto": {
+        "type": "object",
+        "properties": {
+          "concepto": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "example": "Alquiler"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "FIJO",
+              "VARIABLE"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "description": "Neto sin IVA; número o string decimal, mayor a 0",
+            "example": "250000"
+          },
+          "periodo": {
+            "type": "string",
+            "description": "Mes de inicio, YYYY-MM",
+            "example": "2026-09"
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "UNICO",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          },
+          "fin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Último mes (YYYY-MM); sólo para MENSUAL o ANUAL"
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "concepto",
+          "tipo",
+          "importe",
+          "periodo",
+          "periodicidad"
+        ]
+      },
+      "GastoPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "concepto": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "FIJO",
+              "VARIABLE"
+            ]
+          },
+          "importe": {
+            "type": "string",
+            "example": "260000"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "UNICO",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          },
+          "fin": {
+            "type": "string",
+            "nullable": true,
+            "description": "null quita el fin"
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 300
+          }
+        }
       }
     }
   }

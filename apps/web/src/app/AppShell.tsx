@@ -4,6 +4,7 @@ import {
   Home,
   LogOut,
   Package,
+  Receipt,
   Settings,
   Truck,
   Users,
@@ -19,6 +20,7 @@ export function AppShell() {
   const rol = me.data?.rol;
   const esDuenio = rol === 'DUENIO';
   const veInventario = rol === 'DUENIO' || rol === 'EMPLEADO';
+  const veGastos = rol === 'DUENIO' || rol === 'CONTADOR';
 
   const enlace = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
@@ -51,6 +53,12 @@ export function AppShell() {
               <ArrowLeftRight className="w-4 h-4" aria-hidden />
               Movimientos
             </NavLink>
+            {veGastos && (
+              <NavLink to="/gastos" className={enlace}>
+                <Receipt className="w-4 h-4" aria-hidden />
+                Gastos
+              </NavLink>
+            )}
             {esDuenio && (
               <>
                 <NavLink to="/proveedores" className={enlace}>

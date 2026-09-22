@@ -1,6 +1,6 @@
 // InventarioSmart — esquema de datos.
 // Comercio (tenant), Usuario, Producto (HU-01), Movimiento (HU-10), Proveedor y PrecioProveedor
-// (HU-02). El resto de las entidades del DER (Gasto, …) llegan con sus HU.
+// (HU-02), Gasto (HU-13). Las entidades de Fase 2 y 3 del DER llegan con sus HU.
 // Convención: nombres de tabla y columna en snake_case, en español; modelos en PascalCase.
 
 generator client {
@@ -48,6 +48,7 @@ model Comercio {
   movimientos Movimiento[]
   proveedores Proveedor[]
   precios     PrecioProveedor[]
+  gastos      Gasto[]
 
   @@map("comercio")
 }
@@ -102,9 +103,50 @@ model Usuario {
   comercio    Comercio          @relation(fields: [comercioId], references: [id])
   movimientos Movimiento[]
   precios     PrecioProveedor[]
+  gastos      Gasto[]
 
   @@index([comercioId])
   @@map("usuario")
+}
+
+/// Tipo de gasto operativo (HU-13).
+enum TipoGasto {
+  FIJO
+  VARIABLE
+
+  @@map("tipo_gasto")
+}
+
+/// Periodicidad de un gasto: único en su mes, mensual desde su mes, anual prorrateado en doceavos.
+enum PeriodicidadGasto {
+  UNICO
+  MENSUAL
+  ANUAL
+
+  @@map("periodicidad_gasto")
+}
+
+/// Gasto operativo del comercio (HU-13, RF-14). Importe neto sin IVA (RN-03).
+/// periodo y fin son el primer día del mes (la API los expone como YYYY-MM).
+model Gasto {
+  id            String            @id @default(uuid()) @db.Uuid
+  comercioId    String            @map("comercio_id") @db.Uuid
+  concepto      String            @db.VarChar(120)
+  tipo          TipoGasto
+  importe       Decimal           @db.Decimal(14, 2)
+  periodo       DateTime          @db.Date
+  periodicidad  PeriodicidadGasto
+  fin           DateTime?         @db.Date
+  notas         String?           @db.VarChar(300)
+  usuarioId     String            @map("usuario_id") @db.Uuid
+  creadoEn      DateTime          @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn DateTime          @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([comercioId, periodo])
+  @@map("gasto")
 }
 
 /// Origen de una fila de costo (HU-02).
