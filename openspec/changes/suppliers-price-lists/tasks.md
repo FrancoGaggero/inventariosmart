@@ -24,6 +24,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR `docs/adr/0007-listas-de-precios-historial-y-costo-vigente.md` (D10); README (rutas de HU-02, formato de planilla), `docs/arquitectura.html` (§5 DER: `Proveedor` y `PrecioProveedor` con las columnas de D1/D2; §6 endpoints de `suppliers`), runbook `rls.md` (segunda tabla de sólo inserción), `openspec/CAPACIDADES.md`; plantilla `docs/plantillas/lista-de-precios.csv` enlazada desde la web. Listo cuando: los documentos reflejan D1 a D6
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.3 Desplegar y verificar en producción: migración aplicada en Neon production, crear un proveedor real, importar una planilla `.csv` chica desde la web publicada y comprobar el costo nuevo del producto en Inventario. Listo cuando: el proveedor y su lista aparecen en `https://inventariosmart0.vercel.app/proveedores` y el costo del producto cambió
 - [ ] 4.4 (manual, Franco) Mover HU-02 a Hecho en Trello, actualizar `Backlog_InventarioSmart_v2.xlsx` y la tarea correspondiente del Gantt. Listo cuando: Trello, backlog y Gantt coinciden
