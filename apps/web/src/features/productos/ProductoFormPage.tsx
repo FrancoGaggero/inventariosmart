@@ -9,7 +9,14 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ErrorApi, mensajeDe } from '@/lib/api';
 import { useMe } from '@/lib/me';
-import { useActualizarProducto, useCrearProducto, useProducto } from '@/lib/productos';
+import {
+  formatearPesos,
+  useActualizarProducto,
+  useCrearProducto,
+  useProducto,
+} from '@/lib/productos';
+import { ETIQUETA_ORIGEN } from '@inventariosmart/shared';
+import { formatearFecha, useHistorialCostos, useProveedores } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
 import { Campo } from '@/ui/Campo';
 
@@ -22,6 +29,7 @@ interface Valores {
   costoReposicion: string;
   stockInicial: string;
   stockSeguridad: string;
+  proveedorPrincipalId: string;
 }
 
 const VACIO: Valores = {
@@ -33,6 +41,7 @@ const VACIO: Valores = {
   costoReposicion: '',
   stockInicial: '0',
   stockSeguridad: '0',
+  proveedorPrincipalId: '',
 };
 
 /** Alta (/productos/nuevo) y edición (/productos/:id) con el mismo formulario. */
@@ -47,6 +56,14 @@ export function ProductoFormPage() {
   const [v, setV] = useState<Valores>(VACIO);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [aviso, setAviso] = useState<{ tono: 'error' | 'plan'; texto: string } | null>(null);
+  // Proveedores activos para elegir el principal (HU-02); historial de costos al editar.
+  const proveedores = useProveedores({ activo: true }, 100, !esNuevo);
+  const listaProveedores = proveedores.data?.pages.flatMap((p) => p.items) ?? [];
+  const historial = useHistorialCostos(id);
+  const costos = historial.data?.pages.flatMap((p) => p.items) ?? [];
+  const principalActual = existente.data?.proveedorPrincipal ?? null;
+  const principalInactivo =
+    principalActual !== null && !listaProveedores.some((p) => p.id === principalActual.id);
 
   // Alícuota por defecto del comercio al crear; datos del producto al editar.
   useEffect(() => {
@@ -67,6 +84,7 @@ export function ProductoFormPage() {
         costoReposicion: p.costoReposicion ?? '',
         stockInicial: String(p.stockActual),
         stockSeguridad: String(p.stockSeguridad),
+        proveedorPrincipalId: p.proveedorPrincipal?.id ?? '',
       });
     }
   }, [existente.data]);
@@ -90,7 +108,10 @@ export function ProductoFormPage() {
     };
     const parsed = esNuevo
       ? ProductoCreateSchema.safeParse({ ...comun, stockInicial: numero(v.stockInicial) })
-      : ProductoPatchSchema.safeParse(comun);
+      : ProductoPatchSchema.safeParse({
+          ...comun,
+          proveedorPrincipalId: v.proveedorPrincipalId === '' ? null : v.proveedorPrincipalId,
+        });
     if (!parsed.success) {
       const e2: Record<string, string> = {};
       for (const i of parsed.error.issues) e2[String(i.path[0] ?? '_')] ??= i.message;
@@ -236,6 +257,31 @@ export function ProductoFormPage() {
           />
         </div>
 
+        {!esNuevo && (
+          <label className="block">
+            <span className="block text-xs font-semibold text-t2 mb-1.5">Proveedor principal</span>
+            <select
+              value={v.proveedorPrincipalId}
+              onChange={(e) => set('proveedorPrincipalId')(e.target.value)}
+              className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+            >
+              <option value="">Sin proveedor</option>
+              {principalInactivo && principalActual && (
+                <option value={principalActual.id}>{principalActual.nombre} (dado de baja)</option>
+              )}
+              {listaProveedores.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.nombre}
+                </option>
+              ))}
+            </select>
+            <span className="block text-xs text-t3 mt-1.5">
+              {errores['proveedorPrincipalId'] ??
+                'Su última lista de precios fija el costo de reposición (RN-08).'}
+            </span>
+          </label>
+        )}
+
         {aviso && <Aviso tono={aviso.tono}>{aviso.texto}</Aviso>}
 
         <div className="flex items-center gap-3 pt-2">
@@ -247,6 +293,61 @@ export function ProductoFormPage() {
           </Link>
         </div>
       </form>
+
+      {!esNuevo && (
+        <section className="space-y-3">
+          <h2 className="font-bold">Historial de costos</h2>
+          <div className="card overflow-x-auto">
+            <table className="w-full text-sm min-w-[520px]">
+              <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+                <tr>
+                  <th className="text-left px-5 py-3">Vigente desde</th>
+                  <th className="text-left px-3 py-3">Proveedor</th>
+                  <th className="text-right px-3 py-3">Costo neto</th>
+                  <th className="text-left px-5 py-3">Origen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historial.isSuccess && costos.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-8 text-center text-t2">
+                      Todavía ningún proveedor informó un costo para este producto.
+                    </td>
+                  </tr>
+                )}
+                {costos.map((c) => (
+                  <tr key={c.id} className="border-t border-white/6">
+                    <td className="px-5 py-2.5 text-t2 whitespace-nowrap">
+                      {formatearFecha(c.vigenteDesde)}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Link to={`/proveedores/${c.proveedor.id}`} className="hover:text-brand-3">
+                        {c.proveedor.nombre}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular-nums">
+                      {formatearPesos(c.costoNeto)}
+                    </td>
+                    <td className="px-5 py-2.5 text-t2">{ETIQUETA_ORIGEN[c.origen]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {historial.hasNextPage && (
+              <div className="p-4 border-t border-white/6 text-center">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  disabled={historial.isFetchingNextPage}
+                  onClick={() => void historial.fetchNextPage()}
+                >
+                  {historial.isFetchingNextPage ? 'Cargando…' : 'Ver más'}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

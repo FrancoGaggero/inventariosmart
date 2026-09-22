@@ -1,6 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ESTADOS_STOCK } from '@inventariosmart/shared';
 
+export class ProveedorPrincipalDto {
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+
+  @ApiProperty({ example: 'Distribuidora Norte' })
+  nombre!: string;
+}
+
 export class ProductoDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -37,6 +45,13 @@ export class ProductoDto {
 
   @ApiProperty({ enum: ESTADOS_STOCK })
   estadoStock!: 'SIN_STOCK' | 'BAJO' | 'OK';
+
+  @ApiProperty({
+    nullable: true,
+    type: ProveedorPrincipalDto,
+    description: 'Proveedor cuya última lista fija el costo vigente (RN-08, HU-02)',
+  })
+  proveedorPrincipal!: ProveedorPrincipalDto | null;
 
   @ApiProperty()
   activo!: boolean;
@@ -107,6 +122,15 @@ export class ProductoPatchBodyDto {
 
   @ApiPropertyOptional({ minimum: 0 })
   stockSeguridad?: number;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    type: String,
+    format: 'uuid',
+    description:
+      'Proveedor principal; null lo quita. Al cambiarlo, el costo pasa al último de ese proveedor (RN-08)',
+  })
+  proveedorPrincipalId?: string | null;
 
   @ApiPropertyOptional({ description: 'true reactiva un producto dado de baja' })
   activo?: boolean;

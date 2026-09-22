@@ -11,6 +11,10 @@ import { MovimientoFormPage } from '@/features/movimientos/MovimientoFormPage';
 import { MovimientosPage } from '@/features/movimientos/MovimientosPage';
 import { ProductoFormPage } from '@/features/productos/ProductoFormPage';
 import { ProductosPage } from '@/features/productos/ProductosPage';
+import { ImportarListaPage } from '@/features/proveedores/ImportarListaPage';
+import { ProveedorDetallePage } from '@/features/proveedores/ProveedorDetallePage';
+import { ProveedorFormPage } from '@/features/proveedores/ProveedorFormPage';
+import { ProveedoresPage } from '@/features/proveedores/ProveedoresPage';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
@@ -37,6 +41,11 @@ export const router = createBrowserRouter([
             children: [
               { path: '/productos/nuevo', element: <ProductoFormPage /> },
               { path: '/productos/:id', element: <ProductoFormPage /> },
+              { path: '/proveedores', element: <ProveedoresPage /> },
+              { path: '/proveedores/nuevo', element: <ProveedorFormPage /> },
+              { path: '/proveedores/:id', element: <ProveedorDetallePage /> },
+              { path: '/proveedores/:id/editar', element: <ProveedorFormPage /> },
+              { path: '/proveedores/:id/importar', element: <ImportarListaPage /> },
               { path: '/configuracion/usuarios', element: <UsuariosPage /> },
               { path: '/configuracion/comercio', element: <ComercioPage /> },
             ],

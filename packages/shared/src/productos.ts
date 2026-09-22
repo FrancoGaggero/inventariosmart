@@ -85,6 +85,8 @@ export const ProductoSchema = z.object({
   stockActual: z.number().int(),
   stockSeguridad: z.number().int(),
   estadoStock: EstadoStockSchema,
+  /** Proveedor cuya última lista fija el costo vigente (RN-08, HU-02). */
+  proveedorPrincipal: z.object({ id: z.uuid(), nombre: z.string() }).nullable(),
   activo: z.boolean(),
   creadoEn: z.string(),
   actualizadoEn: z.string(),
@@ -121,6 +123,8 @@ export const ProductoPatchSchema = z
     alicuotaIva: AlicuotaSchema.optional(),
     costoReposicion: MontoSchema.optional(),
     stockSeguridad: enteroNoNegativo('El stock de seguridad').optional(),
+    /** null quita el proveedor principal; el costo vigente no cambia. */
+    proveedorPrincipalId: z.uuid('Elegí un proveedor válido.').nullable().optional(),
     activo: z.boolean().optional(),
     stockActual: z.unknown().optional(),
   })

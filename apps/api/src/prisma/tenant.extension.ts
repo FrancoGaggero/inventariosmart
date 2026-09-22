@@ -5,7 +5,13 @@ import type { PrismaClient } from '../generated/prisma/client';
  * Modelos con columna `comercio_id`. Toda tabla de negocio nueva se agrega acá
  * (y lleva su política RLS: ver docs/runbooks/rls.md).
  */
-export const TENANT_MODELS = new Set<string>(['Usuario', 'Producto', 'Movimiento']);
+export const TENANT_MODELS = new Set<string>([
+  'Usuario',
+  'Producto',
+  'Movimiento',
+  'Proveedor',
+  'PrecioProveedor',
+]);
 
 /** Operaciones que aceptan `where`. */
 const CON_WHERE = new Set([

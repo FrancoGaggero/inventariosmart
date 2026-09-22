@@ -1,4 +1,4 @@
-import { Activity, ArrowLeftRight, Package, Settings, Users } from 'lucide-react';
+import { Activity, ArrowLeftRight, Package, Settings, Truck, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
@@ -68,6 +68,13 @@ export function HomePage() {
         </Link>
         {esDuenio && (
           <>
+            <Link to="/proveedores" className="card p-5 hover:border-brand-2/50 transition">
+              <Truck className="w-5 h-5 text-brand-3 mb-3" aria-hidden />
+              <h2 className="font-bold">Proveedores</h2>
+              <p className="text-t2 text-sm">
+                Contactos, plazos de entrega y listas de precios que fijan tus costos.
+              </p>
+            </Link>
             <Link
               to="/configuracion/usuarios"
               className="card p-5 hover:border-brand-2/50 transition"

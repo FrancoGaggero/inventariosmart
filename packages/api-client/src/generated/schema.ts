@@ -157,6 +157,26 @@ export interface paths {
         patch: operations["ProductsController_actualizar"];
         trace?: never;
     };
+    "/api/v1/products/{id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de costos del producto (HU-02)
+         * @description Todas las filas de costo de todos los proveedores, de la más reciente a la más antigua.
+         */
+        get: operations["ProductsController_historialCostos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/movements": {
         parameters: {
             query?: never;
@@ -212,6 +232,107 @@ export interface paths {
          * @description No borra nada: registra un AJUSTE inverso con motivo ANULACION que referencia al original (RN-07) y devuelve el stock al valor previo.
          */
         post: operations["MovementsController_anular"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar proveedores del comercio */
+        get: operations["SuppliersController_listar"];
+        put?: never;
+        /** Crear un proveedor */
+        post: operations["SuppliersController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suppliers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de un proveedor */
+        get: operations["SuppliersController_obtener"];
+        put?: never;
+        post?: never;
+        /** Dar de baja (baja lógica: conserva el historial de precios) */
+        delete: operations["SuppliersController_darDeBaja"];
+        options?: never;
+        head?: never;
+        /** Editar un proveedor (datos, lead time, confiabilidad) o reactivarlo */
+        patch: operations["SuppliersController_actualizar"];
+        trace?: never;
+    };
+    "/api/v1/suppliers/{id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista de precios vigente del proveedor
+         * @description Último costo informado por producto, en orden alfabético, con cursor.
+         */
+        get: operations["SuppliersController_listaVigente"];
+        put?: never;
+        /**
+         * Cargar costos a mano
+         * @description Inserta filas de historial (origen MANUAL). Si el proveedor es el principal del producto, o el producto no tenía proveedor, actualiza su costo vigente (RN-08).
+         */
+        post: operations["SuppliersController_cargarPrecios"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suppliers/{id}/price-list/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una lista de precios (.xlsx o .csv)
+         * @description Clasifica cada fila: NUEVO, CAMBIA (con costo anterior), IGUAL, SIN_PRODUCTO o INVALIDA. No registra nada; el archivo no se conserva.
+         */
+        post: operations["SuppliersController_vistaPrevia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suppliers/{id}/price-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar la importación de una lista de precios
+         * @description Registra las filas como un lote IMPORT y aplica RN-08. Las que ya son el costo vigente del proveedor se omiten, así reenviar la misma vista previa no duplica nada.
+         */
+        post: operations["SuppliersController_confirmar"];
         delete?: never;
         options?: never;
         head?: never;
@@ -318,6 +439,12 @@ export interface components {
             /** @description false = dar de baja; true = reactivar */
             activo?: boolean;
         };
+        ProveedorPrincipalDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Distribuidora Norte */
+            nombre: string;
+        };
         ProductoDto: {
             /** Format: uuid */
             id: string;
@@ -348,6 +475,8 @@ export interface components {
             stockSeguridad: number;
             /** @enum {string} */
             estadoStock: "SIN_STOCK" | "BAJO" | "OK";
+            /** @description Proveedor cuya última lista fija el costo vigente (RN-08, HU-02) */
+            proveedorPrincipal: components["schemas"]["ProveedorPrincipalDto"] | null;
             activo: boolean;
             /** Format: date-time */
             creadoEn: string;
@@ -357,6 +486,49 @@ export interface components {
         ListaProductosDto: {
             items: components["schemas"]["ProductoDto"][];
             /** @description Cursor de la página siguiente o null */
+            siguienteCursor: string | null;
+        };
+        ProductoResumenPrecioDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        ProveedorResumenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Distribuidora Norte */
+            nombre: string;
+        };
+        UsuarioResumenPrecioDto: {
+            /** Format: uuid */
+            id: string;
+            nombre: string | null;
+        };
+        PrecioProveedorDto: {
+            /** Format: uuid */
+            id: string;
+            producto: components["schemas"]["ProductoResumenPrecioDto"];
+            proveedor: components["schemas"]["ProveedorResumenDto"];
+            /**
+             * @description Costo neto sin IVA, decimal como string
+             * @example 2340.00
+             */
+            costoNeto: string;
+            /** Format: date-time */
+            vigenteDesde: string;
+            /** @enum {string} */
+            origen: "MANUAL" | "IMPORT";
+            /** Format: uuid */
+            loteId: string | null;
+            usuario: components["schemas"]["UsuarioResumenPrecioDto"];
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        ListaPreciosDto: {
+            items: components["schemas"]["PrecioProveedorDto"][];
             siguienteCursor: string | null;
         };
         ProductoCreateBodyDto: {
@@ -392,6 +564,11 @@ export interface components {
             /** @example 2400.00 */
             costoReposicion?: string;
             stockSeguridad?: number;
+            /**
+             * Format: uuid
+             * @description Proveedor principal; null lo quita. Al cambiarlo, el costo pasa al último de ese proveedor (RN-08)
+             */
+            proveedorPrincipalId?: string | null;
             /** @description true reactiva un producto dado de baja */
             activo?: boolean;
         };
@@ -492,6 +669,138 @@ export interface components {
         };
         AnulacionBodyDto: {
             observacion?: string | null;
+        };
+        ProveedorDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Distribuidora Norte */
+            nombre: string;
+            contacto: string | null;
+            email: string | null;
+            telefono: string | null;
+            /** @example 30712345678 */
+            cuit: string | null;
+            /**
+             * @description Plazo de entrega en días (alimenta RN-04)
+             * @example 7
+             */
+            leadTimeDias: number;
+            /**
+             * @description Índice de confiabilidad de 1 a 5
+             * @example 3
+             */
+            confiabilidad: number;
+            notas: string | null;
+            activo: boolean;
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            actualizadoEn: string;
+        };
+        ListaProveedoresDto: {
+            items: components["schemas"]["ProveedorDto"][];
+            siguienteCursor: string | null;
+        };
+        ProveedorCreateBodyDto: {
+            /** @example Distribuidora Norte */
+            nombre: string;
+            contacto?: string | null;
+            /** Format: email */
+            email?: string | null;
+            telefono?: string | null;
+            /** @description 11 dígitos sin guiones */
+            cuit?: string | null;
+            /** @description Por defecto, 7 días */
+            leadTimeDias?: number;
+            /** @description De 1 a 5; por defecto, 3 */
+            confiabilidad?: number;
+            notas?: string | null;
+        };
+        ProveedorPatchBodyDto: {
+            /** @example Distribuidora Norte */
+            nombre?: string;
+            contacto?: string | null;
+            /** Format: email */
+            email?: string | null;
+            telefono?: string | null;
+            /** @description 11 dígitos sin guiones */
+            cuit?: string | null;
+            /** @description Por defecto, 7 días */
+            leadTimeDias?: number;
+            /** @description De 1 a 5; por defecto, 3 */
+            confiabilidad?: number;
+            notas?: string | null;
+            /** @description true reactiva un proveedor dado de baja */
+            activo?: boolean;
+        };
+        ItemPrecioBodyDto: {
+            /** Format: uuid */
+            productoId: string;
+            /**
+             * @description Costo neto sin IVA; número o string decimal
+             * @example 2340.00
+             */
+            costoNeto: string;
+        };
+        PreciosCreateBodyDto: {
+            items: components["schemas"]["ItemPrecioBodyDto"][];
+            /**
+             * Format: date-time
+             * @description Por defecto, ahora. No futura.
+             */
+            vigenteDesde?: string;
+        };
+        PreciosCreadosDto: {
+            filas: components["schemas"]["PrecioProveedorDto"][];
+            /** @description Productos cuyo costo vigente cambió (RN-08) */
+            productosActualizados: number;
+        };
+        ArchivoListaDto: {
+            /**
+             * Format: binary
+             * @description .xlsx o .csv, hasta 2 MB
+             */
+            archivo: string;
+        };
+        FilaVistaPreviaDto: {
+            /** @description Número de fila de datos en la planilla (1 = primera) */
+            fila: number;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example 2340.00 */
+            costoNeto: string | null;
+            /** @enum {string} */
+            estado: "NUEVO" | "CAMBIA" | "IGUAL" | "SIN_PRODUCTO" | "INVALIDA";
+            /** Format: uuid */
+            productoId: string | null;
+            nombre: string | null;
+            /** @description Último costo de este proveedor */
+            costoAnterior: string | null;
+            error: string | null;
+        };
+        ResumenVistaPreviaDto: {
+            total: number;
+            nuevos: number;
+            cambios: number;
+            iguales: number;
+            sinProducto: number;
+            invalidas: number;
+        };
+        VistaPreviaDto: {
+            filas: components["schemas"]["FilaVistaPreviaDto"][];
+            resumen: components["schemas"]["ResumenVistaPreviaDto"];
+        };
+        ImportacionConfirmBodyDto: {
+            /** @description Las filas NUEVO y CAMBIA de la vista previa */
+            items: components["schemas"]["ItemPrecioBodyDto"][];
+        };
+        ResultadoImportacionDto: {
+            /** Format: uuid */
+            loteId: string;
+            /** @description Filas de costo registradas (las iguales al vigente se omiten) */
+            insertados: number;
+            /** @description Productos cuyo costo vigente cambió (RN-08) */
+            productosActualizados: number;
         };
     };
     responses: never;
@@ -1140,6 +1449,55 @@ export interface operations {
             };
         };
     };
+    ProductsController_historialCostos: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: unknown;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaPreciosDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
     MovementsController_listar: {
         parameters: {
             query?: {
@@ -1370,6 +1728,507 @@ export interface operations {
                 };
             };
             /** @description Ya anulado, es una anulación, o dejaría el stock negativo */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_listar: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: unknown;
+                /** @description Default true */
+                activo?: "true" | "false";
+                /** @description Texto a buscar en el nombre */
+                q?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaProveedoresDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProveedorCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProveedorDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Nombre repetido en el comercio */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProveedorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_darDeBaja: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProveedorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_actualizar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProveedorPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProveedorDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_listaVigente: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: unknown;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaPreciosDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_cargarPrecios: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreciosCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreciosCreadosDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Proveedor o producto inexistente */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Proveedor dado de baja */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_vistaPrevia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ArchivoListaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VistaPreviaDto"];
+                };
+            };
+            /** @description Archivo inválido, vacío o demasiado grande */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SuppliersController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportacionConfirmBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoImportacionDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO ve proveedores y costos */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
             409: {
                 headers: {
                     [name: string]: unknown;

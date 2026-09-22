@@ -36,6 +36,8 @@ describe('products.service (unitario)', () => {
       activo: true,
       creadoEn: new Date('2026-09-11T00:00:00Z'),
       actualizadoEn: new Date('2026-09-11T00:00:00Z'),
+      proveedorPrincipalId: null,
+      proveedorPrincipalNombre: null,
     };
     expect(aProducto({ ...base, stockActual: 47 })).toMatchObject({
       precioVenta: '3900.00',

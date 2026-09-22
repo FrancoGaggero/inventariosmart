@@ -1,4 +1,13 @@
-import { ArrowLeftRight, BarChart3, Home, LogOut, Package, Settings, Users } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  BarChart3,
+  Home,
+  LogOut,
+  Package,
+  Settings,
+  Truck,
+  Users,
+} from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '@/lib/auth';
 import { NOMBRE_ROL, useMe } from '@/lib/me';
@@ -44,6 +53,10 @@ export function AppShell() {
             </NavLink>
             {esDuenio && (
               <>
+                <NavLink to="/proveedores" className={enlace}>
+                  <Truck className="w-4 h-4" aria-hidden />
+                  Proveedores
+                </NavLink>
                 <NavLink to="/configuracion/usuarios" className={enlace}>
                   <Users className="w-4 h-4" aria-hidden />
                   Usuarios

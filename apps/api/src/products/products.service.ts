@@ -14,6 +14,7 @@ import { conflicto, noEncontrado, planRequerido, validacion } from '../common/er
 import { Prisma, type Producto as ProductoRow } from '../generated/prisma/client';
 import { MovementsService } from '../movements/movements.service';
 import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
+import { PricesService } from '../suppliers/prices.service';
 
 /** Código normalizado para la unicidad por comercio sin distinguir mayúsculas (RN-05). */
 export function normalizarCodigo(codigo: string): string {
@@ -34,11 +35,28 @@ interface FilaProducto {
   activo: boolean;
   creadoEn: Date;
   actualizadoEn: Date;
+  proveedorPrincipalId: string | null;
+  proveedorPrincipalNombre: string | null;
 }
 
 type Origen = ProductoRow | FilaProducto;
+export type ProveedorResumen = { id: string; nombre: string } | null;
 
-export function aProducto(p: Origen): Producto {
+/** Proveedor principal: del JOIN del listado, o del `include` de Prisma pasado aparte. */
+function proveedorDe(p: Origen, dado: ProveedorResumen | undefined): ProveedorResumen {
+  if (dado !== undefined) return dado;
+  if ('proveedorPrincipalNombre' in p && p.proveedorPrincipalId && p.proveedorPrincipalNombre) {
+    return { id: p.proveedorPrincipalId, nombre: p.proveedorPrincipalNombre };
+  }
+  return null;
+}
+
+/** `include` para devolver el proveedor principal desde las consultas Prisma. */
+export const INCLUIR_PROVEEDOR = {
+  proveedorPrincipal: { select: { id: true, nombre: true } },
+} as const;
+
+export function aProducto(p: Origen, proveedor?: ProveedorResumen): Producto {
   return {
     id: p.id,
     codigo: p.codigo,
@@ -50,6 +68,7 @@ export function aProducto(p: Origen): Producto {
     stockActual: p.stockActual,
     stockSeguridad: p.stockSeguridad,
     estadoStock: calcularEstadoStock(p.stockActual, p.stockSeguridad),
+    proveedorPrincipal: proveedorDe(p, proveedor),
     activo: p.activo,
     creadoEn: p.creadoEn.toISOString(),
     actualizadoEn: p.actualizadoEn.toISOString(),
@@ -74,19 +93,22 @@ export function decodificarCursor(cursor: string): { nombre: string; id: string 
 }
 
 const COLUMNAS = Prisma.sql`
-  id, codigo, nombre, categoria,
-  precio_venta::text AS "precioVenta",
-  alicuota_iva::text AS "alicuotaIva",
-  costo_reposicion::text AS "costoReposicion",
-  stock_actual AS "stockActual",
-  stock_seguridad AS "stockSeguridad",
-  activo, creado_en AS "creadoEn", actualizado_en AS "actualizadoEn"`;
+  p.id, p.codigo, p.nombre, p.categoria,
+  p.precio_venta::text AS "precioVenta",
+  p.alicuota_iva::text AS "alicuotaIva",
+  p.costo_reposicion::text AS "costoReposicion",
+  p.stock_actual AS "stockActual",
+  p.stock_seguridad AS "stockSeguridad",
+  p.activo, p.creado_en AS "creadoEn", p.actualizado_en AS "actualizadoEn",
+  p.proveedor_principal_id AS "proveedorPrincipalId",
+  pr.nombre AS "proveedorPrincipalNombre"`;
 
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly movements: MovementsService,
+    private readonly prices: PricesService,
   ) {}
 
   /** Listado con búsqueda, filtros y paginación por cursor (CP-01.3). */
@@ -95,38 +117,39 @@ export class ProductsService {
     const cursor = q.cursor ? decodificarCursor(q.cursor) : null;
 
     const condiciones: Prisma.Sql[] = [
-      Prisma.sql`comercio_id = ${comercioId}::uuid`,
-      Prisma.sql`activo = ${q.activo}`,
+      Prisma.sql`p.comercio_id = ${comercioId}::uuid`,
+      Prisma.sql`p.activo = ${q.activo}`,
     ];
     if (q.q) {
       const prefijo = `${normalizarCodigo(q.q)}%`;
       const contiene = `%${q.q}%`;
       condiciones.push(
-        Prisma.sql`(codigo_normalizado LIKE ${prefijo} OR nombre ILIKE ${contiene})`,
+        Prisma.sql`(p.codigo_normalizado LIKE ${prefijo} OR p.nombre ILIKE ${contiene})`,
       );
     }
     switch (q.estado) {
       case 'SIN_STOCK':
-        condiciones.push(Prisma.sql`stock_actual <= 0`);
+        condiciones.push(Prisma.sql`p.stock_actual <= 0`);
         break;
       case 'BAJO':
-        condiciones.push(Prisma.sql`stock_actual > 0 AND stock_actual <= stock_seguridad`);
+        condiciones.push(Prisma.sql`p.stock_actual > 0 AND p.stock_actual <= p.stock_seguridad`);
         break;
       case 'OK':
-        condiciones.push(Prisma.sql`stock_actual > stock_seguridad`);
+        condiciones.push(Prisma.sql`p.stock_actual > p.stock_seguridad`);
         break;
       default:
         break;
     }
     if (cursor) {
-      condiciones.push(Prisma.sql`(nombre, id) > (${cursor.nombre}, ${cursor.id}::uuid)`);
+      condiciones.push(Prisma.sql`(p.nombre, p.id) > (${cursor.nombre}, ${cursor.id}::uuid)`);
     }
 
     const filas = await this.prisma.transaccionTenant((tx) =>
       tx.$queryRaw<FilaProducto[]>(
-        Prisma.sql`SELECT ${COLUMNAS} FROM producto
+        Prisma.sql`SELECT ${COLUMNAS} FROM producto p
+          LEFT JOIN proveedor pr ON pr.id = p.proveedor_principal_id
           WHERE ${Prisma.join(condiciones, ' AND ')}
-          ORDER BY nombre ASC, id ASC
+          ORDER BY p.nombre ASC, p.id ASC
           LIMIT ${q.limit + 1}`,
       ),
     );
@@ -135,15 +158,18 @@ export class ProductsService {
     const pagina = hayMas ? filas.slice(0, q.limit) : filas;
     const ultimo = pagina[pagina.length - 1];
     return {
-      items: pagina.map(aProducto),
+      items: pagina.map((f) => aProducto(f)),
       siguienteCursor: hayMas && ultimo ? codificarCursor(ultimo.nombre, ultimo.id) : null,
     };
   }
 
   async obtener(id: string): Promise<Producto> {
-    const p = await this.prisma.tenant.producto.findFirst({ where: { id } });
+    const p = await this.prisma.tenant.producto.findFirst({
+      where: { id },
+      include: INCLUIR_PROVEEDOR,
+    });
     if (!p) throw noEncontrado('No encontramos ese producto en tu comercio.');
-    return aProducto(p);
+    return aProducto(p, p.proveedorPrincipal);
   }
 
   /** Alta (CP-01.1, CP-01.2, CP-01.6). */
@@ -205,7 +231,6 @@ export class ProductsService {
       if (patch.categoria !== undefined) data.categoria = patch.categoria;
       if (patch.precioVenta !== undefined) data.precioVenta = patch.precioVenta;
       if (patch.alicuotaIva !== undefined) data.alicuotaIva = patch.alicuotaIva;
-      if (patch.costoReposicion !== undefined) data.costoReposicion = patch.costoReposicion;
       if (patch.stockSeguridad !== undefined) data.stockSeguridad = patch.stockSeguridad;
       if (patch.activo !== undefined) {
         if (patch.activo && !actual.activo) {
@@ -215,8 +240,58 @@ export class ProductsService {
         data.activo = patch.activo;
       }
 
-      const actualizado = await tx.producto.update({ where: { id }, data });
-      return aProducto(actualizado);
+      // Proveedor principal (HU-02, CP-01.4d): al cambiarlo, el costo vigente pasa al último
+      // costo de ese proveedor (RN-08), salvo que el mismo PATCH traiga un costo explícito.
+      let principalId = actual.proveedorPrincipalId;
+      let principalActivo = true;
+      if (patch.proveedorPrincipalId !== undefined) {
+        principalId = patch.proveedorPrincipalId;
+        data.proveedorPrincipal =
+          principalId === null ? { disconnect: true } : { connect: { id: principalId } };
+        if (principalId !== null && principalId !== actual.proveedorPrincipalId) {
+          const proveedor = await this.prices.proveedorDelComercio(tx, comercioId, principalId);
+          if (!proveedor.activo) {
+            throw conflicto(
+              `${proveedor.nombre} está dado de baja. Reactivalo para usarlo como proveedor principal.`,
+              {
+                proveedorId: proveedor.id,
+                activo: false,
+              },
+            );
+          }
+          if (patch.costoReposicion === undefined) {
+            const ultimo = await this.prices.ultimoCosto(tx, comercioId, principalId, id);
+            if (ultimo !== null) data.costoReposicion = ultimo;
+          }
+        }
+      } else if (principalId !== null) {
+        const proveedor = await tx.proveedor.findFirst({
+          where: { id: principalId },
+          select: { activo: true },
+        });
+        principalActivo = proveedor?.activo ?? false;
+      }
+
+      // Costo editado a mano (CP-02.5e): queda en el historial como fila MANUAL del principal.
+      const registrarManual =
+        patch.costoReposicion !== undefined && principalId !== null && principalActivo;
+      if (patch.costoReposicion !== undefined && !registrarManual) {
+        data.costoReposicion = patch.costoReposicion;
+      }
+
+      await tx.producto.update({ where: { id }, data, select: { id: true } });
+      if (registrarManual) {
+        await this.prices.registrarEnTransaccion(tx, {
+          proveedorId: principalId!,
+          items: [{ productoId: id, costoNeto: patch.costoReposicion! }],
+          origen: 'MANUAL',
+        });
+      }
+      const actualizado = await tx.producto.findUniqueOrThrow({
+        where: { id },
+        include: INCLUIR_PROVEEDOR,
+      });
+      return aProducto(actualizado, actualizado.proveedorPrincipal);
     });
   }
 
@@ -226,8 +301,12 @@ export class ProductsService {
     return this.prisma.transaccionTenant(async (tx) => {
       const actual = await tx.producto.findFirst({ where: { id, comercioId } });
       if (!actual) throw noEncontrado('No encontramos ese producto en tu comercio.');
-      const bajado = await tx.producto.update({ where: { id }, data: { activo: false } });
-      return aProducto(bajado);
+      const bajado = await tx.producto.update({
+        where: { id },
+        data: { activo: false },
+        include: INCLUIR_PROVEEDOR,
+      });
+      return aProducto(bajado, bajado.proveedorPrincipal);
     });
   }
 

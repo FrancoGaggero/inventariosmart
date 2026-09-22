@@ -67,7 +67,8 @@ REVOKE UPDATE, DELETE ON "movimiento" FROM app_api;
 GRANT UPDATE ("anulado_por_id") ON "movimiento" TO app_api;  -- única columna que la API escribe
 ```
 
-El test `rls.e2e-spec.ts` (CP-10.7c) verifica esos privilegios. Los tests limpian datos con la
+`precio_proveedor` (HU-02, ADR 0007) sigue el mismo esquema, sin columna actualizable. El test
+`rls.e2e-spec.ts` (CP-10.7c, CP-02.4c) verifica esos privilegios. Los tests limpian datos con la
 conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede
 borrar el historial.
 

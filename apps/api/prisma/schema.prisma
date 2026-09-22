@@ -1,6 +1,6 @@
 // InventarioSmart — esquema de datos.
-// Comercio (tenant), Usuario, Producto (HU-01) y Movimiento (HU-10). El resto de las entidades
-// del DER (Proveedor, PrecioProveedor, Gasto, …) llegan con sus HU.
+// Comercio (tenant), Usuario, Producto (HU-01), Movimiento (HU-10), Proveedor y PrecioProveedor
+// (HU-02). El resto de las entidades del DER (Gasto, …) llegan con sus HU.
 // Convención: nombres de tabla y columna en snake_case, en español; modelos en PascalCase.
 
 generator client {
@@ -46,6 +46,8 @@ model Comercio {
   usuarios    Usuario[]
   productos   Producto[]
   movimientos Movimiento[]
+  proveedores Proveedor[]
+  precios     PrecioProveedor[]
 
   @@map("comercio")
 }
@@ -53,30 +55,35 @@ model Comercio {
 /// Producto del catálogo (HU-01). El stock sólo cambia por movimientos (RN-07).
 /// costoReposicion es el costo vigente sin IVA; HU-02 lo actualiza desde listas de proveedores (RN-08).
 model Producto {
-  id                String   @id @default(uuid()) @db.Uuid
-  comercioId        String   @map("comercio_id") @db.Uuid
-  codigo            String   @db.VarChar(64)
+  id                   String   @id @default(uuid()) @db.Uuid
+  comercioId           String   @map("comercio_id") @db.Uuid
+  codigo               String   @db.VarChar(64)
   /// upper(trim(codigo)): unicidad por comercio sin distinguir mayúsculas (RN-05).
-  codigoNormalizado String   @map("codigo_normalizado") @db.VarChar(64)
-  nombre            String   @db.VarChar(120)
-  categoria         String?  @db.VarChar(60)
+  codigoNormalizado    String   @map("codigo_normalizado") @db.VarChar(64)
+  nombre               String   @db.VarChar(120)
+  categoria            String?  @db.VarChar(60)
   /// Precio de venta al público, con IVA incluido.
-  precioVenta       Decimal  @map("precio_venta") @db.Decimal(14, 2)
+  precioVenta          Decimal  @map("precio_venta") @db.Decimal(14, 2)
   /// Alícuota de IVA en porcentaje (RN-03).
-  alicuotaIva       Decimal  @map("alicuota_iva") @db.Decimal(5, 2)
+  alicuotaIva          Decimal  @map("alicuota_iva") @db.Decimal(5, 2)
   /// Costo de reposición vigente, sin IVA.
-  costoReposicion   Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
-  stockActual       Int      @default(0) @map("stock_actual")
-  stockSeguridad    Int      @default(0) @map("stock_seguridad")
-  activo            Boolean  @default(true)
-  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
-  actualizadoEn     DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+  costoReposicion      Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
+  stockActual          Int      @default(0) @map("stock_actual")
+  stockSeguridad       Int      @default(0) @map("stock_seguridad")
+  /// Proveedor cuya última lista fija costoReposicion (RN-08, HU-02).
+  proveedorPrincipalId String?  @map("proveedor_principal_id") @db.Uuid
+  activo               Boolean  @default(true)
+  creadoEn             DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn        DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
 
-  comercio    Comercio     @relation(fields: [comercioId], references: [id])
-  movimientos Movimiento[]
+  comercio           Comercio          @relation(fields: [comercioId], references: [id])
+  movimientos        Movimiento[]
+  proveedorPrincipal Proveedor?        @relation("ProveedorPrincipal", fields: [proveedorPrincipalId], references: [id], onDelete: SetNull)
+  precios            PrecioProveedor[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
+  @@index([proveedorPrincipalId])
   @@map("producto")
 }
 
@@ -92,11 +99,74 @@ model Usuario {
   activo      Boolean  @default(true)
   creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  comercio    Comercio     @relation(fields: [comercioId], references: [id])
+  comercio    Comercio          @relation(fields: [comercioId], references: [id])
   movimientos Movimiento[]
+  precios     PrecioProveedor[]
 
   @@index([comercioId])
   @@map("usuario")
+}
+
+/// Origen de una fila de costo (HU-02).
+enum OrigenPrecio {
+  MANUAL
+  IMPORT
+
+  @@map("origen_precio")
+}
+
+/// Proveedor del comercio (HU-02, RF-03). lead_time_dias alimenta RN-04; confiabilidad, HU-12.
+model Proveedor {
+  id                String   @id @default(uuid()) @db.Uuid
+  comercioId        String   @map("comercio_id") @db.Uuid
+  nombre            String   @db.VarChar(120)
+  /// upper(trim(nombre)): único por comercio sin distinguir mayúsculas.
+  nombreNormalizado String   @map("nombre_normalizado") @db.VarChar(120)
+  contacto          String?  @db.VarChar(120)
+  email             String?  @db.VarChar(254)
+  telefono          String?  @db.VarChar(40)
+  cuit              String?  @db.VarChar(13)
+  leadTimeDias      Int      @default(7) @map("lead_time_dias")
+  /// 1 a 5 (CHECK en la migración).
+  confiabilidad     Int      @default(3) @db.SmallInt
+  notas             String?  @db.VarChar(500)
+  activo            Boolean  @default(true)
+  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn     DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio             Comercio          @relation(fields: [comercioId], references: [id])
+  precios              PrecioProveedor[]
+  productosPrincipales Producto[]        @relation("ProveedorPrincipal")
+
+  @@unique([comercioId, nombreNormalizado])
+  @@index([comercioId, activo, nombre])
+  @@map("proveedor")
+}
+
+/// Historial de costos por producto y proveedor: sólo inserción (RN-08).
+/// El rol de la API no puede modificar ni borrar filas.
+model PrecioProveedor {
+  id           String       @id @default(uuid()) @db.Uuid
+  comercioId   String       @map("comercio_id") @db.Uuid
+  productoId   String       @map("producto_id") @db.Uuid
+  proveedorId  String       @map("proveedor_id") @db.Uuid
+  /// Costo neto sin IVA.
+  costoNeto    Decimal      @map("costo_neto") @db.Decimal(14, 2)
+  vigenteDesde DateTime     @default(now()) @map("vigente_desde") @db.Timestamptz(3)
+  origen       OrigenPrecio
+  /// Agrupa las filas de una misma importación.
+  loteId       String?      @map("lote_id") @db.Uuid
+  usuarioId    String       @map("usuario_id") @db.Uuid
+  creadoEn     DateTime     @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio  Comercio  @relation(fields: [comercioId], references: [id])
+  producto  Producto  @relation(fields: [productoId], references: [id])
+  proveedor Proveedor @relation(fields: [proveedorId], references: [id])
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+
+  @@index([comercioId, proveedorId, productoId, vigenteDesde(sort: Desc), creadoEn(sort: Desc)])
+  @@index([comercioId, productoId, vigenteDesde(sort: Desc), id(sort: Desc)])
+  @@map("precio_proveedor")
 }
 
 /// Tipo de movimiento de stock (HU-10, RF-13).

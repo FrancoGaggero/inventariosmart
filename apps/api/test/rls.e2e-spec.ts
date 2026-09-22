@@ -7,6 +7,8 @@ const TABLA: Record<string, string> = {
   Comercio: 'comercio',
   Producto: 'producto',
   Movimiento: 'movimiento',
+  Proveedor: 'proveedor',
+  PrecioProveedor: 'precio_proveedor',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -108,6 +110,30 @@ describe('aislamiento entre comercios (e2e)', () => {
       t.prisma.raw.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
         await tx.$executeRaw`UPDATE movimiento SET cantidad = 1 WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-02.6b sin contexto la base no devuelve proveedores ni precios', async () => {
+    const [p] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM proveedor`;
+    const [pp] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM precio_proveedor`;
+    expect(Number(p!.n)).toBe(0);
+    expect(Number(pp!.n)).toBe(0);
+  });
+
+  it('CP-02.4c el rol de la aplicación no puede modificar ni borrar el historial de costos (RN-08)', async () => {
+    const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'precio_proveedor' AND grantee = current_user`;
+    expect(privilegios.map((p) => p.privilege_type).sort()).toEqual(['INSERT', 'SELECT']);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM precio_proveedor WHERE comercio_id = ${comercioA}::uuid`;
       }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });

@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import {
   ESTADOS_STOCK,
+  type ListaPrecios,
   type ListaProductos,
   type Producto,
   type ProductoCreate,
@@ -38,6 +39,9 @@ import {
 import { Roles } from '../common/decorators/roles.decorator';
 import { ApiErrorDto } from '../common/dto/api-error.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { PricesService } from '../suppliers/prices.service';
+import { ListaPreciosDto } from '../suppliers/suppliers.dto';
+import { z } from 'zod';
 import {
   ListaProductosDto,
   ProductoCreateBodyDto,
@@ -46,6 +50,11 @@ import {
 } from './products.dto';
 import { ProductsService } from './products.service';
 
+const PaginacionSchema = z.object({
+  cursor: z.string().max(400).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+});
+
 @ApiTags('productos')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ type: ApiErrorDto })
@@ -53,7 +62,10 @@ import { ProductsService } from './products.service';
 @Roles('DUENIO', 'EMPLEADO')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly products: ProductsService) {}
+  constructor(
+    private readonly products: ProductsService,
+    private readonly prices: PricesService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -93,6 +105,28 @@ export class ProductsController {
   @ApiNotFoundResponse({ type: ApiErrorDto })
   obtener(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<Producto> {
     return this.products.obtener(id);
+  }
+
+  @Get(':id/prices')
+  @Roles('DUENIO')
+  @ApiOperation({
+    summary: 'Historial de costos del producto (HU-02)',
+    description:
+      'Todas las filas de costo de todos los proveedores, de la más reciente a la más antigua.',
+  })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 25 },
+  })
+  @ApiOkResponse({ type: ListaPreciosDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  historialCostos(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query(new ZodValidationPipe(PaginacionSchema)) pag: z.infer<typeof PaginacionSchema>,
+  ): Promise<ListaPrecios> {
+    return this.prices.historialProducto(id, pag);
   }
 
   @Post()

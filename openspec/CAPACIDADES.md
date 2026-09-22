@@ -11,7 +11,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `user-roles`            | HU-11 | RF-11         | 1    | 2 · `auth-tenancy` (misma change) |
 | `product-catalog`       | HU-01 | RF-01, RF-02  | 1    | 3 · `product-catalog` (10/09/2026) |
 | `stock-movements`       | HU-10 | RF-13, RF-02  | 1    | 4 · `stock-movements` (22/09/2026) |
-| `suppliers-price-lists` | HU-02 | RF-03         | 1    | 5 · `suppliers-price-lists`      |
+| `suppliers-price-lists` | HU-02 | RF-03         | 1    | 5 · `suppliers-price-lists` (23/09/2026) |
 | `operating-expenses`    | HU-13 | RF-14         | 1    | 6 · `operating-expenses`         |
 | `profitability`         | HU-03 | RF-04         | 1    | 7 · `profitability-engine`       |
 | `financial-dashboard`   | HU-04 | RF-05         | 1    | 8 · `financial-dashboard`        |

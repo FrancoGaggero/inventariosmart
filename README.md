@@ -28,6 +28,10 @@ pnpm dev
   Rutas de HU-01: `GET/POST /products`, `GET/PATCH/DELETE /products/:id` (búsqueda `q`, filtro `estado`, `activo`).
   Rutas de HU-10: `GET/POST /movements`, `GET /movements/:id`, `POST /movements/:id/anular` (filtros `productoId`, `tipo`, `desde`, `hasta`).
   `POST /movements` acepta la cabecera `Idempotency-Key`: repetir la clave devuelve 200 con el movimiento ya registrado.
+  Rutas de HU-02: `GET/POST /suppliers`, `GET/PATCH/DELETE /suppliers/:id`, `GET/POST /suppliers/:id/prices`,
+  `POST /suppliers/:id/price-list/preview` (multipart `archivo`: `.xlsx` o `.csv`, 2 MB, 5.000 filas) y
+  `POST /suppliers/:id/price-list`; `GET /products/:id/prices` (historial de costos). Planilla de ejemplo:
+  `apps/web/public/plantillas/lista-de-precios.csv` (columnas `codigo;costo`, costo neto sin IVA).
   Convención de listados: paginación por cursor, respuesta `{ items, siguienteCursor }`; `siguienteCursor` null en la última página.
 - Web: http://localhost:5173
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
