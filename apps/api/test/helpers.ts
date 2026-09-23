@@ -103,3 +103,20 @@ export async function comoPropietaria<T>(fn: (owner: PrismaClient) => Promise<T>
     await owner.$disconnect();
   }
 }
+
+/**
+ * Serializa las pruebas de carga entre suites (Jest las corre en paralelo): un advisory lock
+ * global mientras dura `fn`, así dos cargas de 50.000 movimientos no compiten por el mismo
+ * Postgres de CI y la medición de RNF-04 es fiel.
+ */
+export async function conCargaExclusiva<T>(fn: () => Promise<T>): Promise<T> {
+  return comoPropietaria((owner) =>
+    owner.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(424242)`;
+        return fn();
+      },
+      { maxWait: 600_000, timeout: 600_000 },
+    ),
+  );
+}

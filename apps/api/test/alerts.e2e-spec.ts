@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { LogMailer, Mailer } from '../src/alerts/mailer';
-import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
+import { type AppDePrueba, conCargaExclusiva, crearAppDePrueba, persona } from './helpers';
 
 const DIA = 24 * 60 * 60 * 1000;
 const haceDias = (n: number) => new Date(Date.now() - n * DIA).toISOString();
@@ -415,55 +415,57 @@ describe('restock-alerts: alertas predictivas de reposición (e2e)', () => {
   });
 
   it('CP-06.7 carga sintética: recálculo de 5.000 productos y 50.000 movimientos en menos de 3 s', async () => {
-    const duenioP = persona('duenio-perf');
-    const meP = (await t.http().get('/api/v1/me').set(auth(duenioP)).expect(200)).body;
-    const comercioP: string = meP.comercio.id;
-    await t.prisma.comoSistema((tx) =>
-      tx.comercio.update({ where: { id: comercioP }, data: { plan: 'PRO' } }),
-    );
-    const productos = Array.from({ length: 5000 }, (_, i) => ({
-      id: randomUUID(),
-      comercioId: comercioP,
-      codigo: `PERF-${i}`,
-      codigoNormalizado: `PERF-${i}`,
-      nombre: `Producto de carga ${String(i).padStart(4, '0')}`,
-      precioVenta: 121,
-      alicuotaIva: 21,
-      costoReposicion: 70,
-      stockActual: i % 3 === 0 ? 2 : 100,
-      stockSeguridad: 1,
-    }));
-    await t.prisma.comoSistema((tx) => tx.producto.createMany({ data: productos }));
-    const LOTE = 5000;
-    for (let lote = 0; lote < 50000 / LOTE; lote += 1) {
-      const movimientos = Array.from({ length: LOTE }, (_, j) => {
-        const n = lote * LOTE + j;
-        return {
-          comercioId: comercioP,
-          productoId: productos[n % productos.length]!.id,
-          usuarioId: meP.usuario.id as string,
-          tipo: 'VENTA' as const,
-          cantidad: 1,
-          efectoStock: -1,
-          stockResultante: 99,
-          precioUnitario: 121,
-          fecha: new Date(Date.now() - (n % 28) * DIA),
-        };
-      });
-      await t.prisma.comoSistema((tx) => tx.movimiento.createMany({ data: movimientos }));
-    }
+    await conCargaExclusiva(async () => {
+      const duenioP = persona('duenio-perf');
+      const meP = (await t.http().get('/api/v1/me').set(auth(duenioP)).expect(200)).body;
+      const comercioP: string = meP.comercio.id;
+      await t.prisma.comoSistema((tx) =>
+        tx.comercio.update({ where: { id: comercioP }, data: { plan: 'PRO' } }),
+      );
+      const productos = Array.from({ length: 5000 }, (_, i) => ({
+        id: randomUUID(),
+        comercioId: comercioP,
+        codigo: `PERF-${i}`,
+        codigoNormalizado: `PERF-${i}`,
+        nombre: `Producto de carga ${String(i).padStart(4, '0')}`,
+        precioVenta: 121,
+        alicuotaIva: 21,
+        costoReposicion: 70,
+        stockActual: i % 3 === 0 ? 2 : 100,
+        stockSeguridad: 1,
+      }));
+      await t.prisma.comoSistema((tx) => tx.producto.createMany({ data: productos }));
+      const LOTE = 5000;
+      for (let lote = 0; lote < 50000 / LOTE; lote += 1) {
+        const movimientos = Array.from({ length: LOTE }, (_, j) => {
+          const n = lote * LOTE + j;
+          return {
+            comercioId: comercioP,
+            productoId: productos[n % productos.length]!.id,
+            usuarioId: meP.usuario.id as string,
+            tipo: 'VENTA' as const,
+            cantidad: 1,
+            efectoStock: -1,
+            stockResultante: 99,
+            precioUnitario: 121,
+            fecha: new Date(Date.now() - (n % 28) * DIA),
+          };
+        });
+        await t.prisma.comoSistema((tx) => tx.movimiento.createMany({ data: movimientos }));
+      }
 
-    const primero = await recalcular(duenioP).expect(200); // calentamiento, como CP-04.3
-    expect(primero.body.creadas).toBeGreaterThan(1000);
-    const inicio = Date.now();
-    const res = await recalcular(duenioP).expect(200);
-    const ms = Date.now() - inicio;
-    expect(res.body).toMatchObject({
-      creadas: 0,
-      actualizadas: primero.body.creadas,
-      resueltas: 0,
+      const primero = await recalcular(duenioP).expect(200); // calentamiento, como CP-04.3
+      expect(primero.body.creadas).toBeGreaterThan(1000);
+      const inicio = Date.now();
+      const res = await recalcular(duenioP).expect(200);
+      const ms = Date.now() - inicio;
+      expect(res.body).toMatchObject({
+        creadas: 0,
+        actualizadas: primero.body.creadas,
+        resueltas: 0,
+      });
+      expect(ms).toBeLessThan(3000);
+      expect((await resumen(duenioP).expect(200)).body.activas).toBe(primero.body.creadas);
     });
-    expect(ms).toBeLessThan(3000);
-    expect((await resumen(duenioP).expect(200)).body.activas).toBe(primero.body.creadas);
   }, 600_000);
 });

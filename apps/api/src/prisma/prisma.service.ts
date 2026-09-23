@@ -50,10 +50,14 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
 
   async comoSistema<T>(fn: (tx: TransaccionRaw) => Promise<T>): Promise<T> {
-    return this.raw.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT set_config('app.rol_sistema', 'provisioning', true)`;
-      return fn(tx);
-    });
+    // Los jobs (recálculo de alertas por comercio) y las cargas de prueba superan el default de 5 s.
+    return this.raw.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.rol_sistema', 'provisioning', true)`;
+        return fn(tx);
+      },
+      { maxWait: 15_000, timeout: 60_000 },
+    );
   }
 
   /**

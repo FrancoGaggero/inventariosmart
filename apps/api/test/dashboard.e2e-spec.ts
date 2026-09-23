@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
+import { type AppDePrueba, conCargaExclusiva, crearAppDePrueba, persona } from './helpers';
 
 describe('financial-dashboard: panel financiero (e2e)', () => {
   let t: AppDePrueba;
@@ -296,48 +296,50 @@ describe('financial-dashboard: panel financiero (e2e)', () => {
   });
 
   it('CP-04.3 carga sintética: 5.000 productos y 50.000 movimientos en menos de 3 s', async () => {
-    const productos = Array.from({ length: 5000 }, (_, i) => ({
-      id: randomUUID(),
-      comercioId: comercioC,
-      codigo: `PERF-${i}`,
-      codigoNormalizado: `PERF-${i}`,
-      nombre: `Producto de carga ${String(i).padStart(4, '0')}`,
-      precioVenta: 121,
-      alicuotaIva: 21,
-      costoReposicion: 70,
-      stockActual: 100,
-      stockSeguridad: 10,
-    }));
-    await t.prisma.comoSistema(async (tx) => {
-      await tx.producto.createMany({ data: productos });
-    });
-    const LOTE = 5000;
-    for (let lote = 0; lote < 50000 / LOTE; lote += 1) {
-      const movimientos = Array.from({ length: LOTE }, (_, j) => {
-        const n = lote * LOTE + j;
-        const dia = (n % 28) + 1;
-        return {
-          comercioId: comercioC,
-          productoId: productos[n % productos.length]!.id,
-          usuarioId: usuarioC,
-          tipo: 'VENTA' as const,
-          cantidad: 1,
-          efectoStock: -1,
-          stockResultante: 99,
-          precioUnitario: 121,
-          fecha: new Date(`${MES}-${String(dia).padStart(2, '0')}T12:00:00-03:00`),
-        };
+    await conCargaExclusiva(async () => {
+      const productos = Array.from({ length: 5000 }, (_, i) => ({
+        id: randomUUID(),
+        comercioId: comercioC,
+        codigo: `PERF-${i}`,
+        codigoNormalizado: `PERF-${i}`,
+        nombre: `Producto de carga ${String(i).padStart(4, '0')}`,
+        precioVenta: 121,
+        alicuotaIva: 21,
+        costoReposicion: 70,
+        stockActual: 100,
+        stockSeguridad: 10,
+      }));
+      await t.prisma.comoSistema(async (tx) => {
+        await tx.producto.createMany({ data: productos });
       });
-      await t.prisma.comoSistema((tx) => tx.movimiento.createMany({ data: movimientos }));
-    }
+      const LOTE = 5000;
+      for (let lote = 0; lote < 50000 / LOTE; lote += 1) {
+        const movimientos = Array.from({ length: LOTE }, (_, j) => {
+          const n = lote * LOTE + j;
+          const dia = (n % 28) + 1;
+          return {
+            comercioId: comercioC,
+            productoId: productos[n % productos.length]!.id,
+            usuarioId: usuarioC,
+            tipo: 'VENTA' as const,
+            cantidad: 1,
+            efectoStock: -1,
+            stockResultante: 99,
+            precioUnitario: 121,
+            fecha: new Date(`${MES}-${String(dia).padStart(2, '0')}T12:00:00-03:00`),
+          };
+        });
+        await t.prisma.comoSistema((tx) => tx.movimiento.createMany({ data: movimientos }));
+      }
 
-    await panel(MES, duenioC).expect(200); // calentamiento
-    const inicio = Date.now();
-    const res = await panel(MES, duenioC).expect(200);
-    const ms = Date.now() - inicio;
-    expect(res.body.stock.productosActivos).toBe(5000);
-    expect(res.body.ventas.unidadesVendidas).toBe(50000);
-    expect(res.body.topRentables).toHaveLength(5);
-    expect(ms).toBeLessThan(3000);
+      await panel(MES, duenioC).expect(200); // calentamiento
+      const inicio = Date.now();
+      const res = await panel(MES, duenioC).expect(200);
+      const ms = Date.now() - inicio;
+      expect(res.body.stock.productosActivos).toBe(5000);
+      expect(res.body.ventas.unidadesVendidas).toBe(50000);
+      expect(res.body.topRentables).toHaveLength(5);
+      expect(ms).toBeLessThan(3000);
+    });
   }, 600_000);
 });
