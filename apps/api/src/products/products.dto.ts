@@ -43,6 +43,12 @@ export class ProductoDto {
   @ApiProperty({ example: 10 })
   stockSeguridad!: number;
 
+  @ApiProperty({
+    example: 3,
+    description: 'Días de anticipación de la alerta de reposición (HU-06)',
+  })
+  diasAnticipacionAlerta!: number;
+
   @ApiProperty({ enum: ESTADOS_STOCK })
   estadoStock!: 'SIN_STOCK' | 'BAJO' | 'OK';
 
@@ -99,6 +105,14 @@ export class ProductoCreateBodyDto {
 
   @ApiPropertyOptional({ minimum: 0, default: 0 })
   stockSeguridad?: number;
+
+  @ApiPropertyOptional({
+    minimum: 0,
+    maximum: 90,
+    default: 3,
+    description: 'Días de anticipación de la alerta de reposición',
+  })
+  diasAnticipacionAlerta?: number;
 }
 
 export class ProductoPatchBodyDto {
@@ -122,6 +136,9 @@ export class ProductoPatchBodyDto {
 
   @ApiPropertyOptional({ minimum: 0 })
   stockSeguridad?: number;
+
+  @ApiPropertyOptional({ minimum: 0, maximum: 90 })
+  diasAnticipacionAlerta?: number;
 
   @ApiPropertyOptional({
     nullable: true,

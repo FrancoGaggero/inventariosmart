@@ -462,6 +462,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Alertas de reposición (HU-06)
+         * @description Paginado por cursor, ordenado por días de cobertura. Si el último cálculo tiene más de una hora, recalcula antes de responder.
+         */
+        get: operations["AlertsController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resumen: activas, críticas, pospuestas y fecha del último cálculo */
+        get: operations["AlertsController_resumen"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/recalculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Recalcular ahora las alertas del comercio (RN-04) */
+        post: operations["AlertsController_recalcular"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/alerts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de una alerta */
+        get: operations["AlertsController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Atender (ya se pidió) o posponer 7 días una alerta abierta */
+        patch: operations["AlertsController_accionar"];
+        trace?: never;
+    };
     "/api/v1/import/preview": {
         parameters: {
             query?: never;
@@ -636,6 +708,11 @@ export interface components {
             stockActual: number;
             /** @example 10 */
             stockSeguridad: number;
+            /**
+             * @description Días de anticipación de la alerta de reposición (HU-06)
+             * @example 3
+             */
+            diasAnticipacionAlerta: number;
             /** @enum {string} */
             estadoStock: "SIN_STOCK" | "BAJO" | "OK";
             /** @description Proveedor cuya última lista fija el costo vigente (RN-08, HU-02) */
@@ -716,6 +793,11 @@ export interface components {
             stockInicial: number;
             /** @default 0 */
             stockSeguridad: number;
+            /**
+             * @description Días de anticipación de la alerta de reposición
+             * @default 3
+             */
+            diasAnticipacionAlerta: number;
         };
         ProductoPatchBodyDto: {
             codigo?: string;
@@ -727,6 +809,7 @@ export interface components {
             /** @example 2400.00 */
             costoReposicion?: string;
             stockSeguridad?: number;
+            diasAnticipacionAlerta?: number;
             /**
              * Format: uuid
              * @description Proveedor principal; null lo quita. Al cambiarlo, el costo pasa al último de ese proveedor (RN-08)
@@ -1295,11 +1378,34 @@ export interface components {
             /** @description Hasta 5, por nombre */
             items: components["schemas"]["AlertaStockDto"][];
         };
+        ReposicionItemDto: {
+            /** Format: uuid */
+            id: string;
+            producto: components["schemas"]["ProductoDashboardDto"];
+            /** @enum {string} */
+            severidad: "PROXIMA" | "CRITICA";
+            /** @example 18 */
+            stock: number;
+            /** @example 9 */
+            diasCobertura: number | null;
+            /** @example 56 */
+            cantidadSugerida: number;
+        };
+        ReposicionDashboardDto: {
+            /** @example 3 */
+            total: number;
+            /** @example 1 */
+            criticas: number;
+            /** @description Hasta 5, por días de cobertura */
+            items: components["schemas"]["ReposicionItemDto"][];
+        };
         AlertasDashboardDto: {
             sinStock: components["schemas"]["GrupoAlertasDto"];
             stockBajo: components["schemas"]["GrupoAlertasDto"];
             /** @description El margen neto no se puede calcular por falta de gastos del mes */
             faltanGastos: boolean;
+            /** @description Alertas de reposición activas (HU-06); null si el plan no las incluye */
+            reposicion: components["schemas"]["ReposicionDashboardDto"] | null;
         };
         DashboardDto: {
             /** @example 2026-09 */
@@ -1309,6 +1415,96 @@ export interface components {
             mesAnterior: components["schemas"]["MesAnteriorDashboardDto"];
             topRentables: components["schemas"]["TopRentableDto"][];
             alertas: components["schemas"]["AlertasDashboardDto"];
+        };
+        ProductoAlertaDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+            /** @example 18 */
+            stockActual: number;
+            /** @example 4 */
+            stockSeguridad: number;
+            /** @enum {string} */
+            estadoStock: "SIN_STOCK" | "BAJO" | "OK";
+        };
+        ProveedorAlertaDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Distribuidora Norte */
+            nombre: string;
+            /** @example 5 */
+            leadTimeDias: number;
+        };
+        AlertaDto: {
+            /** Format: uuid */
+            id: string;
+            producto: components["schemas"]["ProductoAlertaDto"];
+            proveedor: components["schemas"]["ProveedorAlertaDto"] | null;
+            /** @enum {string} */
+            estado: "ACTIVA" | "POSPUESTA" | "ATENDIDA" | "RESUELTA";
+            /** @enum {string} */
+            severidad: "PROXIMA" | "CRITICA";
+            /**
+             * @description Stock al momento del último cálculo
+             * @example 18
+             */
+            stock: number;
+            /**
+             * @description Unidades por día (RN-04)
+             * @example 2.000
+             */
+            velocidadDiaria: string;
+            /** @example 9 */
+            diasCobertura: number | null;
+            /** @example 14 */
+            puntoReposicion: number;
+            /** @example 20 */
+            umbral: number;
+            /** @example 5 */
+            leadTimeDias: number;
+            /** @example 3 */
+            diasAnticipacion: number;
+            /** @example 56 */
+            cantidadSugerida: number;
+            generadaEn: string;
+            actualizadaEn: string;
+            pospuestaHasta: string | null;
+            atendidaEn: string | null;
+            resueltaEn: string | null;
+            notificadaEn: string | null;
+        };
+        ListaAlertasDto: {
+            items: components["schemas"]["AlertaDto"][];
+            siguienteCursor: string | null;
+        };
+        ResumenAlertasDto: {
+            /** @example 3 */
+            activas: number;
+            /** @example 1 */
+            criticas: number;
+            /** @example 0 */
+            pospuestas: number;
+            /** @description Último recálculo; null si nunca corrió */
+            calculadasEn: string | null;
+        };
+        ResultadoRecalculoDto: {
+            /** @example 2 */
+            creadas: number;
+            /** @example 5 */
+            actualizadas: number;
+            /** @example 1 */
+            resueltas: number;
+            calculadasEn: string;
+        };
+        AlertaAccionBodyDto: {
+            /**
+             * @description ATENDER: ya se pidió; POSPONER: 7 días
+             * @enum {string}
+             */
+            accion: "ATENDER" | "POSPONER";
         };
         ArchivoProductosDto: {
             /**
@@ -3228,6 +3424,277 @@ export interface operations {
             };
             /** @description EMPLEADO sin acceso (Propuesta §2.4) */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AlertsController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+                estado?: "ACTIVA" | "POSPUESTA" | "ATENDIDA" | "RESUELTA" | "TODAS";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaAlertasDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AlertsController_resumen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumenAlertasDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AlertsController_recalcular: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoRecalculoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AlertsController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AlertsController_accionar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertaAccionBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertaDto"];
+                };
+            };
+            /** @description Acción desconocida (VALIDACION) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La alerta ya está cerrada (CONFLICTO) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MOTIVOS_RESUMEN } from '@inventariosmart/shared';
+import { MOTIVOS_RESUMEN, SEVERIDADES_ALERTA } from '@inventariosmart/shared';
 
 export class StockDashboardDto {
   @ApiProperty({ example: 120 }) productosActivos!: number;
@@ -65,11 +65,37 @@ export class GrupoAlertasDto {
   items!: AlertaStockDto[];
 }
 
+export class ReposicionItemDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ type: ProductoDashboardDto }) producto!: ProductoDashboardDto;
+  @ApiProperty({ enum: SEVERIDADES_ALERTA }) severidad!: (typeof SEVERIDADES_ALERTA)[number];
+  @ApiProperty({ example: 18 }) stock!: number;
+  @ApiProperty({ nullable: true, type: Number, example: 9 }) diasCobertura!: number | null;
+  @ApiProperty({ example: 56 }) cantidadSugerida!: number;
+}
+
+export class ReposicionDashboardDto {
+  @ApiProperty({ example: 3 }) total!: number;
+  @ApiProperty({ example: 1 }) criticas!: number;
+  @ApiProperty({
+    type: ReposicionItemDto,
+    isArray: true,
+    description: 'Hasta 5, por días de cobertura',
+  })
+  items!: ReposicionItemDto[];
+}
+
 export class AlertasDashboardDto {
   @ApiProperty({ type: GrupoAlertasDto }) sinStock!: GrupoAlertasDto;
   @ApiProperty({ type: GrupoAlertasDto }) stockBajo!: GrupoAlertasDto;
   @ApiProperty({ description: 'El margen neto no se puede calcular por falta de gastos del mes' })
   faltanGastos!: boolean;
+  @ApiProperty({
+    type: ReposicionDashboardDto,
+    nullable: true,
+    description: 'Alertas de reposición activas (HU-06); null si el plan no las incluye',
+  })
+  reposicion!: ReposicionDashboardDto | null;
 }
 
 export class DashboardDto {

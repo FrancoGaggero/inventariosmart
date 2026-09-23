@@ -32,6 +32,7 @@ interface FilaProducto {
   costoReposicion: string;
   stockActual: number;
   stockSeguridad: number;
+  diasAnticipacionAlerta: number;
   activo: boolean;
   creadoEn: Date;
   actualizadoEn: Date;
@@ -67,6 +68,7 @@ export function aProducto(p: Origen, proveedor?: ProveedorResumen): Producto {
     costoReposicion: Number(p.costoReposicion).toFixed(2),
     stockActual: p.stockActual,
     stockSeguridad: p.stockSeguridad,
+    diasAnticipacionAlerta: p.diasAnticipacionAlerta,
     estadoStock: calcularEstadoStock(p.stockActual, p.stockSeguridad),
     proveedorPrincipal: proveedorDe(p, proveedor),
     activo: p.activo,
@@ -99,6 +101,7 @@ const COLUMNAS = Prisma.sql`
   p.costo_reposicion::text AS "costoReposicion",
   p.stock_actual AS "stockActual",
   p.stock_seguridad AS "stockSeguridad",
+  p.dias_anticipacion_alerta AS "diasAnticipacionAlerta",
   p.activo, p.creado_en AS "creadoEn", p.actualizado_en AS "actualizadoEn",
   p.proveedor_principal_id AS "proveedorPrincipalId",
   pr.nombre AS "proveedorPrincipalNombre"`;
@@ -196,6 +199,7 @@ export class ProductsService {
           costoReposicion: dto.costoReposicion,
           stockActual: 0,
           stockSeguridad: dto.stockSeguridad,
+          diasAnticipacionAlerta: dto.diasAnticipacionAlerta,
         },
       });
       if (dto.stockInicial > 0) {
@@ -232,6 +236,9 @@ export class ProductsService {
       if (patch.precioVenta !== undefined) data.precioVenta = patch.precioVenta;
       if (patch.alicuotaIva !== undefined) data.alicuotaIva = patch.alicuotaIva;
       if (patch.stockSeguridad !== undefined) data.stockSeguridad = patch.stockSeguridad;
+      if (patch.diasAnticipacionAlerta !== undefined) {
+        data.diasAnticipacionAlerta = patch.diasAnticipacionAlerta;
+      }
       if (patch.activo !== undefined) {
         if (patch.activo && !actual.activo) {
           const { plan } = await this.bloquearComercio(tx, comercioId);

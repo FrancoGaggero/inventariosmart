@@ -1,6 +1,7 @@
 import {
   ArrowLeftRight,
   BarChart3,
+  BellRing,
   Home,
   LogOut,
   Package,
@@ -11,6 +12,8 @@ import {
   Users,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
+import { planCumple } from '@inventariosmart/shared';
+import { useResumenAlertas } from '@/lib/alertas';
 import { useAuth } from '@/lib/auth';
 import { NOMBRE_ROL, useMe } from '@/lib/me';
 
@@ -22,6 +25,11 @@ export function AppShell() {
   const esDuenio = rol === 'DUENIO';
   const veInventario = rol === 'DUENIO' || rol === 'EMPLEADO';
   const veGastos = rol === 'DUENIO' || rol === 'CONTADOR';
+  // Contador de alertas de reposición (HU-06): sólo con plan PRO y para quienes las ven.
+  const veAlertas = veGastos;
+  const conAlertas = veAlertas && !!me.data && planCumple(me.data.plan, 'PRO');
+  const alertas = useResumenAlertas(conAlertas);
+  const activas = conAlertas ? (alertas.data?.activas ?? 0) : 0;
 
   const enlace = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
@@ -64,6 +72,20 @@ export function AppShell() {
               <NavLink to="/gastos" className={enlace}>
                 <Receipt className="w-4 h-4" aria-hidden />
                 Gastos
+              </NavLink>
+            )}
+            {veAlertas && (
+              <NavLink to="/alertas" className={enlace}>
+                <BellRing className="w-4 h-4" aria-hidden />
+                Alertas
+                {activas > 0 && (
+                  <span
+                    className="ml-1 min-w-5 px-1.5 py-0.5 rounded-full bg-warn/20 text-warn text-[11px] font-bold text-center tabular-nums"
+                    aria-label={`${activas} alertas activas`}
+                  >
+                    {activas}
+                  </span>
+                )}
               </NavLink>
             )}
             {esDuenio && (

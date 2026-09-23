@@ -33,6 +33,12 @@ pnpm dev
   Plantilla: `apps/web/public/plantillas/productos.csv`.
   Ruta de HU-04: `GET /dashboard?periodo` (panel del mes: stock, ventas y márgenes, mes anterior, top rentables y
   alertas; la web lo consulta cada 60 s).
+  Rutas de HU-06 (plan PRO): `GET /alerts?estado&cursor&limit`, `GET /alerts/summary`, `POST /alerts/recalculate`,
+  `PATCH /alerts/:id` (`{ accion: ATENDER | POSPONER }`); alertas predictivas de reposición (RN-04: velocidad de venta de
+  30 días × lead time del proveedor principal + stock de seguridad, con `diasAnticipacionAlerta` por producto). Se
+  recalculan a las 07:00 de Buenos Aires, al leer si el último cálculo tiene más de una hora, y a pedido; el panel suma
+  `alertas.reposicion` (null en plan FREE). Correo de resumen a los dueños con Resend (`RESEND_API_KEY`); sin la key,
+  el envío queda en el log. Cambiar el plan de un comercio: ver `docs/runbooks/deploy.md`.
   Rutas de HU-03: `GET /profitability/products?periodo&q` y `GET /profitability/summary?periodo` (márgenes bruto y
   neto sobre importes netos de IVA; nada se almacena).
   Rutas de HU-13: `GET/POST /expenses`, `GET/PATCH/DELETE /expenses/:id`, `GET /expenses/summary` (todas con
@@ -59,11 +65,11 @@ pnpm dev
 
 ## Variables de entorno
 
-| Archivo         | Variables                                                                                                   | Origen                                          |
-| --------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| `apps/api/.env` | `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (base64), `CORS_ORIGINS`, `PORT`, `LOG_LEVEL` | Neon / Firebase → Cuentas de servicio           |
-| `apps/web/.env` | `VITE_API_URL`, `VITE_FIREBASE_*`                                                                           | Firebase → Configuración del proyecto → app web |
-| `apps/mobile`   | `android/app/google-services.json` (ignorado por git); `--dart-define=API_URL`                              | Firebase → app Android                          |
+| Archivo         | Variables                                                                                                                                                                            | Origen                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `apps/api/.env` | `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (base64), `CORS_ORIGINS`, `PORT`, `LOG_LEVEL`; opcionales `RESEND_API_KEY`, `MAIL_FROM`, `WEB_URL` (correo de alertas) | Neon / Firebase → Cuentas de servicio / Resend → API keys |
+| `apps/web/.env` | `VITE_API_URL`, `VITE_FIREBASE_*`                                                                                                                                                    | Firebase → Configuración del proyecto → app web           |
+| `apps/mobile`   | `android/app/google-services.json` (ignorado por git); `--dart-define=API_URL`                                                                                                       | Firebase → app Android                                    |
 
 Los valores reales viven fuera del repositorio (carpeta de secretos del desarrollador, panel de Render y de Vercel). Ningún `.env` se commitea.
 

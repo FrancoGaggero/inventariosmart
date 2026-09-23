@@ -221,6 +221,43 @@ describe('product-catalog: catálogo de productos (e2e)', () => {
     expect(res.body.code).toBe('SIN_PERMISO');
   });
 
+  it('CP-01.4e días de anticipación de la alerta: default 3, editable, 0 a 90', async () => {
+    const inicial = await t
+      .http()
+      .get(`/api/v1/products/${filtroId}`)
+      .set(auth(duenioA))
+      .expect(200);
+    expect(inicial.body.diasAnticipacionAlerta).toBe(3);
+    const ok = await t
+      .http()
+      .patch(`/api/v1/products/${filtroId}`)
+      .set(auth(duenioA))
+      .send({ diasAnticipacionAlerta: 10 })
+      .expect(200);
+    expect(ok.body.diasAnticipacionAlerta).toBe(10);
+    const mal = await t
+      .http()
+      .patch(`/api/v1/products/${filtroId}`)
+      .set(auth(duenioA))
+      .send({ diasAnticipacionAlerta: 120 })
+      .expect(400);
+    expect(mal.body.code).toBe('VALIDACION');
+    expect(mal.body.details.diasAnticipacionAlerta).toBeDefined();
+    await t
+      .http()
+      .patch(`/api/v1/products/${filtroId}`)
+      .set(auth(duenioA))
+      .send({ diasAnticipacionAlerta: -1 })
+      .expect(400);
+    const alta = await t
+      .http()
+      .post('/api/v1/products')
+      .set(auth(duenioA))
+      .send({ ...base, codigo: 'ANT-5', nombre: 'Con anticipación', diasAnticipacionAlerta: 5 })
+      .expect(201);
+    expect(alta.body.diasAnticipacionAlerta).toBe(5);
+  });
+
   it('CP-01.4c la empleada no crea, edita ni da de baja', async () => {
     await t
       .http()

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ReposicionDashboardSchema } from './alertas';
 import { MesSchema, MotivoResumenSchema } from './gastos';
 import { porcentaje } from './rentabilidad';
 
@@ -67,6 +68,8 @@ export const AlertasDashboardSchema = z.object({
   stockBajo: z.object({ total: z.number().int(), items: z.array(AlertaStockSchema) }),
   /** true cuando el margen neto no se puede calcular por falta de gastos del mes. */
   faltanGastos: z.boolean(),
+  /** Alertas de reposición activas (HU-06); null si el plan no las incluye. */
+  reposicion: ReposicionDashboardSchema,
 });
 
 /** Respuesta de GET /api/v1/dashboard. */

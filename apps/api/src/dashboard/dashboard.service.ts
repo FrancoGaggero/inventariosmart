@@ -8,6 +8,7 @@ import {
   type Dashboard,
   type Mes,
 } from '@inventariosmart/shared';
+import { AlertsService } from '../alerts/alerts.service';
 import { TenantContext } from '../auth/tenant-context';
 import { ProfitabilityService } from '../profitability/profitability.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -28,6 +29,7 @@ const TOP_MAX = 5;
 export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly alerts: AlertsService,
     private readonly profitability: ProfitabilityService,
   ) {}
 
@@ -36,12 +38,13 @@ export class DashboardService {
     const mes = periodo ?? this.mesActualBuenosAires();
     const anterior = sumarMeses(mes, -1);
 
-    const [ventas, previo, stock, topRentables, alertas] = await Promise.all([
+    const [ventas, previo, stock, topRentables, alertas, reposicion] = await Promise.all([
       this.profitability.resumen(mes),
       this.profitability.resumen(anterior),
       this.stock(comercioId),
       this.profitability.topDelMes(mes, TOP_MAX),
       this.alertas(),
+      this.alerts.reposicionParaPanel(),
     ]);
 
     return {
@@ -65,7 +68,7 @@ export class DashboardService {
         variacionVentasPct: variacionPct(ventas.ventasNetas, previo.ventasNetas),
       },
       topRentables,
-      alertas: { ...alertas, faltanGastos: ventas.motivo === 'SIN_GASTOS' },
+      alertas: { ...alertas, faltanGastos: ventas.motivo === 'SIN_GASTOS', reposicion },
     };
   }
 
@@ -90,7 +93,7 @@ export class DashboardService {
     };
   }
 
-  private async alertas(): Promise<Omit<Dashboard['alertas'], 'faltanGastos'>> {
+  private async alertas(): Promise<Omit<Dashboard['alertas'], 'faltanGastos' | 'reposicion'>> {
     const select = {
       id: true,
       codigo: true,

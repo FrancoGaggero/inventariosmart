@@ -6,6 +6,7 @@ import type {
 } from '@inventariosmart/shared';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
+import { ALERTAS_KEY } from './alertas';
 import { api, desenvolver } from './api';
 import { DASHBOARD_KEY } from './dashboard';
 import { PRODUCTOS_KEY } from './productos';
@@ -63,6 +64,8 @@ function useInvalidarStock() {
       qc.invalidateQueries({ queryKey: MOVIMIENTOS_KEY }),
       qc.invalidateQueries({ queryKey: PRODUCTOS_KEY }),
       qc.invalidateQueries({ queryKey: DASHBOARD_KEY }),
+      // Una venta o un ingreso puede crear o resolver alertas de reposición (HU-06).
+      qc.invalidateQueries({ queryKey: ALERTAS_KEY }),
     ]);
 }
 

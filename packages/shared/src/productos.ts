@@ -84,6 +84,8 @@ export const ProductoSchema = z.object({
   costoReposicion: z.string().optional(),
   stockActual: z.number().int(),
   stockSeguridad: z.number().int(),
+  /** Días de anticipación de la alerta de reposición (HU-06 criterio 4). */
+  diasAnticipacionAlerta: z.number().int(),
   estadoStock: EstadoStockSchema,
   /** Proveedor cuya última lista fija el costo vigente (RN-08, HU-02). */
   proveedorPrincipal: z.object({ id: z.uuid(), nombre: z.string() }).nullable(),
@@ -96,6 +98,13 @@ export type Producto = z.infer<typeof ProductoSchema>;
 export const ListaProductosSchema = listaPaginadaSchema(ProductoSchema);
 export type ListaProductos = z.infer<typeof ListaProductosSchema>;
 
+/** Días de anticipación de la alerta de reposición: 0 a 90 (HU-06 criterio 4). */
+export const DiasAnticipacionSchema = z
+  .number('Los días de anticipación deben ser un número entero.')
+  .int('Los días de anticipación deben ser un número entero.')
+  .min(0, 'Los días de anticipación no pueden ser negativos.')
+  .max(90, 'Los días de anticipación no pueden superar 90.');
+
 /** Cuerpo de POST /api/v1/products. */
 export const ProductoCreateSchema = z.object({
   codigo: CodigoProductoSchema,
@@ -107,6 +116,7 @@ export const ProductoCreateSchema = z.object({
   costoReposicion: MontoSchema,
   stockInicial: enteroNoNegativo('El stock inicial').default(0),
   stockSeguridad: enteroNoNegativo('El stock de seguridad').default(0),
+  diasAnticipacionAlerta: DiasAnticipacionSchema.default(3),
 });
 export type ProductoCreate = z.infer<typeof ProductoCreateSchema>;
 
@@ -123,6 +133,7 @@ export const ProductoPatchSchema = z
     alicuotaIva: AlicuotaSchema.optional(),
     costoReposicion: MontoSchema.optional(),
     stockSeguridad: enteroNoNegativo('El stock de seguridad').optional(),
+    diasAnticipacionAlerta: DiasAnticipacionSchema.optional(),
     /** null quita el proveedor principal; el costo vigente no cambia. */
     proveedorPrincipalId: z.uuid('Elegí un proveedor válido.').nullable().optional(),
     activo: z.boolean().optional(),

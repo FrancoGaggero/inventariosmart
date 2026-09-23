@@ -156,3 +156,4 @@ export * from './gastos';
 export * from './rentabilidad';
 export * from './dashboard';
 export * from './importacion';
+export * from './alertas';

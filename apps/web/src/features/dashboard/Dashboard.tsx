@@ -1,7 +1,8 @@
 import { ETIQUETA_MOTIVO_RESUMEN, mesActual, type Mes } from '@inventariosmart/shared';
-import { AlertTriangle, PackageX, TrendingUp } from 'lucide-react';
+import { AlertTriangle, PackageX, TrendingUp, BellRing } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { formatearCobertura } from '@/lib/alertas';
 import { mensajeDe } from '@/lib/api';
 import { useDashboard } from '@/lib/dashboard';
 import { formatearMes } from '@/lib/gastos';
@@ -231,6 +232,66 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
               {d?.alertas.faltanGastos && (
                 <li className="text-t2">
                   Faltan los gastos del mes: sin ellos no se calcula el margen neto.
+                </li>
+              )}
+            </ul>
+          )}
+        </article>
+
+        <article className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold flex items-center gap-2">
+              <BellRing className="w-4 h-4 text-warn" aria-hidden />
+              Reposición
+            </h3>
+            {d?.alertas.reposicion && (
+              <Link to="/alertas" className="text-xs font-semibold text-brand-3 hover:underline">
+                Ver alertas
+              </Link>
+            )}
+          </div>
+          {!d ? null : d.alertas.reposicion === null ? (
+            <p className="text-sm text-t2">
+              Alertas predictivas de reposición: disponibles en el plan PRO. Calculan cuándo reponer
+              según tus ventas y el lead time de cada proveedor.
+            </p>
+          ) : d.alertas.reposicion.total === 0 ? (
+            <p className="text-sm text-ok">
+              Ningún producto se va a quedar sin stock antes de que llegue la reposición.
+            </p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {d.alertas.reposicion.items.map((a) => (
+                <li key={a.id} className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle
+                      className={`w-4 h-4 ${a.severidad === 'CRITICA' ? 'text-crit' : 'text-warn'}`}
+                      aria-hidden
+                    />
+                    <span>
+                      <b>{a.producto.nombre}</b>{' '}
+                      <span className="text-t2">
+                        {formatearCobertura(a.diasCobertura)} de stock · pedir {a.cantidadSugerida}
+                      </span>
+                    </span>
+                  </span>
+                  {puedeOperar && (
+                    <Link
+                      to={`/movimientos/nuevo?productoId=${a.producto.id}&tipo=INGRESO`}
+                      className="text-xs font-semibold text-brand-3 hover:underline whitespace-nowrap"
+                    >
+                      Ingresar
+                    </Link>
+                  )}
+                </li>
+              ))}
+              {d.alertas.reposicion.total > d.alertas.reposicion.items.length && (
+                <li className="text-xs text-t3">
+                  {d.alertas.reposicion.total} productos por reponer en total
+                  {d.alertas.reposicion.criticas > 0
+                    ? `, ${d.alertas.reposicion.criticas} críticos`
+                    : ''}
+                  .
                 </li>
               )}
             </ul>

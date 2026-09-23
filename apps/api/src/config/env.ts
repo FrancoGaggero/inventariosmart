@@ -20,6 +20,11 @@ export const envSchema = z.object({
         .filter(Boolean),
     ),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error']).default('info'),
+  /** Correo transaccional (HU-06). Sin API key, los envíos se registran en el log. */
+  RESEND_API_KEY: z.string().trim().optional(),
+  MAIL_FROM: z.string().trim().min(3).default('InventarioSmart <onboarding@resend.dev>'),
+  /** URL de la web publicada, para los enlaces de los correos. */
+  WEB_URL: z.string().url().default('https://inventariosmart0.vercel.app'),
 });
 
 export type Env = z.infer<typeof envSchema>;

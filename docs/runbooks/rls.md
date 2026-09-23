@@ -67,6 +67,14 @@ REVOKE UPDATE, DELETE ON "movimiento" FROM app_api;
 GRANT UPDATE ("anulado_por_id") ON "movimiento" TO app_api;  -- única columna que la API escribe
 ```
 
+Variante de `alerta` (HU-06): el historial de alertas no se borra pero sí cambia de estado, así que
+conserva `UPDATE` y sólo se revoca `DELETE`:
+
+```sql
+GRANT SELECT, INSERT, UPDATE ON "alerta" TO app_api;
+REVOKE DELETE ON "alerta" FROM app_api;
+```
+
 `precio_proveedor` (HU-02, ADR 0007) sigue el mismo esquema, sin columna actualizable. El test
 `rls.e2e-spec.ts` (CP-10.7c, CP-02.4c) verifica esos privilegios. Los tests limpian datos con la
 conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede

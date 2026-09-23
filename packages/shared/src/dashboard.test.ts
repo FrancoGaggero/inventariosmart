@@ -41,6 +41,7 @@ describe('HU-04 (dashboard)', () => {
         sinStock: { total: 0, items: [] },
         stockBajo: { total: 0, items: [] },
         faltanGastos: false,
+        reposicion: null,
       },
     });
     expect(r.success).toBe(true);

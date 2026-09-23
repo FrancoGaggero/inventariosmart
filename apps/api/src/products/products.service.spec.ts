@@ -33,6 +33,7 @@ describe('products.service (unitario)', () => {
       alicuotaIva: '21.00',
       costoReposicion: '2340.5',
       stockSeguridad: 10,
+      diasAnticipacionAlerta: 3,
       activo: true,
       creadoEn: new Date('2026-09-11T00:00:00Z'),
       actualizadoEn: new Date('2026-09-11T00:00:00Z'),

@@ -161,6 +161,8 @@ describe('financial-dashboard: panel financiero (e2e)', () => {
         ],
       },
       faltanGastos: false,
+      // Plan PRO sin productos en alerta de reposición todavía (HU-06).
+      reposicion: { total: 0, criticas: 0, items: [] },
     });
   });
 
@@ -252,6 +254,45 @@ describe('financial-dashboard: panel financiero (e2e)', () => {
     expect(
       res.body.topRentables.map((x: { producto: { codigo: string } }) => x.producto.codigo),
     ).toEqual(['A']);
+  });
+
+  it('CP-04.1e alertas de reposición en el panel (PRO) y null en FREE', async () => {
+    // Dos productos con ventas recientes que dejan el stock por debajo del umbral (RN-04):
+    // D cobertura 3 días, E cobertura 9 días.
+    const productoD = await crearProducto(duenioA, {
+      codigo: 'D',
+      nombre: 'Producto D',
+      precioVenta: 121,
+      costoReposicion: 100,
+      stockInicial: 33,
+    });
+    const productoE = await crearProducto(duenioA, {
+      codigo: 'E',
+      nombre: 'Producto E',
+      precioVenta: 121,
+      costoReposicion: 100,
+      stockInicial: 39,
+    });
+    const reciente = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    await venta(productoD, 30, reciente).expect(201);
+    await venta(productoE, 30, reciente).expect(201);
+    await t.http().post('/api/v1/alerts/recalculate').set(auth(duenioA)).expect(200);
+
+    const res = await panel(MES, duenioA).expect(200);
+    expect(res.body.alertas.reposicion).toMatchObject({ total: 2, criticas: 1 });
+    expect(
+      res.body.alertas.reposicion.items.map(
+        (i: { producto: { codigo: string } }) => i.producto.codigo,
+      ),
+    ).toEqual(['D', 'E']);
+    expect(res.body.alertas.reposicion.items[0]).toMatchObject({
+      severidad: 'CRITICA',
+      stock: 3,
+      diasCobertura: 3,
+      cantidadSugerida: 34,
+    });
+    const free = await panel(MES, duenioB).expect(200);
+    expect(free.body.alertas.reposicion).toBeNull();
   });
 
   it('CP-04.3 carga sintética: 5.000 productos y 50.000 movimientos en menos de 3 s', async () => {

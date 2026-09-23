@@ -14,6 +14,7 @@ const datos = {
   costoReposicion: '2400.00',
   stockInicial: 10,
   stockSeguridad: 5,
+  diasAnticipacionAlerta: 3,
   alicuotaIva: 21,
 };
 

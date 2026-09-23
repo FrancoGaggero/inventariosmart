@@ -41,6 +41,8 @@ model Comercio {
   moneda              String   @default("ARS") @db.Char(3)
   /// true hasta que el dueño confirma el nombre del comercio (POST /me/onboarding).
   onboardingPendiente Boolean  @default(true) @map("onboarding_pendiente")
+  /// Último recálculo de alertas de reposición (HU-06); null si nunca corrió.
+  alertasCalculadasEn DateTime? @map("alertas_calculadas_en") @db.Timestamptz(3)
   creadoEn            DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
   usuarios    Usuario[]
@@ -49,6 +51,7 @@ model Comercio {
   proveedores Proveedor[]
   precios     PrecioProveedor[]
   gastos      Gasto[]
+  alertas     Alerta[]
 
   @@map("comercio")
 }
@@ -71,6 +74,8 @@ model Producto {
   costoReposicion      Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
   stockActual          Int      @default(0) @map("stock_actual")
   stockSeguridad       Int      @default(0) @map("stock_seguridad")
+  /// Días de anticipación de la alerta de reposición, 0 a 90 (HU-06 criterio 4; CHECK en la migración).
+  diasAnticipacionAlerta Int    @default(3) @map("dias_anticipacion_alerta") @db.SmallInt
   /// Proveedor cuya última lista fija costoReposicion (RN-08, HU-02).
   proveedorPrincipalId String?  @map("proveedor_principal_id") @db.Uuid
   activo               Boolean  @default(true)
@@ -81,6 +86,8 @@ model Producto {
   movimientos        Movimiento[]
   proveedorPrincipal Proveedor?        @relation("ProveedorPrincipal", fields: [proveedorPrincipalId], references: [id], onDelete: SetNull)
   precios            PrecioProveedor[]
+
+  alertas            Alerta[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
@@ -277,4 +284,52 @@ model Movimiento {
   @@index([comercioId, fecha(sort: Desc), id(sort: Desc)])
   @@index([comercioId, productoId, fecha(sort: Desc), id(sort: Desc)])
   @@map("movimiento")
+}
+
+/// Alerta predictiva de reposición (HU-06, RN-04). A lo sumo una abierta por producto
+/// (índice único parcial en la migración). No se borra: se cierra con RESUELTA o ATENDIDA.
+model Alerta {
+  id               String          @id @default(uuid()) @db.Uuid
+  comercioId       String          @map("comercio_id") @db.Uuid
+  productoId       String          @map("producto_id") @db.Uuid
+  estado           EstadoAlerta    @default(ACTIVA)
+  severidad        SeveridadAlerta
+  /// Stock al momento del último cálculo.
+  stock            Int
+  velocidadDiaria  Decimal         @map("velocidad_diaria") @db.Decimal(10, 3)
+  diasCobertura    Int?            @map("dias_cobertura")
+  puntoReposicion  Int             @map("punto_reposicion")
+  umbral           Int
+  leadTimeDias     Int             @map("lead_time_dias")
+  diasAnticipacion Int             @map("dias_anticipacion")
+  cantidadSugerida Int             @map("cantidad_sugerida")
+  generadaEn       DateTime        @default(now()) @map("generada_en") @db.Timestamptz(3)
+  actualizadaEn    DateTime        @default(now()) @map("actualizada_en") @db.Timestamptz(3)
+  pospuestaHasta   DateTime?       @map("pospuesta_hasta") @db.Timestamptz(3)
+  atendidaEn       DateTime?       @map("atendida_en") @db.Timestamptz(3)
+  resueltaEn       DateTime?       @map("resuelta_en") @db.Timestamptz(3)
+  notificadaEn     DateTime?       @map("notificada_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@index([comercioId, estado, diasCobertura])
+  @@index([productoId])
+  @@map("alerta")
+}
+
+enum EstadoAlerta {
+  ACTIVA
+  POSPUESTA
+  ATENDIDA
+  RESUELTA
+
+  @@map("estado_alerta")
+}
+
+enum SeveridadAlerta {
+  PROXIMA
+  CRITICA
+
+  @@map("severidad_alerta")
 }

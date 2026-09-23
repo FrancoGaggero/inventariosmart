@@ -1,5 +1,6 @@
 import type { EstadoStock, Producto, ProductoCreate, ProductoPatch } from '@inventariosmart/shared';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ALERTAS_KEY } from './alertas';
 import { api, desenvolver } from './api';
 
 export const PRODUCTOS_KEY = ['productos'] as const;
@@ -47,7 +48,12 @@ export function useProducto(id: string | undefined) {
 
 function useInvalidarProductos() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: PRODUCTOS_KEY });
+  // Un cambio de producto (anticipación, seguridad, proveedor) puede mover sus alertas (HU-06).
+  return () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: PRODUCTOS_KEY }),
+      qc.invalidateQueries({ queryKey: ALERTAS_KEY }),
+    ]);
 }
 
 export function useCrearProducto() {

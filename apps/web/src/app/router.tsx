@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router';
+import { AlertasPage } from '@/features/alertas/AlertasPage';
 import { AuthGate } from '@/features/auth/AuthGate';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { OnboardingPage } from '@/features/auth/OnboardingPage';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
             children: [
               { path: '/gastos', element: <GastosPage /> },
               { path: '/rentabilidad', element: <RentabilidadPage /> },
+              { path: '/alertas', element: <AlertasPage /> },
             ],
           },
           {

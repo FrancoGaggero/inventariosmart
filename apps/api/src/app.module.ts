@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AlertsModule } from './alerts/alerts.module';
 import { AuthModule } from './auth/auth.module';
 import { ComercioModule } from './comercio/comercio.module';
 import { DashboardModule } from './dashboard/dashboard.module';
@@ -37,6 +39,7 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     ThrottlerModule.forRoot({ throttlers: [{ name: 'global', ttl: 60_000, limit: 120 }] }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     HealthModule,
@@ -50,6 +53,7 @@ import { UsersModule } from './users/users.module';
     ProfitabilityModule,
     DashboardModule,
     ImportModule,
+    AlertsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

@@ -2748,6 +2748,388 @@
         ]
       }
     },
+    "/api/v1/alerts": {
+      "get": {
+        "description": "Paginado por cursor, ordenado por días de cobertura. Si el último cálculo tiene más de una hora, recalcula antes de responder.",
+        "operationId": "AlertsController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "estado",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ACTIVA",
+                "POSPUESTA",
+                "ATENDIDA",
+                "RESUELTA",
+                "TODAS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaAlertasDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Alertas de reposición (HU-06)",
+        "tags": [
+          "alertas"
+        ]
+      }
+    },
+    "/api/v1/alerts/summary": {
+      "get": {
+        "operationId": "AlertsController_resumen",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenAlertasDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resumen: activas, críticas, pospuestas y fecha del último cálculo",
+        "tags": [
+          "alertas"
+        ]
+      }
+    },
+    "/api/v1/alerts/recalculate": {
+      "post": {
+        "operationId": "AlertsController_recalcular",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoRecalculoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recalcular ahora las alertas del comercio (RN-04)",
+        "tags": [
+          "alertas"
+        ]
+      }
+    },
+    "/api/v1/alerts/{id}": {
+      "get": {
+        "operationId": "AlertsController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertaDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de una alerta",
+        "tags": [
+          "alertas"
+        ]
+      },
+      "patch": {
+        "operationId": "AlertsController_accionar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertaAccionBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertaDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Acción desconocida (VALIDACION)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las alertas requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La alerta ya está cerrada (CONFLICTO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atender (ya se pidió) o posponer 7 días una alerta abierta",
+        "tags": [
+          "alertas"
+        ]
+      }
+    },
     "/api/v1/import/preview": {
       "post": {
         "description": "Valida cada fila con las reglas del alta de producto y la clasifica: NUEVO, ACTUALIZA (el código existe) o INVALIDA. Informa si la importación superaría el límite del plan. No registra nada.",
@@ -3250,6 +3632,11 @@
             "type": "number",
             "example": 10
           },
+          "diasAnticipacionAlerta": {
+            "type": "number",
+            "example": 3,
+            "description": "Días de anticipación de la alerta de reposición (HU-06)"
+          },
           "estadoStock": {
             "type": "string",
             "enum": [
@@ -3289,6 +3676,7 @@
           "alicuotaIva",
           "stockActual",
           "stockSeguridad",
+          "diasAnticipacionAlerta",
           "estadoStock",
           "proveedorPrincipal",
           "activo",
@@ -3489,6 +3877,13 @@
             "type": "number",
             "minimum": 0,
             "default": 0
+          },
+          "diasAnticipacionAlerta": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 90,
+            "default": 3,
+            "description": "Días de anticipación de la alerta de reposición"
           }
         },
         "required": [
@@ -3531,6 +3926,11 @@
           "stockSeguridad": {
             "type": "number",
             "minimum": 0
+          },
+          "diasAnticipacionAlerta": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 90
           },
           "proveedorPrincipalId": {
             "type": "string",
@@ -4975,6 +5375,71 @@
           "items"
         ]
       },
+      "ReposicionItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "producto": {
+            "$ref": "#/components/schemas/ProductoDashboardDto"
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "PROXIMA",
+              "CRITICA"
+            ]
+          },
+          "stock": {
+            "type": "number",
+            "example": 18
+          },
+          "diasCobertura": {
+            "type": "number",
+            "nullable": true,
+            "example": 9
+          },
+          "cantidadSugerida": {
+            "type": "number",
+            "example": 56
+          }
+        },
+        "required": [
+          "id",
+          "producto",
+          "severidad",
+          "stock",
+          "diasCobertura",
+          "cantidadSugerida"
+        ]
+      },
+      "ReposicionDashboardDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 3
+          },
+          "criticas": {
+            "type": "number",
+            "example": 1
+          },
+          "items": {
+            "description": "Hasta 5, por días de cobertura",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReposicionItemDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "criticas",
+          "items"
+        ]
+      },
       "AlertasDashboardDto": {
         "type": "object",
         "properties": {
@@ -4987,12 +5452,23 @@
           "faltanGastos": {
             "type": "boolean",
             "description": "El margen neto no se puede calcular por falta de gastos del mes"
+          },
+          "reposicion": {
+            "nullable": true,
+            "description": "Alertas de reposición activas (HU-06); null si el plan no las incluye",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReposicionDashboardDto"
+              }
+            ]
           }
         },
         "required": [
           "sinStock",
           "stockBajo",
-          "faltanGastos"
+          "faltanGastos",
+          "reposicion"
         ]
       },
       "DashboardDto": {
@@ -5028,6 +5504,273 @@
           "mesAnterior",
           "topRentables",
           "alertas"
+        ]
+      },
+      "ProductoAlertaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          },
+          "stockActual": {
+            "type": "number",
+            "example": 18
+          },
+          "stockSeguridad": {
+            "type": "number",
+            "example": 4
+          },
+          "estadoStock": {
+            "type": "string",
+            "enum": [
+              "SIN_STOCK",
+              "BAJO",
+              "OK"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre",
+          "stockActual",
+          "stockSeguridad",
+          "estadoStock"
+        ]
+      },
+      "ProveedorAlertaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Distribuidora Norte"
+          },
+          "leadTimeDias": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "leadTimeDias"
+        ]
+      },
+      "AlertaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "producto": {
+            "$ref": "#/components/schemas/ProductoAlertaDto"
+          },
+          "proveedor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProveedorAlertaDto"
+              }
+            ]
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ACTIVA",
+              "POSPUESTA",
+              "ATENDIDA",
+              "RESUELTA"
+            ]
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "PROXIMA",
+              "CRITICA"
+            ]
+          },
+          "stock": {
+            "type": "number",
+            "example": 18,
+            "description": "Stock al momento del último cálculo"
+          },
+          "velocidadDiaria": {
+            "type": "string",
+            "example": "2.000",
+            "description": "Unidades por día (RN-04)"
+          },
+          "diasCobertura": {
+            "type": "number",
+            "nullable": true,
+            "example": 9
+          },
+          "puntoReposicion": {
+            "type": "number",
+            "example": 14
+          },
+          "umbral": {
+            "type": "number",
+            "example": 20
+          },
+          "leadTimeDias": {
+            "type": "number",
+            "example": 5
+          },
+          "diasAnticipacion": {
+            "type": "number",
+            "example": 3
+          },
+          "cantidadSugerida": {
+            "type": "number",
+            "example": 56
+          },
+          "generadaEn": {
+            "type": "string"
+          },
+          "actualizadaEn": {
+            "type": "string"
+          },
+          "pospuestaHasta": {
+            "type": "string",
+            "nullable": true
+          },
+          "atendidaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "resueltaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "notificadaEn": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "producto",
+          "proveedor",
+          "estado",
+          "severidad",
+          "stock",
+          "velocidadDiaria",
+          "diasCobertura",
+          "puntoReposicion",
+          "umbral",
+          "leadTimeDias",
+          "diasAnticipacion",
+          "cantidadSugerida",
+          "generadaEn",
+          "actualizadaEn",
+          "pospuestaHasta",
+          "atendidaEn",
+          "resueltaEn",
+          "notificadaEn"
+        ]
+      },
+      "ListaAlertasDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertaDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ResumenAlertasDto": {
+        "type": "object",
+        "properties": {
+          "activas": {
+            "type": "number",
+            "example": 3
+          },
+          "criticas": {
+            "type": "number",
+            "example": 1
+          },
+          "pospuestas": {
+            "type": "number",
+            "example": 0
+          },
+          "calculadasEn": {
+            "type": "string",
+            "nullable": true,
+            "description": "Último recálculo; null si nunca corrió"
+          }
+        },
+        "required": [
+          "activas",
+          "criticas",
+          "pospuestas",
+          "calculadasEn"
+        ]
+      },
+      "ResultadoRecalculoDto": {
+        "type": "object",
+        "properties": {
+          "creadas": {
+            "type": "number",
+            "example": 2
+          },
+          "actualizadas": {
+            "type": "number",
+            "example": 5
+          },
+          "resueltas": {
+            "type": "number",
+            "example": 1
+          },
+          "calculadasEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "creadas",
+          "actualizadas",
+          "resueltas",
+          "calculadasEn"
+        ]
+      },
+      "AlertaAccionBodyDto": {
+        "type": "object",
+        "properties": {
+          "accion": {
+            "type": "string",
+            "enum": [
+              "ATENDER",
+              "POSPONER"
+            ],
+            "description": "ATENDER: ya se pidió; POSPONER: 7 días"
+          }
+        },
+        "required": [
+          "accion"
         ]
       },
       "ArchivoProductosDto": {

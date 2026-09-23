@@ -12,6 +12,7 @@ export const TENANT_MODELS = new Set<string>([
   'Proveedor',
   'PrecioProveedor',
   'Gasto',
+  'Alerta',
 ]);
 
 /** Operaciones que aceptan `where`. */

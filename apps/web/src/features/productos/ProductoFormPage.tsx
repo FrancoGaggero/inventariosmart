@@ -29,6 +29,7 @@ interface Valores {
   costoReposicion: string;
   stockInicial: string;
   stockSeguridad: string;
+  diasAnticipacionAlerta: string;
   proveedorPrincipalId: string;
 }
 
@@ -41,6 +42,7 @@ const VACIO: Valores = {
   costoReposicion: '',
   stockInicial: '0',
   stockSeguridad: '0',
+  diasAnticipacionAlerta: '3',
   proveedorPrincipalId: '',
 };
 
@@ -84,6 +86,7 @@ export function ProductoFormPage() {
         costoReposicion: p.costoReposicion ?? '',
         stockInicial: String(p.stockActual),
         stockSeguridad: String(p.stockSeguridad),
+        diasAnticipacionAlerta: String(p.diasAnticipacionAlerta),
         proveedorPrincipalId: p.proveedorPrincipal?.id ?? '',
       });
     }
@@ -105,6 +108,7 @@ export function ProductoFormPage() {
       alicuotaIva: numero(v.alicuotaIva),
       costoReposicion: v.costoReposicion,
       stockSeguridad: numero(v.stockSeguridad),
+      diasAnticipacionAlerta: numero(v.diasAnticipacionAlerta),
     };
     const parsed = esNuevo
       ? ProductoCreateSchema.safeParse({ ...comun, stockInicial: numero(v.stockInicial) })
@@ -256,6 +260,15 @@ export function ProductoFormPage() {
             error={errores['stockSeguridad']}
           />
         </div>
+
+        <Campo
+          label="Días de anticipación de la alerta de reposición"
+          value={v.diasAnticipacionAlerta}
+          onChange={set('diasAnticipacionAlerta')}
+          inputMode="numeric"
+          ayuda="Cuántos días antes de que la reposición llegue tarde querés el aviso (0 a 90). Se suma al lead time del proveedor principal."
+          error={errores['diasAnticipacionAlerta']}
+        />
 
         {!esNuevo && (
           <label className="block">
