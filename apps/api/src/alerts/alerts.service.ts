@@ -185,9 +185,11 @@ export class AlertsService {
       tiempos[fase] = Date.now() - t0;
     };
     // Una pasada agrupada sobre los movimientos y las alertas del comercio (RNF-04, CP-06.7):
-    // ventas de la ventana de 30 días, último ingreso y última atención por producto.
+    // ventas de la ventana de 30 días, último ingreso y última atención por producto. Las CTE van
+    // MATERIALIZED para que la agregación se calcule una sola vez aunque las estadísticas estén
+    // desactualizadas (sin eso, con datos recién cargados el planificador la repite por producto).
     const filas = await tx.$queryRaw<FilaCalculo[]>`
-      WITH mov AS (
+      WITH mov AS MATERIALIZED (
         SELECT m.producto_id,
                COALESCE(SUM(m.cantidad) FILTER (
                  WHERE m.tipo = 'VENTA' AND m.anulado_por_id IS NULL
@@ -198,11 +200,11 @@ export class AlertsService {
         WHERE m.comercio_id = ${comercioId}::uuid
         GROUP BY m.producto_id
       ),
-      abiertas AS (
+      abiertas AS MATERIALIZED (
         SELECT x.producto_id, x.id, x.estado, x.pospuesta_hasta FROM alerta x
         WHERE x.comercio_id = ${comercioId}::uuid AND x.estado IN ('ACTIVA', 'POSPUESTA')
       ),
-      atendidas AS (
+      atendidas AS MATERIALIZED (
         SELECT x.producto_id, MAX(x.atendida_en) AS atendida_en FROM alerta x
         WHERE x.comercio_id = ${comercioId}::uuid AND x.estado = 'ATENDIDA'
         GROUP BY x.producto_id
