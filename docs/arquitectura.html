@@ -513,7 +513,7 @@ CREATE POLICY producto_sistema ON producto
       <tr><td class="k">Asistente IA</td><td><span class="pill web">Web</span></td><td><span class="pill mob">Mobile</span></td><td>Fase 3, plan Premium.</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>Alcance mobile del MVP: cuatro pantallas.</b> Login, dashboard, inventario y registrar movimiento. Es lo que entra en los 6 días de la tarea 4.10 si el cliente Dart ya está generado desde OpenAPI y la app se arranca en el sprint 0 (§10).</div>
+  <div class="note"><b>Alcance mobile del MVP: cuatro pantallas, construidas en el change <span class="id">mobile-mvp</span> (spec <span class="id">mobile-app</span>, 24/09/2026).</b> Login (email/contraseña y Google, creación de cuenta, onboarding mínimo del nombre), Inicio (4 KPI, top 3 rentables, alertas, cambio de mes), Inventario (búsqueda, chips OK / Bajo / Sin stock, páginas por cursor, alta rápida del DUENIO, "Vender") y Registrar movimiento (venta, ingreso, ajuste; clave de idempotencia por intento; aviso de stock bajo). Pestañas por rol: DUENIO Inicio · Inventario · Movimiento; EMPLEADO sin Inicio; CONTADOR sólo Inicio. Los modelos Dart se escriben a mano a partir del contrato en lugar de generar el cliente (ADR 0009); tests de widgets sin red ni Firebase en CI.</div>
 </section>
 
 <section id="s8">

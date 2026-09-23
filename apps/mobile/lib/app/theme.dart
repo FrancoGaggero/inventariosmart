@@ -8,7 +8,15 @@ class AppColors {
   static const brand = Color(0xFF2563EB);
   static const brand3 = Color(0xFF60A5FA);
   static const ok = Color(0xFF10B981);
+  static const warn = Color(0xFFF59E0B);
   static const crit = Color(0xFFEF4444);
+
+  /// Color del estado de stock (OK / BAJO / SIN_STOCK).
+  static Color estadoStock(String estado) => switch (estado) {
+        'OK' => ok,
+        'BAJO' => warn,
+        _ => crit,
+      };
   static const t1 = Color(0xFFF1F5F9);
   static const t2 = Color(0xFF94A3B8);
   static const t3 = Color(0xFF475569);

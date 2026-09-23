@@ -45,6 +45,16 @@ pnpm dev
 - Web: http://localhost:5173
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 
+  App Android (`mobile-mvp`): login (email/contraseña y Google), panel resumido del mes, inventario de mostrador con alta
+  rápida y registro de movimientos; pestañas según rol (DUENIO: Inicio · Inventario · Movimiento; EMPLEADO sin Inicio;
+  CONTADOR sólo Inicio). Contra la API publicada: `flutter run --dart-define=API_URL=https://inventariosmart-api.onrender.com`.
+  APK de demo: `flutter build apk --release --dart-define=API_URL=https://inventariosmart-api.onrender.com`
+  (queda en `apps/mobile/build/app/outputs/flutter-apk/app-release.apk`, ignorado por git).
+  Google en Android exige registrar la huella SHA-1 en Firebase → Configuración del proyecto → app Android
+  (`cd apps/mobile/android && ./gradlew signingReport` muestra la de depuración) y volver a descargar `google-services.json`;
+  hasta entonces el botón de Google avisa que no está disponible y el acceso con email y contraseña funciona igual.
+  Tests: `cd apps/mobile && flutter analyze --fatal-infos && flutter test` (sin red ni Firebase: auth falsa y servidor en memoria).
+
 `pnpm dev` levanta API y web en paralelo. La base de desarrollo es la rama `dev` de Neon (decisión D2 del sprint 0); las migraciones nuevas se crean con `pnpm --filter @inventariosmart/api prisma:migrate`.
 
 ## Variables de entorno

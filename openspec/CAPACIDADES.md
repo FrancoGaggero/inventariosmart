@@ -16,7 +16,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `profitability`         | HU-03 | RF-04         | 1    | 7 · `profitability-engine` (24/09/2026) |
 | `financial-dashboard`   | HU-04 | RF-05         | 1    | 8 · `financial-dashboard` (24/09/2026) |
 | `excel-import`          | HU-05 | RF-08         | 1    | 9 · `excel-import-onboarding` (24/09/2026) |
-| (mobile, sin spec nuevo)| —     | RNF-06        | 1    | 10 · `mobile-mvp` (modifica specs existentes sólo si cambia comportamiento) |
+| `mobile-app`            | —     | RNF-06        | 1    | 10 · `mobile-mvp` (24/09/2026; app Android sobre las specs existentes) |
 | `restock-alerts`        | HU-06 | RF-06         | 2    | 11 · `restock-alerts`            |
 | `purchase-orders`       | HU-07 | RF-07         | 2    | 12 · `purchase-orders-copilot`   |
 | `weekly-reports`        | HU-09 | RF-09         | 2    | 13 · `weekly-reports`            |
