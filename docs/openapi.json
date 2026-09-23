@@ -2522,6 +2522,164 @@
           "gastos"
         ]
       }
+    },
+    "/api/v1/profitability/products": {
+      "get": {
+        "description": "Precio neto, margen bruto ($ y %), unidades vendidas del mes y margen neto (RN-01, RN-02, RN-03). Nada se almacena: refleja el precio, el costo y los gastos actuales.",
+        "operationId": "ProfitabilityController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Código (prefijo) o nombre (contiene)",
+            "schema": {}
+          },
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaRentabilidadDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso: el margen es sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rentabilidad por producto",
+        "tags": [
+          "rentabilidad"
+        ]
+      }
+    },
+    "/api/v1/profitability/summary": {
+      "get": {
+        "description": "Ventas netas, costo de lo vendido (costo vigente, RN-08), margen bruto y neto ($ y %) y gastos del mes; motivo cuando el neto no es calculable.",
+        "operationId": "ProfitabilityController_resumen",
+        "parameters": [
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenRentabilidadDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso: el margen es sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consolidado del mes",
+        "tags": [
+          "rentabilidad"
+        ]
+      }
     }
   },
   "info": {
@@ -4172,6 +4330,208 @@
             "maxLength": 300
           }
         }
+      },
+      "ProductoRentabilidadDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "RentabilidadProductoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoRentabilidadDto"
+          },
+          "precioVenta": {
+            "type": "string",
+            "description": "Precio de venta con IVA",
+            "example": "12100.00"
+          },
+          "alicuotaIva": {
+            "type": "string",
+            "example": "21"
+          },
+          "precioNeto": {
+            "type": "string",
+            "description": "Precio ÷ (1 + alícuota) (RN-03)",
+            "example": "10000.00"
+          },
+          "costoReposicion": {
+            "type": "string",
+            "description": "Costo de reposición vigente, neto",
+            "example": "6000.00"
+          },
+          "margenBruto": {
+            "type": "string",
+            "description": "Precio neto − costo (RN-01)",
+            "example": "4000.00"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true,
+            "description": "Sobre el precio neto",
+            "example": "40.00"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "description": "Ventas no anuladas del mes",
+            "example": 10
+          },
+          "margenBrutoMes": {
+            "type": "string",
+            "description": "margenBruto × unidadesVendidas",
+            "example": "40000.00"
+          },
+          "margenNeto": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bruto − gasto por unidad (RN-02)",
+            "example": "2000.00"
+          },
+          "margenNetoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "20.00"
+          }
+        },
+        "required": [
+          "producto",
+          "precioVenta",
+          "alicuotaIva",
+          "precioNeto",
+          "costoReposicion",
+          "margenBruto",
+          "margenBrutoPct",
+          "unidadesVendidas",
+          "margenBrutoMes",
+          "margenNeto",
+          "margenNetoPct"
+        ]
+      },
+      "ListaRentabilidadDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "gastoPorUnidad": {
+            "type": "string",
+            "nullable": true,
+            "description": "Gasto operativo por unidad vendida del mes"
+          },
+          "motivoNeto": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_GASTOS",
+              "SIN_VENTAS"
+            ],
+            "description": "Por qué el neto no es calculable"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RentabilidadProductoDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "periodo",
+          "gastoPorUnidad",
+          "motivoNeto",
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ResumenRentabilidadDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 15
+          },
+          "ventasNetas": {
+            "type": "string",
+            "description": "Σ cantidad × precio unitario neto",
+            "example": "105000.00"
+          },
+          "costoVendido": {
+            "type": "string",
+            "description": "Σ cantidad × costo vigente (RN-08)",
+            "example": "64000.00"
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "41000.00"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true,
+            "description": "Sobre ventas netas",
+            "example": "39.05"
+          },
+          "gastos": {
+            "type": "string",
+            "description": "Gastos aplicables al mes",
+            "example": "30000.00"
+          },
+          "margenNeto": {
+            "type": "string",
+            "nullable": true,
+            "example": "11000.00"
+          },
+          "margenNetoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "10.48"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_GASTOS",
+              "SIN_VENTAS"
+            ]
+          }
+        },
+        "required": [
+          "periodo",
+          "unidadesVendidas",
+          "ventasNetas",
+          "costoVendido",
+          "margenBruto",
+          "margenBrutoPct",
+          "gastos",
+          "margenNeto",
+          "margenNetoPct",
+          "motivo"
+        ]
       }
     }
   }

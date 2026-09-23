@@ -17,6 +17,7 @@ import { ImportarListaPage } from '@/features/proveedores/ImportarListaPage';
 import { ProveedorDetallePage } from '@/features/proveedores/ProveedorDetallePage';
 import { ProveedorFormPage } from '@/features/proveedores/ProveedorFormPage';
 import { ProveedoresPage } from '@/features/proveedores/ProveedoresPage';
+import { RentabilidadPage } from '@/features/rentabilidad/RentabilidadPage';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
@@ -33,7 +34,10 @@ export const router = createBrowserRouter([
           { path: '/movimientos', element: <MovimientosPage /> },
           {
             element: <RequireRole roles={['DUENIO', 'CONTADOR']} />,
-            children: [{ path: '/gastos', element: <GastosPage /> }],
+            children: [
+              { path: '/gastos', element: <GastosPage /> },
+              { path: '/rentabilidad', element: <RentabilidadPage /> },
+            ],
           },
           {
             element: <RequireRole roles={['DUENIO', 'EMPLEADO']} />,

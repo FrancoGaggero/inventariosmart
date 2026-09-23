@@ -1,4 +1,13 @@
-import { Activity, ArrowLeftRight, Package, Receipt, Settings, Truck, Users } from 'lucide-react';
+import {
+  Activity,
+  ArrowLeftRight,
+  Package,
+  Receipt,
+  Settings,
+  TrendingUp,
+  Truck,
+  Users,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
@@ -68,6 +77,15 @@ export function HomePage() {
           </p>
         </Link>
         {veGastos && (
+          <Link to="/rentabilidad" className="card p-5 hover:border-brand-2/50 transition">
+            <TrendingUp className="w-5 h-5 text-brand-3 mb-3" aria-hidden />
+            <h2 className="font-bold">Rentabilidad</h2>
+            <p className="text-t2 text-sm">
+              Margen bruto y neto por producto y del mes, sobre importes netos.
+            </p>
+          </Link>
+        )}
+        {veGastos && (
           <Link to="/gastos" className="card p-5 hover:border-brand-2/50 transition">
             <Receipt className="w-5 h-5 text-brand-3 mb-3" aria-hidden />
             <h2 className="font-bold">Gastos</h2>
@@ -130,8 +148,7 @@ export function HomePage() {
       </section>
 
       <p className="text-xs text-t3">
-        La rentabilidad por producto y el dashboard llegan con las próximas historias (HU-03,
-        HU-04).
+        El dashboard financiero llega con la próxima historia (HU-04).
       </p>
     </div>
   );

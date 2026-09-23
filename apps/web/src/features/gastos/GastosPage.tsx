@@ -4,11 +4,10 @@ import {
   ETIQUETA_TIPO_GASTO,
   TIPOS_GASTO,
   mesActual,
-  sumarMeses,
   type Mes,
   type TipoGasto,
 } from '@inventariosmart/shared';
-import { ChevronLeft, ChevronRight, Plus, Receipt } from 'lucide-react';
+import { Plus, Receipt } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -22,6 +21,7 @@ import {
 import { useMe } from '@/lib/me';
 import { formatearPesos } from '@/lib/productos';
 import { Aviso } from '@/ui/Aviso';
+import { SelectorMes } from '@/ui/SelectorMes';
 
 type Chip = 'TODOS' | TipoGasto;
 
@@ -69,31 +69,7 @@ export function GastosPage() {
       </header>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="btn btn-ghost !px-2"
-            aria-label="Mes anterior"
-            onClick={() => setPeriodo((m) => sumarMeses(m, -1))}
-          >
-            <ChevronLeft className="w-4 h-4" aria-hidden />
-          </button>
-          <input
-            type="month"
-            value={periodo}
-            onChange={(e) => e.target.value && setPeriodo(e.target.value as Mes)}
-            aria-label="Mes"
-            className="rounded-xl bg-[#070C16] border border-white/12 px-3 py-2 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
-          />
-          <button
-            type="button"
-            className="btn btn-ghost !px-2"
-            aria-label="Mes siguiente"
-            onClick={() => setPeriodo((m) => sumarMeses(m, 1))}
-          >
-            <ChevronRight className="w-4 h-4" aria-hidden />
-          </button>
-        </div>
+        <SelectorMes valor={periodo} onChange={setPeriodo} />
         <div className="flex gap-2" role="tablist" aria-label="Filtrar por tipo">
           {(
             [

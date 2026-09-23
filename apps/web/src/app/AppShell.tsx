@@ -6,6 +6,7 @@ import {
   Package,
   Receipt,
   Settings,
+  TrendingUp,
   Truck,
   Users,
 } from 'lucide-react';
@@ -53,6 +54,12 @@ export function AppShell() {
               <ArrowLeftRight className="w-4 h-4" aria-hidden />
               Movimientos
             </NavLink>
+            {veGastos && (
+              <NavLink to="/rentabilidad" className={enlace}>
+                <TrendingUp className="w-4 h-4" aria-hidden />
+                Rentabilidad
+              </NavLink>
+            )}
             {veGastos && (
               <NavLink to="/gastos" className={enlace}>
                 <Receipt className="w-4 h-4" aria-hidden />

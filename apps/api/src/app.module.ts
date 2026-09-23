@@ -13,6 +13,7 @@ import { MeModule } from './me/me.module';
 import { MovementsModule } from './movements/movements.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
+import { ProfitabilityModule } from './profitability/profitability.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { UsersModule } from './users/users.module';
 
@@ -44,6 +45,7 @@ import { UsersModule } from './users/users.module';
     MovementsModule,
     SuppliersModule,
     ExpensesModule,
+    ProfitabilityModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

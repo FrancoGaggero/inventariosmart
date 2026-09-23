@@ -153,3 +153,4 @@ export * from './productos';
 export * from './movimientos';
 export * from './proveedores';
 export * from './gastos';
+export * from './rentabilidad';

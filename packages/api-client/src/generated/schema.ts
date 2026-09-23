@@ -402,6 +402,46 @@ export interface paths {
         patch: operations["ExpensesController_actualizar"];
         trace?: never;
     };
+    "/api/v1/profitability/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rentabilidad por producto
+         * @description Precio neto, margen bruto ($ y %), unidades vendidas del mes y margen neto (RN-01, RN-02, RN-03). Nada se almacena: refleja el precio, el costo y los gastos actuales.
+         */
+        get: operations["ProfitabilityController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profitability/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consolidado del mes
+         * @description Ventas netas, costo de lo vendido (costo vigente, RN-08), margen bruto y neto ($ y %) y gastos del mes; motivo cuando el neto no es calculable.
+         */
+        get: operations["ProfitabilityController_resumen"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1001,6 +1041,108 @@ export interface components {
             /** @description null quita el fin */
             fin?: string | null;
             notas?: string | null;
+        };
+        ProductoRentabilidadDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        RentabilidadProductoDto: {
+            producto: components["schemas"]["ProductoRentabilidadDto"];
+            /**
+             * @description Precio de venta con IVA
+             * @example 12100.00
+             */
+            precioVenta: string;
+            /** @example 21 */
+            alicuotaIva: string;
+            /**
+             * @description Precio ÷ (1 + alícuota) (RN-03)
+             * @example 10000.00
+             */
+            precioNeto: string;
+            /**
+             * @description Costo de reposición vigente, neto
+             * @example 6000.00
+             */
+            costoReposicion: string;
+            /**
+             * @description Precio neto − costo (RN-01)
+             * @example 4000.00
+             */
+            margenBruto: string;
+            /**
+             * @description Sobre el precio neto
+             * @example 40.00
+             */
+            margenBrutoPct: string | null;
+            /**
+             * @description Ventas no anuladas del mes
+             * @example 10
+             */
+            unidadesVendidas: number;
+            /**
+             * @description margenBruto × unidadesVendidas
+             * @example 40000.00
+             */
+            margenBrutoMes: string;
+            /**
+             * @description Bruto − gasto por unidad (RN-02)
+             * @example 2000.00
+             */
+            margenNeto: string | null;
+            /** @example 20.00 */
+            margenNetoPct: string | null;
+        };
+        ListaRentabilidadDto: {
+            /** @example 2026-09 */
+            periodo: string;
+            /** @description Gasto operativo por unidad vendida del mes */
+            gastoPorUnidad: string | null;
+            /**
+             * @description Por qué el neto no es calculable
+             * @enum {string|null}
+             */
+            motivoNeto: "SIN_GASTOS" | "SIN_VENTAS" | null;
+            items: components["schemas"]["RentabilidadProductoDto"][];
+            siguienteCursor: string | null;
+        };
+        ResumenRentabilidadDto: {
+            /** @example 2026-09 */
+            periodo: string;
+            /** @example 15 */
+            unidadesVendidas: number;
+            /**
+             * @description Σ cantidad × precio unitario neto
+             * @example 105000.00
+             */
+            ventasNetas: string;
+            /**
+             * @description Σ cantidad × costo vigente (RN-08)
+             * @example 64000.00
+             */
+            costoVendido: string;
+            /** @example 41000.00 */
+            margenBruto: string;
+            /**
+             * @description Sobre ventas netas
+             * @example 39.05
+             */
+            margenBrutoPct: string | null;
+            /**
+             * @description Gastos aplicables al mes
+             * @example 30000.00
+             */
+            gastos: string;
+            /** @example 11000.00 */
+            margenNeto: string | null;
+            /** @example 10.48 */
+            margenNetoPct: string | null;
+            /** @enum {string|null} */
+            motivo: "SIN_GASTOS" | "SIN_VENTAS" | null;
         };
     };
     responses: never;
@@ -2721,6 +2863,102 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProfitabilityController_listar: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: unknown;
+                /** @description Código (prefijo) o nombre (contiene) */
+                q?: unknown;
+                periodo?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaRentabilidadDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso: el margen es sensible */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProfitabilityController_resumen: {
+        parameters: {
+            query?: {
+                periodo?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumenRentabilidadDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso: el margen es sensible */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

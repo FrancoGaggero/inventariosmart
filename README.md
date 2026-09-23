@@ -28,6 +28,8 @@ pnpm dev
   Rutas de HU-01: `GET/POST /products`, `GET/PATCH/DELETE /products/:id` (búsqueda `q`, filtro `estado`, `activo`).
   Rutas de HU-10: `GET/POST /movements`, `GET /movements/:id`, `POST /movements/:id/anular` (filtros `productoId`, `tipo`, `desde`, `hasta`).
   `POST /movements` acepta la cabecera `Idempotency-Key`: repetir la clave devuelve 200 con el movimiento ya registrado.
+  Rutas de HU-03: `GET /profitability/products?periodo&q` y `GET /profitability/summary?periodo` (márgenes bruto y
+  neto sobre importes netos de IVA; nada se almacena).
   Rutas de HU-13: `GET/POST /expenses`, `GET/PATCH/DELETE /expenses/:id`, `GET /expenses/summary` (todas con
   `?periodo=YYYY-MM`, default mes actual en Buenos Aires); el resumen devuelve `gastoPorUnidad` o `null` con motivo.
   Rutas de HU-02: `GET/POST /suppliers`, `GET/PATCH/DELETE /suppliers/:id`, `GET/POST /suppliers/:id/prices`,
