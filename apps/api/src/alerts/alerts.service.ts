@@ -160,7 +160,8 @@ export class AlertsService {
       // Un solo recálculo por comercio a la vez (D4): el segundo espera y encuentra el cálculo fresco.
       // El lock y la lectura del comercio van en un solo viaje a la base.
       const [comercio] = await tx.$queryRaw<{ nombre: string; alertasCalculadasEn: Date | null }[]>`
-        SELECT pg_advisory_xact_lock(hashtext(${comercioId})), c.nombre, c.alertas_calculadas_en AS "alertasCalculadasEn"
+        SELECT pg_advisory_xact_lock(hashtext(${comercioId}))::text AS lock,
+               c.nombre, c.alertas_calculadas_en AS "alertasCalculadasEn"
         FROM comercio c WHERE c.id = ${comercioId}::uuid`;
       if (!comercio) throw noEncontrado('No encontramos tu comercio.');
       if (opts.soloSiVencido && !calculoVencido(comercio.alertasCalculadasEn)) return null;
