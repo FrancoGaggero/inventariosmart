@@ -11,6 +11,7 @@ import type {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_URL, ErrorApi, api, comoApiError, desenvolver } from './api';
 import { obtenerIdToken } from './auth';
+import { DASHBOARD_KEY } from './dashboard';
 import { PRODUCTOS_KEY } from './productos';
 
 export const PROVEEDORES_KEY = ['proveedores'] as const;
@@ -66,6 +67,7 @@ function useInvalidarCostos() {
     Promise.all([
       qc.invalidateQueries({ queryKey: PRECIOS_KEY }),
       qc.invalidateQueries({ queryKey: PRODUCTOS_KEY }),
+      qc.invalidateQueries({ queryKey: DASHBOARD_KEY }),
     ]);
 }
 

@@ -7,6 +7,7 @@ import type {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { api, desenvolver } from './api';
+import { DASHBOARD_KEY } from './dashboard';
 import { PRODUCTOS_KEY } from './productos';
 
 export const MOVIMIENTOS_KEY = ['movimientos'] as const;
@@ -61,6 +62,7 @@ function useInvalidarStock() {
     Promise.all([
       qc.invalidateQueries({ queryKey: MOVIMIENTOS_KEY }),
       qc.invalidateQueries({ queryKey: PRODUCTOS_KEY }),
+      qc.invalidateQueries({ queryKey: DASHBOARD_KEY }),
     ]);
 }
 

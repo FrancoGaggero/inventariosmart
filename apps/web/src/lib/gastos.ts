@@ -9,6 +9,7 @@ import type {
 } from '@inventariosmart/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, desenvolver } from './api';
+import { DASHBOARD_KEY } from './dashboard';
 
 export const GASTOS_KEY = ['gastos'] as const;
 
@@ -43,7 +44,11 @@ export function useGasto(id: string | undefined) {
 
 function useInvalidarGastos() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: GASTOS_KEY });
+  return () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: GASTOS_KEY }),
+      qc.invalidateQueries({ queryKey: DASHBOARD_KEY }),
+    ]);
 }
 
 export function useCrearGasto() {

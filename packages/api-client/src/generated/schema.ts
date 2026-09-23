@@ -442,6 +442,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Panel financiero del mes
+         * @description Stock, ventas y márgenes del mes con comparación contra el mes anterior, productos más rentables y alertas activas, en una sola respuesta calculada en el momento (RF-05, RNF-04).
+         */
+        get: operations["DashboardController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1143,6 +1163,112 @@ export interface components {
             margenNetoPct: string | null;
             /** @enum {string|null} */
             motivo: "SIN_GASTOS" | "SIN_VENTAS" | null;
+        };
+        StockDashboardDto: {
+            /** @example 120 */
+            productosActivos: number;
+            /**
+             * @description Σ stock actual de los activos
+             * @example 1540
+             */
+            unidades: number;
+            /**
+             * @description Σ stock × costo vigente, neto
+             * @example 2450000.00
+             */
+            valorizacion: string;
+            /** @example 4 */
+            sinStock: number;
+            /** @example 9 */
+            stockBajo: number;
+        };
+        VentasDashboardDto: {
+            /** @example 145 */
+            unidadesVendidas: number;
+            /** @example 1230000.00 */
+            ventasNetas: string;
+            /** @example 790000.00 */
+            costoVendido: string;
+            /** @example 440000.00 */
+            margenBruto: string;
+            /** @example 35.77 */
+            margenBrutoPct: string | null;
+            /** @example 290000.00 */
+            gastos: string;
+            /** @example 150000.00 */
+            margenNeto: string | null;
+            /** @example 12.20 */
+            margenNetoPct: string | null;
+            /** @enum {string|null} */
+            motivo: "SIN_GASTOS" | "SIN_VENTAS" | null;
+        };
+        MesAnteriorDashboardDto: {
+            /** @example 2026-08 */
+            periodo: string;
+            /** @example 120 */
+            unidadesVendidas: number;
+            /** @example 980000.00 */
+            ventasNetas: string;
+            /**
+             * @description Variación de ventas netas contra el mes anterior
+             * @example 25.51
+             */
+            variacionVentasPct: string | null;
+        };
+        ProductoDashboardDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        TopRentableDto: {
+            producto: components["schemas"]["ProductoDashboardDto"];
+            /** @example 40 */
+            unidadesVendidas: number;
+            /** @example 4000.00 */
+            margenBruto: string;
+            /** @example 40.00 */
+            margenBrutoPct: string | null;
+            /**
+             * @description Margen bruto generado en el mes
+             * @example 160000.00
+             */
+            margenBrutoMes: string;
+        };
+        AlertaStockDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example BI-09 */
+            codigo: string;
+            /** @example Bujía BI-09 */
+            nombre: string;
+            /** @example 0 */
+            stockActual: number;
+            /** @example 5 */
+            stockSeguridad: number;
+        };
+        GrupoAlertasDto: {
+            /** @example 4 */
+            total: number;
+            /** @description Hasta 5, por nombre */
+            items: components["schemas"]["AlertaStockDto"][];
+        };
+        AlertasDashboardDto: {
+            sinStock: components["schemas"]["GrupoAlertasDto"];
+            stockBajo: components["schemas"]["GrupoAlertasDto"];
+            /** @description El margen neto no se puede calcular por falta de gastos del mes */
+            faltanGastos: boolean;
+        };
+        DashboardDto: {
+            /** @example 2026-09 */
+            periodo: string;
+            stock: components["schemas"]["StockDashboardDto"];
+            ventas: components["schemas"]["VentasDashboardDto"];
+            mesAnterior: components["schemas"]["MesAnteriorDashboardDto"];
+            topRentables: components["schemas"]["TopRentableDto"][];
+            alertas: components["schemas"]["AlertasDashboardDto"];
         };
     };
     responses: never;
@@ -2958,6 +3084,52 @@ export interface operations {
                 };
             };
             /** @description EMPLEADO sin acceso: el margen es sensible */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    DashboardController_obtener: {
+        parameters: {
+            query?: {
+                periodo?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso (Propuesta §2.4) */
             403: {
                 headers: {
                     [name: string]: unknown;

@@ -2680,6 +2680,73 @@
           "rentabilidad"
         ]
       }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "description": "Stock, ventas y márgenes del mes con comparación contra el mes anterior, productos más rentables y alertas activas, en una sola respuesta calculada en el momento (RF-05, RNF-04).",
+        "operationId": "DashboardController_obtener",
+        "parameters": [
+          {
+            "name": "periodo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-09"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso (Propuesta §2.4)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Panel financiero del mes",
+        "tags": [
+          "dashboard"
+        ]
+      }
     }
   },
   "info": {
@@ -4531,6 +4598,290 @@
           "margenNeto",
           "margenNetoPct",
           "motivo"
+        ]
+      },
+      "StockDashboardDto": {
+        "type": "object",
+        "properties": {
+          "productosActivos": {
+            "type": "number",
+            "example": 120
+          },
+          "unidades": {
+            "type": "number",
+            "description": "Σ stock actual de los activos",
+            "example": 1540
+          },
+          "valorizacion": {
+            "type": "string",
+            "description": "Σ stock × costo vigente, neto",
+            "example": "2450000.00"
+          },
+          "sinStock": {
+            "type": "number",
+            "example": 4
+          },
+          "stockBajo": {
+            "type": "number",
+            "example": 9
+          }
+        },
+        "required": [
+          "productosActivos",
+          "unidades",
+          "valorizacion",
+          "sinStock",
+          "stockBajo"
+        ]
+      },
+      "VentasDashboardDto": {
+        "type": "object",
+        "properties": {
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 145
+          },
+          "ventasNetas": {
+            "type": "string",
+            "example": "1230000.00"
+          },
+          "costoVendido": {
+            "type": "string",
+            "example": "790000.00"
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "440000.00"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "35.77"
+          },
+          "gastos": {
+            "type": "string",
+            "example": "290000.00"
+          },
+          "margenNeto": {
+            "type": "string",
+            "nullable": true,
+            "example": "150000.00"
+          },
+          "margenNetoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "12.20"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_GASTOS",
+              "SIN_VENTAS"
+            ]
+          }
+        },
+        "required": [
+          "unidadesVendidas",
+          "ventasNetas",
+          "costoVendido",
+          "margenBruto",
+          "margenBrutoPct",
+          "gastos",
+          "margenNeto",
+          "margenNetoPct",
+          "motivo"
+        ]
+      },
+      "MesAnteriorDashboardDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 120
+          },
+          "ventasNetas": {
+            "type": "string",
+            "example": "980000.00"
+          },
+          "variacionVentasPct": {
+            "type": "string",
+            "nullable": true,
+            "description": "Variación de ventas netas contra el mes anterior",
+            "example": "25.51"
+          }
+        },
+        "required": [
+          "periodo",
+          "unidadesVendidas",
+          "ventasNetas",
+          "variacionVentasPct"
+        ]
+      },
+      "ProductoDashboardDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "TopRentableDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoDashboardDto"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 40
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "4000.00"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "40.00"
+          },
+          "margenBrutoMes": {
+            "type": "string",
+            "description": "Margen bruto generado en el mes",
+            "example": "160000.00"
+          }
+        },
+        "required": [
+          "producto",
+          "unidadesVendidas",
+          "margenBruto",
+          "margenBrutoPct",
+          "margenBrutoMes"
+        ]
+      },
+      "AlertaStockDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "BI-09"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Bujía BI-09"
+          },
+          "stockActual": {
+            "type": "number",
+            "example": 0
+          },
+          "stockSeguridad": {
+            "type": "number",
+            "example": 5
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre",
+          "stockActual",
+          "stockSeguridad"
+        ]
+      },
+      "GrupoAlertasDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 4
+          },
+          "items": {
+            "description": "Hasta 5, por nombre",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertaStockDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "items"
+        ]
+      },
+      "AlertasDashboardDto": {
+        "type": "object",
+        "properties": {
+          "sinStock": {
+            "$ref": "#/components/schemas/GrupoAlertasDto"
+          },
+          "stockBajo": {
+            "$ref": "#/components/schemas/GrupoAlertasDto"
+          },
+          "faltanGastos": {
+            "type": "boolean",
+            "description": "El margen neto no se puede calcular por falta de gastos del mes"
+          }
+        },
+        "required": [
+          "sinStock",
+          "stockBajo",
+          "faltanGastos"
+        ]
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "periodo": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "stock": {
+            "$ref": "#/components/schemas/StockDashboardDto"
+          },
+          "ventas": {
+            "$ref": "#/components/schemas/VentasDashboardDto"
+          },
+          "mesAnterior": {
+            "$ref": "#/components/schemas/MesAnteriorDashboardDto"
+          },
+          "topRentables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopRentableDto"
+            }
+          },
+          "alertas": {
+            "$ref": "#/components/schemas/AlertasDashboardDto"
+          }
+        },
+        "required": [
+          "periodo",
+          "stock",
+          "ventas",
+          "mesAnterior",
+          "topRentables",
+          "alertas"
         ]
       }
     }

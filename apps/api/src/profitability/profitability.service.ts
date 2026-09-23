@@ -12,6 +12,7 @@ import {
   type RentabilidadProducto,
   type RentabilidadQuery,
   type ResumenRentabilidad,
+  type TopRentable,
 } from '@inventariosmart/shared';
 import { TenantContext } from '../auth/tenant-context';
 import { codificarCursor, decodificarCursor } from '../common/cursor';
@@ -137,6 +138,43 @@ export class ProfitabilityService {
       margenNetoPct: neto === null ? null : porcentaje(neto, ventasNetas),
       motivo: gastos.motivo,
     };
+  }
+
+  /** Productos con ventas en el mes, ordenados por margen bruto generado (HU-04, D1 d). */
+  async topDelMes(periodo: Mes, n: number): Promise<TopRentable[]> {
+    const { comercioId } = TenantContext.requerido();
+    const desde = inicioMesBuenosAires(periodo);
+    const hasta = inicioMesBuenosAires(sumarMeses(periodo, 1));
+    const filas = await this.prisma.transaccionTenant(
+      (tx) =>
+        tx.$queryRaw<FilaRentabilidad[]>`
+        SELECT p.id, p.codigo, p.nombre,
+               p.precio_venta::text AS "precioVenta",
+               p.alicuota_iva::text AS "alicuotaIva",
+               p.costo_reposicion::text AS "costoReposicion",
+               v.unidades
+        FROM producto p
+        JOIN LATERAL (
+          SELECT COALESCE(SUM(m.cantidad), 0)::int AS unidades
+          FROM movimiento m
+          WHERE m.producto_id = p.id AND m.tipo = 'VENTA' AND m.anulado_por_id IS NULL
+            AND m.fecha >= ${desde} AND m.fecha < ${hasta}
+        ) v ON true
+        WHERE p.comercio_id = ${comercioId}::uuid AND p.activo AND v.unidades > 0
+        ORDER BY (p.precio_venta / (1 + p.alicuota_iva / 100) - p.costo_reposicion) * v.unidades DESC,
+                 p.nombre ASC
+        LIMIT ${n}`,
+    );
+    return filas.map((f) => {
+      const r = this.aRentabilidad(f, null);
+      return {
+        producto: r.producto,
+        unidadesVendidas: r.unidadesVendidas,
+        margenBruto: r.margenBruto,
+        margenBrutoPct: r.margenBrutoPct,
+        margenBrutoMes: r.margenBrutoMes,
+      };
+    });
   }
 
   private aRentabilidad(f: FilaRentabilidad, gastoPorUnidad: string | null): RentabilidadProducto {
