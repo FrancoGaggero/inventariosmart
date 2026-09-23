@@ -18,6 +18,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR `docs/adr/0008-rentabilidad-derivada-costo-vigente.md` (D8); README (rutas de HU-03), `docs/arquitectura.html` (§6 endpoints de `profitability`; RN-01/RN-03 con la implementación real en lugar de la vista SQL prevista), `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D4
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Verificar en producción: la página Rentabilidad muestra el margen bruto de la batería y, con el alquiler cargado y las ventas de septiembre, el margen neto del mes. Listo cuando: `https://inventariosmart0.vercel.app/rentabilidad` muestra el consolidado y la fila del producto con sus márgenes
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Verificar en producción: la página Rentabilidad muestra el margen bruto de la batería y, con el alquiler cargado y las ventas de septiembre, el margen neto del mes. Listo cuando: `https://inventariosmart0.vercel.app/rentabilidad` muestra el consolidado y la fila del producto con sus márgenes
 - [ ] 4.4 (manual, Franco) Mover HU-03 a Hecho en Trello, actualizar `Backlog_InventarioSmart_v2.xlsx` y la tarea correspondiente del Gantt. Listo cuando: Trello, backlog y Gantt coinciden
