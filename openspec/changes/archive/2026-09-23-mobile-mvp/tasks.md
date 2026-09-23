@@ -27,7 +27,7 @@
 ## 6. Documentación y cierre
 
 - [x] 6.1 ADR 0009 (modelos Dart a mano), README (correr la app, registrar la SHA-1 y reemplazar `google-services.json`, compilar el APK de demo), `docs/arquitectura.html` §7 (pantallas mobile construidas), `openspec/CAPACIDADES.md` (capacidad `mobile-app`). Listo cuando: los documentos reflejan D1 a D9
-- [ ] 6.2 `flutter analyze --fatal-infos`, `flutter test` y `flutter build apk --debug --dart-define=API_URL=https://inventariosmart-api.onrender.com` en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 6.3 (manual, Franco) Registrar la SHA-1 de depuración en Firebase → app Android y reemplazar `apps/mobile/android/app/google-services.json`. Listo cuando: el archivo nuevo tiene `oauth_client` y "Continuar con Google" entra al comercio (CP-M.1b)
-- [ ] 6.4 Verificar en el emulador contra producción: login con email, panel del mes, inventario con búsqueda y chips, una venta desde "Vender" con su stock resultante, y la venta visible en la web. Listo cuando: CP-M.6 se cumple con los datos reales del comercio
+- [x] 6.2 `flutter analyze --fatal-infos`, `flutter test` y `flutter build apk --debug --dart-define=API_URL=https://inventariosmart-api.onrender.com` en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 6.3 (manual, Franco) Registrar la SHA-1 de depuración en Firebase → app Android y reemplazar `apps/mobile/android/app/google-services.json`. Listo cuando: el archivo nuevo tiene `oauth_client` y "Continuar con Google" entra al comercio (CP-M.1b)
+- [x] 6.4 Verificar en el emulador contra producción: login con email, panel del mes, inventario con búsqueda y chips, una venta desde "Vender" con su stock resultante, y la venta visible en la web. Listo cuando: CP-M.6 se cumple con los datos reales del comercio
 - [ ] 6.5 (manual, Franco) Mover la tarea mobile a Hecho en Trello, actualizar `Backlog_InventarioSmart_v2.xlsx` y la tarea 4.10 del Gantt. Listo cuando: Trello, backlog y Gantt coinciden
