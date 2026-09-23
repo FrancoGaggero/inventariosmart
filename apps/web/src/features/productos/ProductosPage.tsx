@@ -1,5 +1,5 @@
 import type { EstadoStock } from '@inventariosmart/shared';
-import { Package, Plus, Search } from 'lucide-react';
+import { FileSpreadsheet, Package, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -89,10 +89,16 @@ export function ProductosPage() {
           </p>
         </div>
         {esDuenio && (
-          <Link to="/productos/nuevo" className="btn btn-primary">
-            <Plus className="w-4 h-4" aria-hidden />
-            Nuevo producto
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/importar" className="btn btn-ghost">
+              <FileSpreadsheet className="w-4 h-4" aria-hidden />
+              Importar desde Excel
+            </Link>
+            <Link to="/productos/nuevo" className="btn btn-primary">
+              <Plus className="w-4 h-4" aria-hidden />
+              Nuevo producto
+            </Link>
+          </div>
         )}
       </header>
 
@@ -171,6 +177,10 @@ export function ProductosPage() {
                       {' '}
                       <Link to="/productos/nuevo" className="text-brand-3 font-semibold">
                         Cargá el primero
+                      </Link>{' '}
+                      o{' '}
+                      <Link to="/importar" className="text-brand-3 font-semibold">
+                        importá tu planilla
                       </Link>
                       .
                     </>

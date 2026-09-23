@@ -10,6 +10,7 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { type Env, validateEnv } from './config/env';
 import { HealthModule } from './health/health.module';
+import { ImportModule } from './import/import.module';
 import { MeModule } from './me/me.module';
 import { MovementsModule } from './movements/movements.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -48,6 +49,7 @@ import { UsersModule } from './users/users.module';
     ExpensesModule,
     ProfitabilityModule,
     DashboardModule,
+    ImportModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

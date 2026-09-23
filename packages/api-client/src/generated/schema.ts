@@ -462,6 +462,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una planilla de productos (.xlsx o .csv)
+         * @description Valida cada fila con las reglas del alta de producto y la clasifica: NUEVO, ACTUALIZA (el código existe) o INVALIDA. Informa si la importación superaría el límite del plan. No registra nada.
+         */
+        post: operations["ImportController_vistaPrevia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/import/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar la importación de productos
+         * @description Crea los nuevos con su INGRESO de stock inicial y actualiza los existentes sin tocar el stock, en una sola transacción. 402 si supera el límite del plan.
+         */
+        post: operations["ImportController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1269,6 +1309,63 @@ export interface components {
             mesAnterior: components["schemas"]["MesAnteriorDashboardDto"];
             topRentables: components["schemas"]["TopRentableDto"][];
             alertas: components["schemas"]["AlertasDashboardDto"];
+        };
+        ArchivoProductosDto: {
+            /**
+             * Format: binary
+             * @description .xlsx o .csv, hasta 2 MB y 5.000 filas
+             */
+            archivo: string;
+        };
+        FilaImportacionDto: {
+            /** @description Número de fila de datos (1 = primera) */
+            fila: number;
+            /** @example FA-220 */
+            codigo: string;
+            /** @enum {string} */
+            estado: "NUEVO" | "ACTUALIZA" | "INVALIDA";
+            /** @description Datos validados; null si es inválida */
+            datos: components["schemas"]["ProductoCreateBodyDto"] | null;
+            /** Format: uuid */
+            productoId: string | null;
+            /** @description Stock actual del existente; no cambia */
+            stockActual: number | null;
+            error: string | null;
+        };
+        ResumenImportacionDto: {
+            total: number;
+            nuevos: number;
+            actualizan: number;
+            invalidas: number;
+            productosActualesActivos: number;
+            productosResultantes: number;
+            limitePlan: number | null;
+            superaLimite: boolean;
+        };
+        VistaPreviaImportacionDto: {
+            filas: components["schemas"]["FilaImportacionDto"][];
+            resumen: components["schemas"]["ResumenImportacionDto"];
+        };
+        FilaConfirmDto: {
+            fila: number;
+            codigo: string;
+            /** @enum {string} */
+            estado: "NUEVO" | "ACTUALIZA";
+            datos: components["schemas"]["ProductoCreateBodyDto"];
+        };
+        ImportacionProductosConfirmBodyDto: {
+            filas: components["schemas"]["FilaConfirmDto"][];
+        };
+        DetalleOmitidoDto: {
+            fila: number;
+            codigo: string;
+            motivo: string;
+        };
+        ResultadoImportacionProductosDto: {
+            creados: number;
+            actualizados: number;
+            omitidos: number;
+            detalles: components["schemas"]["DetalleOmitidoDto"][];
         };
     };
     responses: never;
@@ -3130,6 +3227,112 @@ export interface operations {
                 };
             };
             /** @description EMPLEADO sin acceso (Propuesta §2.4) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ImportController_vistaPrevia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["ArchivoProductosDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VistaPreviaImportacionDto"];
+                };
+            };
+            /** @description Archivo inválido, sin columnas obligatorias o demasiado grande */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO importa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ImportController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportacionProductosConfirmBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoImportacionProductosDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Límite de productos del plan (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el DUENIO importa */
             403: {
                 headers: {
                     [name: string]: unknown;

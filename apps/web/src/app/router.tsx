@@ -9,6 +9,7 @@ import { GastoFormPage } from '@/features/gastos/GastoFormPage';
 import { GastosPage } from '@/features/gastos/GastosPage';
 import { UsuariosPage } from '@/features/config/UsuariosPage';
 import { HomePage } from '@/features/home/HomePage';
+import { ImportarProductosPage } from '@/features/importacion/ImportarProductosPage';
 import { MovimientoFormPage } from '@/features/movimientos/MovimientoFormPage';
 import { MovimientosPage } from '@/features/movimientos/MovimientosPage';
 import { ProductoFormPage } from '@/features/productos/ProductoFormPage';
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
             element: <RequireRole roles={['DUENIO']} />,
             children: [
               { path: '/productos/nuevo', element: <ProductoFormPage /> },
+              { path: '/importar', element: <ImportarProductosPage /> },
               { path: '/productos/:id', element: <ProductoFormPage /> },
               { path: '/proveedores', element: <ProveedoresPage /> },
               { path: '/proveedores/nuevo', element: <ProveedorFormPage /> },

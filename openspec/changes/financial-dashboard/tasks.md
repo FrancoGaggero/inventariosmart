@@ -18,6 +18,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 README (ruta de HU-04), `docs/arquitectura.html` (§6 `dashboard`; §7 mobile con el mismo endpoint), `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D5
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.3 Verificar en producción: el inicio muestra el panel de septiembre con el stock de la batería, las ventas, el margen neto con el alquiler cargado, el top rentables y las alertas de stock. Listo cuando: `https://inventariosmart0.vercel.app/` muestra el panel con los números reales del comercio
 - [ ] 4.4 (manual, Franco) Mover HU-04 a Hecho en Trello, actualizar `Backlog_InventarioSmart_v2.xlsx` y la tarea correspondiente del Gantt. Listo cuando: Trello, backlog y Gantt coinciden

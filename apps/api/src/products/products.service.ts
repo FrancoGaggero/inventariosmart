@@ -311,7 +311,7 @@ export class ProductsService {
   }
 
   /** Bloquea la fila del comercio para serializar altas concurrentes (D6) y lee plan e IVA. */
-  private async bloquearComercio(
+  async bloquearComercio(
     tx: TransaccionRaw,
     comercioId: string,
   ): Promise<{ plan: Plan; ivaDefault: string }> {
@@ -323,7 +323,7 @@ export class ProductsService {
     return fila;
   }
 
-  private async verificarLimite(tx: TransaccionRaw, comercioId: string, plan: Plan): Promise<void> {
+  async verificarLimite(tx: TransaccionRaw, comercioId: string, plan: Plan): Promise<void> {
     const limite = LIMITES_PLAN[plan].productos;
     if (limite === null) return;
     const activos = await tx.producto.count({ where: { comercioId, activo: true } });

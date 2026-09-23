@@ -2747,6 +2747,152 @@
           "dashboard"
         ]
       }
+    },
+    "/api/v1/import/preview": {
+      "post": {
+        "description": "Valida cada fila con las reglas del alta de producto y la clasifica: NUEVO, ACTUALIZA (el código existe) o INVALIDA. Informa si la importación superaría el límite del plan. No registra nada.",
+        "operationId": "ImportController_vistaPrevia",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchivoProductosDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VistaPreviaImportacionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Archivo inválido, sin columnas obligatorias o demasiado grande",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el DUENIO importa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vista previa de una planilla de productos (.xlsx o .csv)",
+        "tags": [
+          "importacion"
+        ]
+      }
+    },
+    "/api/v1/import/commit": {
+      "post": {
+        "description": "Crea los nuevos con su INGRESO de stock inicial y actualiza los existentes sin tocar el stock, en una sola transacción. 402 si supera el límite del plan.",
+        "operationId": "ImportController_confirmar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportacionProductosConfirmBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoImportacionProductosDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Límite de productos del plan (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el DUENIO importa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar la importación de productos",
+        "tags": [
+          "importacion"
+        ]
+      }
     }
   },
   "info": {
@@ -4882,6 +5028,219 @@
           "mesAnterior",
           "topRentables",
           "alertas"
+        ]
+      },
+      "ArchivoProductosDto": {
+        "type": "object",
+        "properties": {
+          "archivo": {
+            "type": "string",
+            "format": "binary",
+            "description": ".xlsx o .csv, hasta 2 MB y 5.000 filas"
+          }
+        },
+        "required": [
+          "archivo"
+        ]
+      },
+      "FilaImportacionDto": {
+        "type": "object",
+        "properties": {
+          "fila": {
+            "type": "number",
+            "description": "Número de fila de datos (1 = primera)"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "NUEVO",
+              "ACTUALIZA",
+              "INVALIDA"
+            ]
+          },
+          "datos": {
+            "nullable": true,
+            "description": "Datos validados; null si es inválida",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductoCreateBodyDto"
+              }
+            ]
+          },
+          "productoId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "stockActual": {
+            "type": "number",
+            "nullable": true,
+            "description": "Stock actual del existente; no cambia"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "fila",
+          "codigo",
+          "estado",
+          "datos",
+          "productoId",
+          "stockActual",
+          "error"
+        ]
+      },
+      "ResumenImportacionDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "nuevos": {
+            "type": "number"
+          },
+          "actualizan": {
+            "type": "number"
+          },
+          "invalidas": {
+            "type": "number"
+          },
+          "productosActualesActivos": {
+            "type": "number"
+          },
+          "productosResultantes": {
+            "type": "number"
+          },
+          "limitePlan": {
+            "type": "number",
+            "nullable": true
+          },
+          "superaLimite": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "total",
+          "nuevos",
+          "actualizan",
+          "invalidas",
+          "productosActualesActivos",
+          "productosResultantes",
+          "limitePlan",
+          "superaLimite"
+        ]
+      },
+      "VistaPreviaImportacionDto": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilaImportacionDto"
+            }
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenImportacionDto"
+          }
+        },
+        "required": [
+          "filas",
+          "resumen"
+        ]
+      },
+      "FilaConfirmDto": {
+        "type": "object",
+        "properties": {
+          "fila": {
+            "type": "number"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "NUEVO",
+              "ACTUALIZA"
+            ]
+          },
+          "datos": {
+            "$ref": "#/components/schemas/ProductoCreateBodyDto"
+          }
+        },
+        "required": [
+          "fila",
+          "codigo",
+          "estado",
+          "datos"
+        ]
+      },
+      "ImportacionProductosConfirmBodyDto": {
+        "type": "object",
+        "properties": {
+          "filas": {
+            "minItems": 1,
+            "maxItems": 5000,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilaConfirmDto"
+            }
+          }
+        },
+        "required": [
+          "filas"
+        ]
+      },
+      "DetalleOmitidoDto": {
+        "type": "object",
+        "properties": {
+          "fila": {
+            "type": "number"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fila",
+          "codigo",
+          "motivo"
+        ]
+      },
+      "ResultadoImportacionProductosDto": {
+        "type": "object",
+        "properties": {
+          "creados": {
+            "type": "number"
+          },
+          "actualizados": {
+            "type": "number"
+          },
+          "omitidos": {
+            "type": "number"
+          },
+          "detalles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetalleOmitidoDto"
+            }
+          }
+        },
+        "required": [
+          "creados",
+          "actualizados",
+          "omitidos",
+          "detalles"
         ]
       }
     }
