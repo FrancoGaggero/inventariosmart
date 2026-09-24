@@ -201,15 +201,17 @@ export function AppShell() {
               </div>
             )}
             <span className="hidden lg:inline-flex">{botonTema(false)}</span>
-            <button
-              type="button"
-              className="hidden lg:inline-flex btn btn-ghost !py-2 !px-3"
-              onClick={() => void logout()}
-              aria-label="Cerrar sesión"
-              title="Cerrar sesión"
-            >
-              <LogOut className="w-4 h-4" aria-hidden />
-            </button>
+            <span className="hidden lg:inline-flex">
+              <button
+                type="button"
+                className="btn btn-ghost !py-2 !px-3"
+                onClick={() => void logout()}
+                aria-label="Cerrar sesión"
+                title="Cerrar sesión"
+              >
+                <LogOut className="w-4 h-4" aria-hidden />
+              </button>
+            </span>
           </div>
         </div>
       </header>

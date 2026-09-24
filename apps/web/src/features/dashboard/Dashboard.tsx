@@ -87,7 +87,7 @@ function Kpi({
   extra?: React.ReactNode;
 }) {
   return (
-    <Entrada indice={indice} className="card card-hover p-4 flex gap-3">
+    <Entrada indice={indice} className="card card-hover p-4 flex gap-3 min-w-0 overflow-hidden">
       <span
         className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${TONO[tono]}`}
         aria-hidden
@@ -103,7 +103,9 @@ function Kpi({
           </>
         ) : (
           <>
-            <dd className={`text-xl font-extrabold leading-tight mt-0.5 ${claseValor}`}>
+            <dd
+              className={`text-lg sm:text-xl font-extrabold leading-tight mt-0.5 whitespace-nowrap ${claseValor}`}
+            >
               <MontoAnimado valor={valor} />
             </dd>
             <dd className="text-xs text-t3 mt-1 truncate">{detalle}</dd>
