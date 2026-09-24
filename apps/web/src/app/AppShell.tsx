@@ -130,8 +130,9 @@ export function AppShell() {
     };
   }, [abierto]);
 
+  // Entre lg y xl los enlaces van sólo con icono (tooltip); las etiquetas entran desde xl (D1).
   const enlace = ({ isActive }: { isActive: boolean }) =>
-    `subrayado-activo flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+    `subrayado-activo flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-semibold transition ${
       isActive ? 'text-brand-3' : 'text-t2 hover:text-t1 hover:bg-fill'
     }`;
 
@@ -178,9 +179,16 @@ export function AppShell() {
 
           <nav className="hidden lg:flex items-center gap-0.5 ml-2 min-w-0" aria-label="Principal">
             {enlaces.map((e) => (
-              <NavLink key={e.to} to={e.to} end={e.fin} className={enlace}>
+              <NavLink
+                key={e.to}
+                to={e.to}
+                end={e.fin}
+                className={enlace}
+                title={e.etiqueta}
+                aria-label={e.etiqueta}
+              >
                 <e.Icono className="w-4 h-4 shrink-0" aria-hidden />
-                <span className="whitespace-nowrap">{e.etiqueta}</span>
+                <span className="whitespace-nowrap hidden xl:inline">{e.etiqueta}</span>
                 {e.badge !== undefined && (
                   <Badge n={e.badge} critico={!!e.critico} className="ml-1" />
                 )}
@@ -190,7 +198,7 @@ export function AppShell() {
 
           <div className="ml-auto flex items-center gap-2 min-w-0">
             {me.data && (
-              <div className="hidden md:flex flex-col items-end leading-tight min-w-0">
+              <div className="hidden md:flex lg:hidden 2xl:flex flex-col items-end leading-tight min-w-0">
                 <span className="text-sm font-bold truncate max-w-48">
                   {me.data.comercio.nombre}
                 </span>

@@ -91,7 +91,9 @@ const PASOS = [
 const PLANES = [
   {
     nombre: 'Free',
+    clave: 'FREE',
     precio: 'Gratis',
+    boton: 'Crear cuenta gratis',
     detalle: 'Para empezar',
     incluye: [
       `Hasta ${LIMITES_PLAN.FREE.productos} productos`,
@@ -103,7 +105,9 @@ const PLANES = [
   },
   {
     nombre: 'Pro',
+    clave: 'PRO',
     precio: 'Mensual',
+    boton: 'Quiero el plan Pro',
     detalle: 'Para el día a día',
     incluye: [
       'Productos y usuarios sin límite',
@@ -115,7 +119,9 @@ const PLANES = [
   },
   {
     nombre: 'Premium',
+    clave: 'PREMIUM',
     precio: 'Mensual',
+    boton: 'Quiero Premium',
     detalle: 'Para decidir mejor',
     incluye: [
       'Todo lo de Pro',
@@ -303,17 +309,17 @@ export function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  to="/registro"
+                  to={`/registro?plan=${p.clave}`}
                   className={`btn mt-5 ${p.destacado ? 'btn-primary' : 'btn-ghost'}`}
                 >
-                  {p.nombre === 'Free' ? 'Crear cuenta' : 'Empezar con Free'}
+                  {p.boton}
                 </Link>
               </Entrada>
             ))}
           </div>
           <p className="text-xs text-t3">
-            Los planes Pro y Premium se activan por ahora desde el equipo de InventarioSmart; la
-            gestión de planes en la app llega en una próxima etapa.
+            Toda cuenta empieza en Free. Si elegís Pro o Premium, creá la cuenta y avisanos: hasta
+            que llegue la gestión de planes dentro de la app, lo activamos nosotros.
           </p>
         </section>
       </main>
