@@ -2,6 +2,7 @@ import { BarChart3, BellRing, LogIn, ShoppingCart, TrendingUp } from 'lucide-rea
 import { type FormEvent, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useAuth } from '@/lib/auth';
+import { GraficaBarras } from '@/ui/GraficaBarras';
 
 const MENSAJES: Record<string, string> = {
   'auth/invalid-credential': 'El email o la contraseña no son correctos.',
@@ -25,43 +26,6 @@ const BENEFICIOS = [
     texto: 'La orden se redacta sola; vos confirmás.',
   },
 ];
-
-/** Gráfica decorativa del panel lateral (design D5): barras que suben. */
-function GraficaDecorativa() {
-  const barras = [38, 52, 46, 64, 58, 76, 70, 88];
-  return (
-    <svg viewBox="0 0 240 110" className="w-full max-w-xs" aria-hidden>
-      <defs>
-        <linearGradient id="g-barra" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.35" />
-        </linearGradient>
-      </defs>
-      {barras.map((h, i) => (
-        <rect
-          key={i}
-          x={12 + i * 28}
-          y={100 - h}
-          width={18}
-          height={h}
-          rx={5}
-          fill="url(#g-barra)"
-          className="entra"
-          style={{ ['--i' as string]: i, transformOrigin: 'bottom' }}
-        />
-      ))}
-      <path
-        d="M20 72 L48 60 L76 66 L104 44 L132 50 L160 30 L188 36 L216 14"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.9"
-      />
-    </svg>
-  );
-}
 
 export function LoginPage() {
   const { user, cargando, loginConGoogle, loginConEmail } = useAuth();
@@ -186,7 +150,7 @@ export function LoginPage() {
           </h2>
         </div>
         <div className="my-8">
-          <GraficaDecorativa />
+          <GraficaBarras />
         </div>
         <ul className="space-y-3">
           {BENEFICIOS.map((b, i) => (

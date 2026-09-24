@@ -16,9 +16,11 @@
 - [x] 3.4 `EstadoVacio` en `MovimientosPage`, `ProveedoresPage`, `GastosPage`, `SugerenciaPage`; `.chip` en todos los filtros por estado. Listo cuando: cada listado vacío muestra ilustración, texto y acción (cuando el rol puede crear)
 - [x] 3.5 `LoginPage` con panel lateral ilustrativo a partir de `lg` (D5). Listo cuando: a 1280 px se ve el panel con frase, tres beneficios y la gráfica; a 360 px sólo el formulario, sin desborde
 
+- [x] 3.6 `LandingPage` en `/` sin sesión (D8): cabecera con accesos, hero, servicios, cómo funciona, planes y pie; `AuthGate` la muestra en la raíz sin sesión; `GraficaBarras` compartida con el login. Listo cuando: sin sesión `/` muestra la portada y `/productos` sigue yendo al login; con sesión `/` es el panel; sin desborde a 360 y 1280 px
+
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0012 (sistema visual y tema), README (conmutador de tema, tests de la web), `docs/arquitectura.html` §7 (nota de UI responsive y tema), `openspec/CAPACIDADES.md` (fila "(sin spec, web UI)"). Listo cuando: los documentos reflejan D1 a D7
 - [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, `pnpm build` en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Verificación visual (D6): capturas a 360, 768, 1024 y 1280 px de Inicio, Inventario, Alertas, Órdenes y Nueva orden, y en tema claro de Inicio y Alertas, guardadas en `openspec/changes/web-visual-polish/capturas/`; verificación en producción por Franco (`https://inventariosmart0.vercel.app`). Listo cuando: ninguna captura muestra desborde ni elementos superpuestos y Franco confirma
+- [ ] 4.3 Verificación visual (D6): comprobación a 360, 768, 1024 y 1280 px de Portada, Login, Inicio, Inventario, Alertas, Órdenes y Nueva orden, y en tema claro de Portada, Inicio y Alertas, registrada en `openspec/changes/web-visual-polish/verificacion.md`; verificación en producción por Franco (`https://inventariosmart0.vercel.app`). Listo cuando: ninguna pantalla desborda ni superpone elementos y Franco confirma
 - [ ] 4.4 (manual, Franco) Registrar la mejora en Trello como tarjeta técnica de Fase 2 y en el backlog. Listo cuando: Trello y backlog coinciden
