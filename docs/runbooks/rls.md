@@ -84,6 +84,8 @@ REVOKE DELETE ON "orden_compra" FROM app_api;
 GRANT SELECT, INSERT, UPDATE, DELETE ON "orden_compra_item" TO app_api;
 ```
 
+`reporte_semanal` (HU-09, ADR 0013) usa la variante de `alerta`: se regenera con UPDATE y no se borra.
+
 `precio_proveedor` (HU-02, ADR 0007) sigue el mismo esquema, sin columna actualizable. El test
 `rls.e2e-spec.ts` (CP-10.7c, CP-02.4c) verifica esos privilegios. Los tests limpian datos con la
 conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede

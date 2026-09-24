@@ -667,6 +667,98 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ajustes del reporte semanal: activo y destinatarios extra */
+        get: operations["ReportsController_ajustes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cambiar los ajustes del reporte semanal */
+        patch: operations["ReportsController_actualizarAjustes"];
+        trace?: never;
+    };
+    "/api/v1/reports/weekly": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reportes semanales, del más reciente al más antiguo (HU-09)
+         * @description Si falta el reporte de la última semana cerrada y los reportes están activos, lo genera y envía antes de responder.
+         */
+        get: operations["ReportsController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/weekly/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generar o regenerar el reporte de una semana (default: la semana en curso)
+         * @description Regenerar reemplaza el contenido sin reenviar el correo; con `enviar: true` se envía igual. Un reporte nuevo se envía si los reportes están activos.
+         */
+        post: operations["ReportsController_generar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/weekly/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de un reporte con su contenido */
+        get: operations["ReportsController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/weekly/{id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reenviar un reporte por correo */
+        post: operations["ReportsController_reenviar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1827,6 +1919,203 @@ export interface components {
             texto?: string;
             /** @description Descarta el texto editado y vuelve al generado */
             regenerarTexto?: boolean;
+        };
+        AjustesReportesDto: {
+            /** @example true */
+            activo: boolean;
+            /**
+             * @example [
+             *       "contadora@ejemplo.test"
+             *     ]
+             */
+            destinatariosExtra: string[];
+        };
+        AjustesReportesPatchBodyDto: {
+            activo?: boolean;
+            destinatariosExtra?: string[];
+        };
+        ReporteResumenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-W38 */
+            semana: string;
+            desde: string;
+            hasta: string;
+            /** @example 40 */
+            unidadesVendidas: number;
+            /** @example 113223.10 */
+            ventasNetas: string;
+            /** @example 41223.10 */
+            margenBruto: string;
+            margenBrutoPct: string | null;
+            variacionVentasPct: string | null;
+            /**
+             * @description Productos con alguna oportunidad de ahorro
+             * @example 2
+             */
+            oportunidades: number;
+            enviadoEn: string | null;
+            /** @enum {string|null} */
+            motivoNoEnvio: "SIN_PROVEEDOR" | "ENVIO_FALLIDO" | "SIN_DESTINATARIOS" | null;
+            generadoEn: string;
+        };
+        ListaReportesDto: {
+            items: components["schemas"]["ReporteResumenDto"][];
+            siguienteCursor: string | null;
+        };
+        GenerarReporteBodyDto: {
+            /**
+             * @description Default: la semana en curso
+             * @example 2026-W38
+             */
+            semana?: string;
+            /** @description true: envía el correo aunque ya se haya enviado */
+            enviar?: boolean;
+        };
+        ResumenSemanaDto: {
+            /** @example 40 */
+            unidadesVendidas: number;
+            /** @example 113223.10 */
+            ventasNetas: string;
+            /** @example 72000.00 */
+            costoVendido: string;
+            /** @example 41223.10 */
+            margenBruto: string;
+            /** @example 36.41 */
+            margenBrutoPct: string | null;
+            /** @description Gasto por unidad del mes (RN-02) */
+            gastoPorUnidad: string | null;
+            /**
+             * @description Gasto por unidad × unidades de la semana
+             * @example 100000.00
+             */
+            gastos: string;
+            margenNeto: string | null;
+            margenNetoPct: string | null;
+            /** @enum {string|null} */
+            motivo: "SIN_GASTOS" | "SIN_VENTAS" | null;
+        };
+        SemanaAnteriorDto: {
+            /** @example 2026-W37 */
+            semana: string;
+            /** @example 100000.00 */
+            ventasNetas: string;
+            /** @example 35 */
+            unidadesVendidas: number;
+            /** @example 13.22 */
+            variacionVentasPct: string | null;
+        };
+        ProductoReporteDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        EstrellaDto: {
+            producto: components["schemas"]["ProductoReporteDto"];
+            /** @example 30 */
+            unidadesVendidas: number;
+            /** @example 1123.14 */
+            margenBruto: string;
+            margenBrutoPct: string | null;
+            /** @example 33694.20 */
+            margenBrutoSemana: string;
+        };
+        OportunidadCompraDto: {
+            producto: components["schemas"]["ProductoReporteDto"];
+            proveedorActual: string | null;
+            /** @example Sur */
+            proveedorSugerido: string;
+            /** Format: uuid */
+            proveedorSugeridoId: string;
+            /** @example 2340.00 */
+            costoActual: string;
+            /** @example 2000.00 */
+            costoSugerido: string;
+            /** @example 60 */
+            unidades30d: number;
+            /** @example 20400.00 */
+            ahorroEstimado: string;
+        };
+        ListaOportunidadCompraDto: {
+            items: components["schemas"]["OportunidadCompraDto"][];
+            /** @example 20400.00 */
+            total: string;
+        };
+        CapitalInmovilizadoDto: {
+            producto: components["schemas"]["ProductoReporteDto"];
+            /** @example 20 */
+            stock: number;
+            /** @example 500.00 */
+            costoActual: string;
+            /** @example 10000.00 */
+            monto: string;
+        };
+        ListaCapitalInmovilizadoDto: {
+            items: components["schemas"]["CapitalInmovilizadoDto"][];
+            /** @example 10000.00 */
+            total: string;
+        };
+        MargenBajoDto: {
+            producto: components["schemas"]["ProductoReporteDto"];
+            /** @example 1000.00 */
+            precioNeto: string;
+            /** @example 900.00 */
+            costoActual: string;
+            /** @example 10.00 */
+            margenBrutoPct: string;
+            /** @example 3 */
+            unidadesSemana: number;
+            /** @example 3000.00 */
+            monto: string;
+        };
+        ListaMargenBajoDto: {
+            items: components["schemas"]["MargenBajoDto"][];
+            /** @example 3000.00 */
+            total: string;
+        };
+        OportunidadesDto: {
+            comprarMasBarato: components["schemas"]["ListaOportunidadCompraDto"];
+            capitalInmovilizado: components["schemas"]["ListaCapitalInmovilizadoDto"];
+            margenBajo: components["schemas"]["ListaMargenBajoDto"];
+        };
+        AlertaCriticaReporteDto: {
+            producto: components["schemas"]["ProductoReporteDto"];
+            /** @example 3 */
+            stock: number;
+            diasCobertura: number | null;
+            /** @example 64 */
+            cantidadSugerida: number;
+        };
+        ContenidoReporteDto: {
+            /** @example 2026-W38 */
+            semana: string;
+            desde: string;
+            hasta: string;
+            /** @example 2026-09 */
+            mesGastos: string;
+            resumen: components["schemas"]["ResumenSemanaDto"];
+            semanaAnterior: components["schemas"]["SemanaAnteriorDto"];
+            estrellas: components["schemas"]["EstrellaDto"][];
+            oportunidades: components["schemas"]["OportunidadesDto"];
+            alertasCriticas: components["schemas"]["AlertaCriticaReporteDto"][];
+            generadoEn: string;
+        };
+        ReporteSemanalDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-W38 */
+            semana: string;
+            desde: string;
+            hasta: string;
+            contenido: components["schemas"]["ContenidoReporteDto"];
+            destinatarios: string[];
+            enviadoEn: string | null;
+            /** @enum {string|null} */
+            motivoNoEnvio: "SIN_PROVEEDOR" | "ENVIO_FALLIDO" | "SIN_DESTINATARIOS" | null;
+            generadoEn: string;
         };
     };
     responses: never;
@@ -4488,6 +4777,325 @@ export interface operations {
             };
             /** @description Sólo se cancela un BORRADOR */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_ajustes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AjustesReportesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_actualizarAjustes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AjustesReportesPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AjustesReportesDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaReportesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_generar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerarReporteBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReporteSemanalDto"];
+                };
+            };
+            /** @description Semana inválida (VALIDACION) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReporteSemanalDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ReportsController_reenviar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReporteSemanalDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

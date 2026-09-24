@@ -17,6 +17,8 @@ export interface Correo {
  * `LogMailer` en desarrollo, tests y cuando falta la key: deja constancia y no falla.
  */
 export abstract class Mailer {
+  /** false cuando no hay proveedor real (los reportes lo registran como SIN_PROVEEDOR, HU-09). */
+  abstract configurado: boolean;
   /** true si el proveedor aceptó el envío. Nunca lanza. */
   abstract enviar(correo: Correo): Promise<boolean>;
 }
@@ -24,9 +26,16 @@ export abstract class Mailer {
 @Injectable()
 export class LogMailer extends Mailer {
   private readonly logger = new Logger(LogMailer.name);
+  /** En tests se simula un proveedor real; en producción sin key, no hay proveedor. */
+  configurado: boolean;
   readonly enviados: Correo[] = [];
   /** Destinatarios a los que el doble "rechaza" el envío (simula un proveedor de correo caído). */
   readonly rechazarA = new Set<string>();
+
+  constructor(configurado = false) {
+    super();
+    this.configurado = configurado;
+  }
 
   async enviar(correo: Correo): Promise<boolean> {
     this.enviados.push(correo);
@@ -44,6 +53,7 @@ export class LogMailer extends Mailer {
 
 export class ResendMailer extends Mailer {
   private readonly logger = new Logger(ResendMailer.name);
+  readonly configurado = true;
   private readonly resend: Resend;
 
   constructor(
@@ -84,6 +94,6 @@ export const mailerProvider: Provider = {
     if (apiKey && config.get('NODE_ENV', { infer: true }) !== 'test') {
       return new ResendMailer(apiKey, config.get('MAIL_FROM', { infer: true }));
     }
-    return new LogMailer();
+    return new LogMailer(config.get('NODE_ENV', { infer: true }) === 'test');
   },
 };

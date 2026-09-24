@@ -13,6 +13,7 @@ const TABLA: Record<string, string> = {
   Alerta: 'alerta',
   OrdenCompra: 'orden_compra',
   OrdenCompraItem: 'orden_compra_item',
+  ReporteSemanal: 'reporte_semanal',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -188,6 +189,23 @@ describe('aislamiento entre comercios (e2e)', () => {
       t.prisma.raw.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
         await tx.$executeRaw`DELETE FROM orden_compra WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-09.6c sin contexto la base no devuelve reportes y el rol de la aplicación no los borra', async () => {
+    const [n] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM reporte_semanal`;
+    expect(Number(n!.n)).toBe(0);
+    const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'reporte_semanal' AND grantee = current_user`;
+    expect(privilegios.map((p) => p.privilege_type).sort()).toEqual(['INSERT', 'SELECT', 'UPDATE']);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM reporte_semanal WHERE comercio_id = ${comercioA}::uuid`;
       }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });

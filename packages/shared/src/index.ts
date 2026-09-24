@@ -158,3 +158,4 @@ export * from './dashboard';
 export * from './importacion';
 export * from './alertas';
 export * from './ordenes';
+export * from './reportes';

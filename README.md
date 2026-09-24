@@ -47,6 +47,11 @@ pnpm dev
   queda `CONFIRMADA` con `motivoNoEnvio` y el texto para copiar. Confirmar atiende las alertas de esos productos.
   Para que el correo llegue a proveedores reales hay que verificar un dominio en Resend y cambiar `MAIL_FROM`;
   sin dominio, Resend sólo entrega a la casilla del dueño de la cuenta.
+  Rutas de HU-09 (plan PRO): `GET /reports/weekly?cursor&limit` (genera la última semana cerrada si falta),
+  `GET /reports/weekly/:id`, `POST /reports/weekly/generate` (`{ semana?, enviar? }`), `POST /reports/weekly/:id/resend`,
+  `GET/PATCH /reports/settings` (`activo`, `destinatariosExtra`). Reporte semanal de rentabilidad (semana ISO lunes a
+  domingo en Buenos Aires) con productos estrella y oportunidades de ahorro; se genera los lunes a las 08:00 y se
+  envía a los dueños activos más los correos extra; el contenido queda guardado tal como se envió.
   Rutas de HU-03: `GET /profitability/products?periodo&q` y `GET /profitability/summary?periodo` (márgenes bruto y
   neto sobre importes netos de IVA; nada se almacena).
   Rutas de HU-13: `GET/POST /expenses`, `GET/PATCH/DELETE /expenses/:id`, `GET /expenses/summary` (todas con

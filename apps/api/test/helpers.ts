@@ -72,6 +72,7 @@ export async function crearAppDePrueba(controllers: Type[] = []): Promise<AppDeP
       });
       const comercios = [...new Set(usuarios.map((u) => u.comercioId))];
       // Tablas de negocio primero (FK a comercio), después usuarios y comercios.
+      await owner.reporteSemanal.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.ordenCompraItem.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.ordenCompra.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.alerta.deleteMany({ where: { comercioId: { in: comercios } } });

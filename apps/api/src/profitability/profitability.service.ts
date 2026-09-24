@@ -102,13 +102,26 @@ export class ProfitabilityService {
 
   /** Consolidado del mes (CP-03.5). */
   async resumen(periodo: Mes | undefined): Promise<ResumenRentabilidad> {
-    const { comercioId } = TenantContext.requerido();
     const mes = periodo ?? this.mesActualBuenosAires();
     const desde = inicioMesBuenosAires(mes);
     const hasta = inicioMesBuenosAires(sumarMeses(mes, 1));
+    return { periodo: mes, ...(await this.resumenEntre(desde, hasta, mes, 'mes')) };
+  }
 
+  /**
+   * Consolidado de un rango de fechas (HU-09 lo usa por semana). Los gastos salen del mes
+   * `mesGastos` (RN-02): con `modo: 'mes'` se resta el total del mes (el rango es el mes);
+   * con `modo: 'porUnidad'` se resta el gasto por unidad × unidades del rango.
+   */
+  async resumenEntre(
+    desde: Date,
+    hasta: Date,
+    mesGastos: Mes,
+    modo: 'mes' | 'porUnidad',
+  ): Promise<Omit<ResumenRentabilidad, 'periodo'>> {
+    const { comercioId } = TenantContext.requerido();
     const [gastos, [fila]] = await Promise.all([
-      this.expenses.resumen(mes),
+      this.expenses.resumen(mesGastos),
       this.prisma.transaccionTenant(
         (tx) =>
           tx.$queryRaw<FilaResumen[]>`
@@ -122,29 +135,44 @@ export class ProfitabilityService {
       ),
     ]);
 
+    const unidades = fila?.unidades ?? 0;
     const ventasNetas = redondear2(Number(fila?.ventasNetas ?? 0));
     const costoVendido = redondear2(Number(fila?.costoVendido ?? 0));
     const bruto = margenBruto(ventasNetas, costoVendido);
-    const neto = gastos.gastoPorUnidad === null ? null : margenBruto(bruto, gastos.total);
+    const gastosAplicados =
+      modo === 'mes'
+        ? gastos.total
+        : gastos.gastoPorUnidad === null
+          ? '0.00'
+          : redondear2(Number(gastos.gastoPorUnidad) * unidades);
+    const sinVentas = modo === 'porUnidad' && unidades === 0;
+    const neto =
+      gastos.gastoPorUnidad === null || sinVentas ? null : margenBruto(bruto, gastosAplicados);
     return {
-      periodo: mes,
-      unidadesVendidas: fila?.unidades ?? 0,
+      unidadesVendidas: unidades,
       ventasNetas,
       costoVendido,
       margenBruto: bruto,
       margenBrutoPct: porcentaje(bruto, ventasNetas),
-      gastos: gastos.total,
+      gastos: gastosAplicados,
       margenNeto: neto,
       margenNetoPct: neto === null ? null : porcentaje(neto, ventasNetas),
-      motivo: gastos.motivo,
+      motivo: sinVentas ? 'SIN_VENTAS' : gastos.motivo,
     };
   }
 
   /** Productos con ventas en el mes, ordenados por margen bruto generado (HU-04, D1 d). */
   async topDelMes(periodo: Mes, n: number): Promise<TopRentable[]> {
+    return this.topEntre(
+      inicioMesBuenosAires(periodo),
+      inicioMesBuenosAires(sumarMeses(periodo, 1)),
+      n,
+    );
+  }
+
+  /** Productos con ventas en el rango, ordenados por margen bruto generado (HU-09 por semana). */
+  async topEntre(desde: Date, hasta: Date, n: number): Promise<TopRentable[]> {
     const { comercioId } = TenantContext.requerido();
-    const desde = inicioMesBuenosAires(periodo);
-    const hasta = inicioMesBuenosAires(sumarMeses(periodo, 1));
     const filas = await this.prisma.transaccionTenant(
       (tx) =>
         tx.$queryRaw<FilaRentabilidad[]>`

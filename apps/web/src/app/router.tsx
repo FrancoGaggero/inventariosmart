@@ -23,6 +23,8 @@ import { ProveedorDetallePage } from '@/features/proveedores/ProveedorDetallePag
 import { ProveedorFormPage } from '@/features/proveedores/ProveedorFormPage';
 import { ProveedoresPage } from '@/features/proveedores/ProveedoresPage';
 import { RentabilidadPage } from '@/features/rentabilidad/RentabilidadPage';
+import { ReportePage } from '@/features/reportes/ReportePage';
+import { ReportesPage } from '@/features/reportes/ReportesPage';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
@@ -46,6 +48,8 @@ export const router = createBrowserRouter([
               { path: '/ordenes', element: <OrdenesPage /> },
               { path: '/ordenes/nueva', element: <SugerenciaPage /> },
               { path: '/ordenes/:id', element: <OrdenPage /> },
+              { path: '/reportes', element: <ReportesPage /> },
+              { path: '/reportes/:id', element: <ReportePage /> },
             ],
           },
           {

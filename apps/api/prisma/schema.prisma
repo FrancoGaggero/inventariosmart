@@ -32,28 +32,32 @@ enum Rol {
 
 /// Comercio: unidad de aislamiento multi-tenant (RNF-10).
 model Comercio {
-  id                  String    @id @default(uuid()) @db.Uuid
-  nombre              String    @db.VarChar(120)
-  cuit                String?   @db.VarChar(13)
-  plan                Plan      @default(FREE)
+  id                    String    @id @default(uuid()) @db.Uuid
+  nombre                String    @db.VarChar(120)
+  cuit                  String?   @db.VarChar(13)
+  plan                  Plan      @default(FREE)
   /// Alícuota de IVA por defecto para productos nuevos (RN-03), en porcentaje.
-  ivaDefault          Decimal   @default(21) @map("iva_default") @db.Decimal(5, 2)
-  moneda              String    @default("ARS") @db.Char(3)
+  ivaDefault            Decimal   @default(21) @map("iva_default") @db.Decimal(5, 2)
+  moneda                String    @default("ARS") @db.Char(3)
   /// true hasta que el dueño confirma el nombre del comercio (POST /me/onboarding).
-  onboardingPendiente Boolean   @default(true) @map("onboarding_pendiente")
+  onboardingPendiente   Boolean   @default(true) @map("onboarding_pendiente")
   /// Último recálculo de alertas de reposición (HU-06); null si nunca corrió.
-  alertasCalculadasEn DateTime? @map("alertas_calculadas_en") @db.Timestamptz(3)
-  creadoEn            DateTime  @default(now()) @map("creado_en") @db.Timestamptz(3)
+  alertasCalculadasEn   DateTime? @map("alertas_calculadas_en") @db.Timestamptz(3)
+  /// Reporte semanal (HU-09): activo y correos extra además de los dueños.
+  reportesActivos       Boolean   @default(true) @map("reportes_activos")
+  reportesDestinatarios String[]  @default([]) @map("reportes_destinatarios")
+  creadoEn              DateTime  @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  usuarios         Usuario[]
-  productos        Producto[]
-  movimientos      Movimiento[]
-  proveedores      Proveedor[]
-  precios          PrecioProveedor[]
-  ordenesCompra    OrdenCompra[]
-  itemsOrdenCompra OrdenCompraItem[]
-  gastos           Gasto[]
-  alertas          Alerta[]
+  usuarios          Usuario[]
+  productos         Producto[]
+  movimientos       Movimiento[]
+  proveedores       Proveedor[]
+  precios           PrecioProveedor[]
+  ordenesCompra     OrdenCompra[]
+  itemsOrdenCompra  OrdenCompraItem[]
+  reportesSemanales ReporteSemanal[]
+  gastos            Gasto[]
+  alertas           Alerta[]
 
   @@map("comercio")
 }
@@ -417,4 +421,34 @@ enum MotivoNoEnvio {
   ENVIO_FALLIDO
 
   @@map("motivo_no_envio")
+}
+
+/// Reporte semanal de rentabilidad (HU-09): un snapshot por comercio y semana ISO, tal como se envió.
+model ReporteSemanal {
+  id            String                @id @default(uuid()) @db.Uuid
+  comercioId    String                @map("comercio_id") @db.Uuid
+  /// `AAAA-Www` (lunes a domingo, Buenos Aires).
+  semana        String                @db.VarChar(8)
+  desde         DateTime              @db.Timestamptz(3)
+  hasta         DateTime              @db.Timestamptz(3)
+  contenido     Json
+  destinatarios String[]              @default([])
+  enviadoEn     DateTime?             @map("enviado_en") @db.Timestamptz(3)
+  motivoNoEnvio MotivoNoEnvioReporte? @map("motivo_no_envio")
+  generadoEn    DateTime              @default(now()) @map("generado_en") @db.Timestamptz(3)
+  actualizadoEn DateTime              @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+
+  @@unique([comercioId, semana])
+  @@index([comercioId, semana(sort: Desc)])
+  @@map("reporte_semanal")
+}
+
+enum MotivoNoEnvioReporte {
+  SIN_PROVEEDOR
+  ENVIO_FALLIDO
+  SIN_DESTINATARIOS
+
+  @@map("motivo_no_envio_reporte")
 }

@@ -1,8 +1,14 @@
-import { ComercioPatchSchema } from '@inventariosmart/shared';
+import {
+  AjustesReportesPatchSchema,
+  ComercioPatchSchema,
+  planCumple,
+} from '@inventariosmart/shared';
+import { Mail, Plus, X } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { type FormEvent, useEffect, useState } from 'react';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
 import { useInvalidarMe, useMe } from '@/lib/me';
+import { useActualizarAjustesReportes, useAjustesReportes } from '@/lib/reportes';
 import { Aviso } from '@/ui/Aviso';
 import { Campo } from '@/ui/Campo';
 
@@ -14,6 +20,33 @@ export function ComercioPage() {
   const [iva, setIva] = useState('21');
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [aviso, setAviso] = useState<{ tono: 'ok' | 'error'; texto: string } | null>(null);
+  const tienePlan = me.data ? planCumple(me.data.plan, 'PRO') : false;
+  const ajustes = useAjustesReportes(tienePlan);
+  const guardarAjustes = useActualizarAjustesReportes();
+  const [destinatario, setDestinatario] = useState('');
+  const [avisoReportes, setAvisoReportes] = useState<{
+    tono: 'ok' | 'error';
+    texto: string;
+  } | null>(null);
+
+  const cambiarAjustes = (patch: { activo?: boolean; destinatariosExtra?: string[] }) => {
+    setAvisoReportes(null);
+    const parsed = AjustesReportesPatchSchema.safeParse(patch);
+    if (!parsed.success) {
+      setAvisoReportes({
+        tono: 'error',
+        texto: parsed.error.issues[0]?.message ?? 'Datos inválidos.',
+      });
+      return;
+    }
+    guardarAjustes.mutate(parsed.data, {
+      onSuccess: () => {
+        setDestinatario('');
+        setAvisoReportes({ tono: 'ok', texto: 'Ajustes del reporte guardados.' });
+      },
+      onError: (err) => setAvisoReportes({ tono: 'error', texto: mensajeDe(err) }),
+    });
+  };
 
   useEffect(() => {
     if (me.data) {
@@ -89,6 +122,86 @@ export function ComercioPage() {
           </span>
         </div>
       </form>
+
+      <section className="card p-5 space-y-4">
+        <div>
+          <h2 className="font-bold flex items-center gap-2">
+            <Mail className="w-4 h-4 text-brand-3" aria-hidden />
+            Reporte semanal
+          </h2>
+          <p className="text-t2 text-sm mt-1">
+            Cada lunes a las 8 llega por correo cómo te fue la semana: números, productos estrella y
+            oportunidades de ahorro. Va a los dueños activos y a los correos que agregues.
+          </p>
+        </div>
+        {!tienePlan && <Aviso tono="plan">Disponible en el plan PRO.</Aviso>}
+        {tienePlan && ajustes.data && (
+          <>
+            <label className="flex items-center gap-3 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                className="accent-brand w-4 h-4"
+                checked={ajustes.data.activo}
+                disabled={guardarAjustes.isPending}
+                onChange={(e) => cambiarAjustes({ activo: e.target.checked })}
+              />
+              Enviar el reporte semanal por correo
+            </label>
+            <div className="space-y-2">
+              <span className="block text-xs font-semibold text-t2">Destinatarios extra</span>
+              {ajustes.data.destinatariosExtra.length === 0 ? (
+                <p className="text-xs text-t3">Sólo los dueños activos.</p>
+              ) : (
+                <ul className="flex flex-wrap gap-2">
+                  {ajustes.data.destinatariosExtra.map((d) => (
+                    <li key={d} className="chip">
+                      {d}
+                      <button
+                        type="button"
+                        aria-label={`Quitar ${d}`}
+                        className="ml-1 hover:text-crit"
+                        onClick={() =>
+                          cambiarAjustes({
+                            destinatariosExtra: ajustes.data.destinatariosExtra.filter(
+                              (x) => x !== d,
+                            ),
+                          })
+                        }
+                      >
+                        <X className="w-3 h-3" aria-hidden />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <form
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!destinatario.trim()) return;
+                  cambiarAjustes({
+                    destinatariosExtra: [...ajustes.data!.destinatariosExtra, destinatario.trim()],
+                  });
+                }}
+              >
+                <input
+                  type="email"
+                  value={destinatario}
+                  onChange={(e) => setDestinatario(e.target.value)}
+                  placeholder="contadora@ejemplo.com"
+                  aria-label="Correo extra"
+                  className="campo !py-2.5"
+                />
+                <button type="submit" className="btn btn-ghost" disabled={guardarAjustes.isPending}>
+                  <Plus className="w-4 h-4" aria-hidden />
+                  Agregar
+                </button>
+              </form>
+            </div>
+            {avisoReportes && <Aviso tono={avisoReportes.tono}>{avisoReportes.texto}</Aviso>}
+          </>
+        )}
+      </section>
     </div>
   );
 }

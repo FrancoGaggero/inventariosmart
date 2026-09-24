@@ -3871,6 +3871,441 @@
           "ordenes-de-compra"
         ]
       }
+    },
+    "/api/v1/reports/settings": {
+      "get": {
+        "operationId": "ReportsController_ajustes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AjustesReportesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ajustes del reporte semanal: activo y destinatarios extra",
+        "tags": [
+          "reportes"
+        ]
+      },
+      "patch": {
+        "operationId": "ReportsController_actualizarAjustes",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AjustesReportesPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AjustesReportesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar los ajustes del reporte semanal",
+        "tags": [
+          "reportes"
+        ]
+      }
+    },
+    "/api/v1/reports/weekly": {
+      "get": {
+        "description": "Si falta el reporte de la última semana cerrada y los reportes están activos, lo genera y envía antes de responder.",
+        "operationId": "ReportsController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 12
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaReportesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reportes semanales, del más reciente al más antiguo (HU-09)",
+        "tags": [
+          "reportes"
+        ]
+      }
+    },
+    "/api/v1/reports/weekly/generate": {
+      "post": {
+        "description": "Regenerar reemplaza el contenido sin reenviar el correo; con `enviar: true` se envía igual. Un reporte nuevo se envía si los reportes están activos.",
+        "operationId": "ReportsController_generar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerarReporteBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReporteSemanalDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Semana inválida (VALIDACION)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generar o regenerar el reporte de una semana (default: la semana en curso)",
+        "tags": [
+          "reportes"
+        ]
+      }
+    },
+    "/api/v1/reports/weekly/{id}": {
+      "get": {
+        "operationId": "ReportsController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReporteSemanalDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de un reporte con su contenido",
+        "tags": [
+          "reportes"
+        ]
+      }
+    },
+    "/api/v1/reports/weekly/{id}/resend": {
+      "post": {
+        "operationId": "ReportsController_reenviar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReporteSemanalDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: los reportes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reenviar un reporte por correo",
+        "tags": [
+          "reportes"
+        ]
+      }
     }
   },
   "info": {
@@ -7148,6 +7583,616 @@
             "description": "Descarta el texto editado y vuelve al generado"
           }
         }
+      },
+      "AjustesReportesDto": {
+        "type": "object",
+        "properties": {
+          "activo": {
+            "type": "boolean",
+            "example": true
+          },
+          "destinatariosExtra": {
+            "example": [
+              "contadora@ejemplo.test"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "activo",
+          "destinatariosExtra"
+        ]
+      },
+      "AjustesReportesPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "activo": {
+            "type": "boolean"
+          },
+          "destinatariosExtra": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ReporteResumenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "semana": {
+            "type": "string",
+            "example": "2026-W38"
+          },
+          "desde": {
+            "type": "string"
+          },
+          "hasta": {
+            "type": "string"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 40
+          },
+          "ventasNetas": {
+            "type": "string",
+            "example": "113223.10"
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "41223.10"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true
+          },
+          "variacionVentasPct": {
+            "type": "string",
+            "nullable": true
+          },
+          "oportunidades": {
+            "type": "number",
+            "example": 2,
+            "description": "Productos con alguna oportunidad de ahorro"
+          },
+          "enviadoEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivoNoEnvio": {
+            "type": "string",
+            "enum": [
+              "SIN_PROVEEDOR",
+              "ENVIO_FALLIDO",
+              "SIN_DESTINATARIOS"
+            ],
+            "nullable": true
+          },
+          "generadoEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "semana",
+          "desde",
+          "hasta",
+          "unidadesVendidas",
+          "ventasNetas",
+          "margenBruto",
+          "margenBrutoPct",
+          "variacionVentasPct",
+          "oportunidades",
+          "enviadoEn",
+          "motivoNoEnvio",
+          "generadoEn"
+        ]
+      },
+      "ListaReportesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReporteResumenDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "GenerarReporteBodyDto": {
+        "type": "object",
+        "properties": {
+          "semana": {
+            "type": "string",
+            "example": "2026-W38",
+            "description": "Default: la semana en curso"
+          },
+          "enviar": {
+            "type": "boolean",
+            "description": "true: envía el correo aunque ya se haya enviado"
+          }
+        }
+      },
+      "ResumenSemanaDto": {
+        "type": "object",
+        "properties": {
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 40
+          },
+          "ventasNetas": {
+            "type": "string",
+            "example": "113223.10"
+          },
+          "costoVendido": {
+            "type": "string",
+            "example": "72000.00"
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "41223.10"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "36.41"
+          },
+          "gastoPorUnidad": {
+            "type": "string",
+            "nullable": true,
+            "description": "Gasto por unidad del mes (RN-02)"
+          },
+          "gastos": {
+            "type": "string",
+            "example": "100000.00",
+            "description": "Gasto por unidad × unidades de la semana"
+          },
+          "margenNeto": {
+            "type": "string",
+            "nullable": true
+          },
+          "margenNetoPct": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivo": {
+            "type": "string",
+            "enum": [
+              "SIN_GASTOS",
+              "SIN_VENTAS"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "unidadesVendidas",
+          "ventasNetas",
+          "costoVendido",
+          "margenBruto",
+          "margenBrutoPct",
+          "gastoPorUnidad",
+          "gastos",
+          "margenNeto",
+          "margenNetoPct",
+          "motivo"
+        ]
+      },
+      "SemanaAnteriorDto": {
+        "type": "object",
+        "properties": {
+          "semana": {
+            "type": "string",
+            "example": "2026-W37"
+          },
+          "ventasNetas": {
+            "type": "string",
+            "example": "100000.00"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 35
+          },
+          "variacionVentasPct": {
+            "type": "string",
+            "nullable": true,
+            "example": "13.22"
+          }
+        },
+        "required": [
+          "semana",
+          "ventasNetas",
+          "unidadesVendidas",
+          "variacionVentasPct"
+        ]
+      },
+      "ProductoReporteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "EstrellaDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoReporteDto"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 30
+          },
+          "margenBruto": {
+            "type": "string",
+            "example": "1123.14"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "nullable": true
+          },
+          "margenBrutoSemana": {
+            "type": "string",
+            "example": "33694.20"
+          }
+        },
+        "required": [
+          "producto",
+          "unidadesVendidas",
+          "margenBruto",
+          "margenBrutoPct",
+          "margenBrutoSemana"
+        ]
+      },
+      "OportunidadCompraDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoReporteDto"
+          },
+          "proveedorActual": {
+            "type": "string",
+            "nullable": true
+          },
+          "proveedorSugerido": {
+            "type": "string",
+            "example": "Sur"
+          },
+          "proveedorSugeridoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "costoActual": {
+            "type": "string",
+            "example": "2340.00"
+          },
+          "costoSugerido": {
+            "type": "string",
+            "example": "2000.00"
+          },
+          "unidades30d": {
+            "type": "number",
+            "example": 60
+          },
+          "ahorroEstimado": {
+            "type": "string",
+            "example": "20400.00"
+          }
+        },
+        "required": [
+          "producto",
+          "proveedorActual",
+          "proveedorSugerido",
+          "proveedorSugeridoId",
+          "costoActual",
+          "costoSugerido",
+          "unidades30d",
+          "ahorroEstimado"
+        ]
+      },
+      "ListaOportunidadCompraDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OportunidadCompraDto"
+            }
+          },
+          "total": {
+            "type": "string",
+            "example": "20400.00"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "CapitalInmovilizadoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoReporteDto"
+          },
+          "stock": {
+            "type": "number",
+            "example": 20
+          },
+          "costoActual": {
+            "type": "string",
+            "example": "500.00"
+          },
+          "monto": {
+            "type": "string",
+            "example": "10000.00"
+          }
+        },
+        "required": [
+          "producto",
+          "stock",
+          "costoActual",
+          "monto"
+        ]
+      },
+      "ListaCapitalInmovilizadoDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapitalInmovilizadoDto"
+            }
+          },
+          "total": {
+            "type": "string",
+            "example": "10000.00"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "MargenBajoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoReporteDto"
+          },
+          "precioNeto": {
+            "type": "string",
+            "example": "1000.00"
+          },
+          "costoActual": {
+            "type": "string",
+            "example": "900.00"
+          },
+          "margenBrutoPct": {
+            "type": "string",
+            "example": "10.00"
+          },
+          "unidadesSemana": {
+            "type": "number",
+            "example": 3
+          },
+          "monto": {
+            "type": "string",
+            "example": "3000.00"
+          }
+        },
+        "required": [
+          "producto",
+          "precioNeto",
+          "costoActual",
+          "margenBrutoPct",
+          "unidadesSemana",
+          "monto"
+        ]
+      },
+      "ListaMargenBajoDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MargenBajoDto"
+            }
+          },
+          "total": {
+            "type": "string",
+            "example": "3000.00"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ]
+      },
+      "OportunidadesDto": {
+        "type": "object",
+        "properties": {
+          "comprarMasBarato": {
+            "$ref": "#/components/schemas/ListaOportunidadCompraDto"
+          },
+          "capitalInmovilizado": {
+            "$ref": "#/components/schemas/ListaCapitalInmovilizadoDto"
+          },
+          "margenBajo": {
+            "$ref": "#/components/schemas/ListaMargenBajoDto"
+          }
+        },
+        "required": [
+          "comprarMasBarato",
+          "capitalInmovilizado",
+          "margenBajo"
+        ]
+      },
+      "AlertaCriticaReporteDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoReporteDto"
+          },
+          "stock": {
+            "type": "number",
+            "example": 3
+          },
+          "diasCobertura": {
+            "type": "number",
+            "nullable": true
+          },
+          "cantidadSugerida": {
+            "type": "number",
+            "example": 64
+          }
+        },
+        "required": [
+          "producto",
+          "stock",
+          "diasCobertura",
+          "cantidadSugerida"
+        ]
+      },
+      "ContenidoReporteDto": {
+        "type": "object",
+        "properties": {
+          "semana": {
+            "type": "string",
+            "example": "2026-W38"
+          },
+          "desde": {
+            "type": "string"
+          },
+          "hasta": {
+            "type": "string"
+          },
+          "mesGastos": {
+            "type": "string",
+            "example": "2026-09"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenSemanaDto"
+          },
+          "semanaAnterior": {
+            "$ref": "#/components/schemas/SemanaAnteriorDto"
+          },
+          "estrellas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EstrellaDto"
+            }
+          },
+          "oportunidades": {
+            "$ref": "#/components/schemas/OportunidadesDto"
+          },
+          "alertasCriticas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlertaCriticaReporteDto"
+            }
+          },
+          "generadoEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "semana",
+          "desde",
+          "hasta",
+          "mesGastos",
+          "resumen",
+          "semanaAnterior",
+          "estrellas",
+          "oportunidades",
+          "alertasCriticas",
+          "generadoEn"
+        ]
+      },
+      "ReporteSemanalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "semana": {
+            "type": "string",
+            "example": "2026-W38"
+          },
+          "desde": {
+            "type": "string"
+          },
+          "hasta": {
+            "type": "string"
+          },
+          "contenido": {
+            "$ref": "#/components/schemas/ContenidoReporteDto"
+          },
+          "destinatarios": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enviadoEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivoNoEnvio": {
+            "type": "string",
+            "enum": [
+              "SIN_PROVEEDOR",
+              "ENVIO_FALLIDO",
+              "SIN_DESTINATARIOS"
+            ],
+            "nullable": true
+          },
+          "generadoEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "semana",
+          "desde",
+          "hasta",
+          "contenido",
+          "destinatarios",
+          "enviadoEn",
+          "motivoNoEnvio",
+          "generadoEn"
+        ]
       }
     }
   }

@@ -2,6 +2,7 @@ import {
   ArrowLeftRight,
   BarChart3,
   BellRing,
+  FileBarChart,
   Home,
   LogOut,
   type LucideIcon,
@@ -24,6 +25,7 @@ import { useResumenAlertas } from '@/lib/alertas';
 import { useAuth } from '@/lib/auth';
 import { NOMBRE_ROL, useMe } from '@/lib/me';
 import { useTema } from '@/lib/tema';
+import { Confirmar } from '@/ui/Confirmar';
 
 interface Enlace {
   to: string;
@@ -96,7 +98,12 @@ export function AppShell() {
           },
         ]
       : []),
-    ...(conAlertas ? [{ to: '/ordenes', etiqueta: 'Órdenes', Icono: ShoppingCart }] : []),
+    ...(conAlertas
+      ? [
+          { to: '/ordenes', etiqueta: 'Órdenes', Icono: ShoppingCart },
+          { to: '/reportes', etiqueta: 'Reportes', Icono: FileBarChart },
+        ]
+      : []),
     ...(esDuenio
       ? [
           { to: '/proveedores', etiqueta: 'Proveedores', Icono: Truck },
@@ -107,6 +114,8 @@ export function AppShell() {
   ];
 
   const [abierto, setAbierto] = useState(false);
+  // Cerrar sesión pide confirmación: un clic sin querer no debe echar al usuario.
+  const [confirmarSalida, setConfirmarSalida] = useState(false);
   const botonMenu = useRef<HTMLButtonElement>(null);
   const primerEnlace = useRef<HTMLAnchorElement>(null);
   const location = useLocation();
@@ -213,7 +222,7 @@ export function AppShell() {
               <button
                 type="button"
                 className="btn btn-ghost !py-2 !px-3"
-                onClick={() => void logout()}
+                onClick={() => setConfirmarSalida(true)}
                 aria-label="Cerrar sesión"
                 title="Cerrar sesión"
               >
@@ -283,7 +292,7 @@ export function AppShell() {
               <button
                 type="button"
                 className="btn btn-ghost !py-2 !px-3 w-full justify-start"
-                onClick={() => void logout()}
+                onClick={() => setConfirmarSalida(true)}
               >
                 <LogOut className="w-4 h-4" aria-hidden />
                 Cerrar sesión
@@ -292,6 +301,22 @@ export function AppShell() {
           </aside>
         </div>
       )}
+
+      <Confirmar
+        abierto={confirmarSalida}
+        titulo="¿Cerrar sesión?"
+        textoConfirmar="Cerrar sesión"
+        textoCancelar="Seguir acá"
+        peligroso
+        onConfirmar={() => {
+          setConfirmarSalida(false);
+          void logout();
+        }}
+        onCancelar={() => setConfirmarSalida(false)}
+      >
+        Vas a salir de {me.data?.comercio.nombre ?? 'InventarioSmart'}. Podés volver a entrar cuando
+        quieras.
+      </Confirmar>
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8 min-w-0">
         <Outlet />
