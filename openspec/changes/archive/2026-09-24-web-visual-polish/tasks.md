@@ -6,7 +6,7 @@
 
 ## 2. Navegación responsive
 
-- [ ] 2.1 `AppShell` (D1): enlaces con icono y etiqueta a partir de `lg`, indicador de sección activa, panel lateral por debajo con todos los enlaces, comercio, rol, plan, conmutador de tema y "Cerrar sesión"; cierre por navegación, Escape, velo y botón; foco gestionado; badge de alertas en el enlace y en el botón "Menú", con pulso si hay críticas; `max-w-6xl` y `overflow-x: clip`. Listo cuando: en el navegador integrado, a 360, 768, 1024 y 1280 px, `document.documentElement.scrollWidth === document.documentElement.clientWidth` en Inicio, Inventario, Alertas, Órdenes y Nueva orden, y todos los enlaces son alcanzables con teclado
+- [x] 2.1 `AppShell` (D1): enlaces con icono y etiqueta a partir de `lg`, indicador de sección activa, panel lateral por debajo con todos los enlaces, comercio, rol, plan, conmutador de tema y "Cerrar sesión"; cierre por navegación, Escape, velo y botón; foco gestionado; badge de alertas en el enlace y en el botón "Menú", con pulso si hay críticas; `max-w-6xl` y `overflow-x: clip`. Listo cuando: en el navegador integrado, a 360, 768, 1024 y 1280 px, `document.documentElement.scrollWidth === document.documentElement.clientWidth` en Inicio, Inventario, Alertas, Órdenes y Nueva orden, y todos los enlaces son alcanzables con teclado
 
 ## 3. Componentes y pantallas
 
@@ -21,6 +21,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0012 (sistema visual y tema), README (conmutador de tema, tests de la web), `docs/arquitectura.html` §7 (nota de UI responsive y tema), `openspec/CAPACIDADES.md` (fila "(sin spec, web UI)"). Listo cuando: los documentos reflejan D1 a D7
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, `pnpm build` en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Verificación visual (D6): comprobación a 360, 768, 1024 y 1280 px de Portada, Login, Inicio, Inventario, Alertas, Órdenes y Nueva orden, y en tema claro de Portada, Inicio y Alertas, registrada en `openspec/changes/web-visual-polish/verificacion.md`; verificación en producción por Franco (`https://inventariosmart0.vercel.app`). Listo cuando: ninguna pantalla desborda ni superpone elementos y Franco confirma
-- [ ] 4.4 (manual, Franco) Registrar la mejora en Trello como tarjeta técnica de Fase 2 y en el backlog. Listo cuando: Trello y backlog coinciden
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, `pnpm build` en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Verificación visual (D6): comprobación a 360, 768, 1024 y 1280 px de Portada, Login, Inicio, Inventario, Alertas, Órdenes y Nueva orden, y en tema claro de Portada, Inicio y Alertas, registrada en `openspec/changes/web-visual-polish/verificacion.md`; verificación en producción por Franco (`https://inventariosmart0.vercel.app`). Listo cuando: ninguna pantalla desborda ni superpone elementos y Franco confirma
+- [x] 4.4 (manual, Franco) Registrar la mejora en Trello como tarjeta técnica de Fase 2 y en el backlog. Listo cuando: Trello y backlog coinciden

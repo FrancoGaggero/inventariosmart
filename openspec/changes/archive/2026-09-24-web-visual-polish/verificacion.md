@@ -33,7 +33,7 @@ tarjeta): segunda pasada con KPI de 328 px y botón oculto.
 ² A 1280 px la cabecera con diez enlaces etiquetados más el nombre del comercio se superponía
 (nav hasta 1024 px, bloque derecho desde ~909 px). Corregido: entre `lg` y `xl` los enlaces van
 sólo con icono y tooltip, las etiquetas entran desde `xl` y el bloque del comercio desde `2xl`.
-Re-medido después del deploy (ver abajo).
+Re-medido con el bundle de `3b72bbb`: a 1024 px nav hasta 589 px y bloque derecho desde 894 px (sólo iconos, 0 etiquetas); a 1280 px nav hasta 1103 px y bloque derecho desde 1115 px (10 etiquetas visibles, comercio oculto); a 1600 px nav hasta 1179 px, bloque derecho desde 1191 px con el comercio visible. Sin superposición en los tres.
 ³ La fila de chips de filtro scrollea dentro de su contenedor `overflow-x-auto` (por diseño).
 ⁴ Medido en local (`http://localhost:5173`, sin sesión) a 474 y 1280 px.
 
