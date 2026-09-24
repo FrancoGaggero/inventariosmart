@@ -11,6 +11,8 @@ const TABLA: Record<string, string> = {
   PrecioProveedor: 'precio_proveedor',
   Gasto: 'gasto',
   Alerta: 'alerta',
+  OrdenCompra: 'orden_compra',
+  OrdenCompraItem: 'orden_compra_item',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -160,6 +162,32 @@ describe('aislamiento entre comercios (e2e)', () => {
       t.prisma.raw.$transaction(async (tx) => {
         await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
         await tx.$executeRaw`DELETE FROM alerta WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-07.6c sin contexto la base no devuelve órdenes y el rol de la aplicación no las borra', async () => {
+    const [n] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM orden_compra`;
+    expect(Number(n!.n)).toBe(0);
+    const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'orden_compra' AND grantee = current_user`;
+    expect(privilegios.map((p) => p.privilege_type).sort()).toEqual(['INSERT', 'SELECT', 'UPDATE']);
+    const items = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'orden_compra_item' AND grantee = current_user`;
+    expect(items.map((p) => p.privilege_type).sort()).toEqual([
+      'DELETE',
+      'INSERT',
+      'SELECT',
+      'UPDATE',
+    ]);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM orden_compra WHERE comercio_id = ${comercioA}::uuid`;
       }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });

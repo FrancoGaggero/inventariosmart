@@ -42,6 +42,14 @@ export class AlertaDto {
   @ApiProperty({ nullable: true, type: String }) atendidaEn!: string | null;
   @ApiProperty({ nullable: true, type: String }) resueltaEn!: string | null;
   @ApiProperty({ nullable: true, type: String }) notificadaEn!: string | null;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    format: 'uuid',
+    description:
+      'Orden de compra que la atendió (HU-07); null si se atendió a mano o sigue abierta',
+  })
+  ordenCompraId!: string | null;
 }
 
 export class ListaAlertasDto {

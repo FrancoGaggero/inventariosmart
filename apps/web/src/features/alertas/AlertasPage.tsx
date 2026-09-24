@@ -4,7 +4,14 @@ import {
   type EstadoAlerta,
   planCumple,
 } from '@inventariosmart/shared';
-import { AlertTriangle, BellRing, CheckCircle2, Clock, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle,
+  BellRing,
+  CheckCircle2,
+  Clock,
+  RefreshCw,
+  ShoppingCart,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import {
@@ -99,20 +106,32 @@ export function AlertasPage() {
         frase={resumen.isError ? mensajeDe(resumen.error) : fraseAlertas(resumen.data)}
         derecha={
           <div className="flex flex-col items-end gap-1">
-            {esDuenio && (
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={recalcularAhora}
-                disabled={recalcular.isPending}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 ${recalcular.isPending ? 'animate-spin' : ''}`}
-                  aria-hidden
-                />
-                Recalcular ahora
-              </button>
-            )}
+            <div className="flex flex-wrap gap-2 justify-end">
+              {esDuenio && (
+                <Link
+                  to={`/ordenes/nueva${(resumen.data?.criticas ?? 0) > 0 ? '' : '?severidad=TODAS'}`}
+                  className="btn btn-primary"
+                  aria-disabled={(resumen.data?.activas ?? 0) === 0}
+                >
+                  <ShoppingCart className="w-4 h-4" aria-hidden />
+                  Generar orden
+                </Link>
+              )}
+              {esDuenio && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={recalcularAhora}
+                  disabled={recalcular.isPending}
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${recalcular.isPending ? 'animate-spin' : ''}`}
+                    aria-hidden
+                  />
+                  Recalcular ahora
+                </button>
+              )}
+            </div>
             <span className="text-[11px] text-t3">
               Último cálculo: {formatearCalculo(resumen.data?.calculadasEn ?? null)}
             </span>
@@ -235,6 +254,13 @@ export function AlertasPage() {
                       {a.estado === 'POSPUESTA' && a.pospuestaHasta && (
                         <div className="text-[11px] text-t3">
                           hasta {formatearCalculo(a.pospuestaHasta)}
+                        </div>
+                      )}
+                      {a.estado === 'ATENDIDA' && a.ordenCompraId && (
+                        <div className="text-[11px] text-t3">
+                          <Link to={`/ordenes/${a.ordenCompraId}`} className="hover:underline">
+                            por orden de compra
+                          </Link>
                         </div>
                       )}
                     </td>

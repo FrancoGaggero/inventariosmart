@@ -59,6 +59,7 @@ interface FilaAlerta {
   atendidaEn: Date | null;
   resueltaEn: Date | null;
   notificadaEn: Date | null;
+  ordenCompraId: string | null;
   productoId: string;
   codigo: string;
   nombre: string;
@@ -87,6 +88,7 @@ const COLUMNAS_ALERTA = Prisma.sql`
   a.generada_en AS "generadaEn", a.actualizada_en AS "actualizadaEn",
   a.pospuesta_hasta AS "pospuestaHasta", a.atendida_en AS "atendidaEn",
   a.resuelta_en AS "resueltaEn", a.notificada_en AS "notificadaEn",
+  a.orden_compra_id AS "ordenCompraId",
   p.id AS "productoId", p.codigo, p.nombre,
   p.stock_actual AS "stockActual", p.stock_seguridad AS "stockSeguridad",
   pr.id AS "proveedorId", pr.nombre AS "proveedorNombre", pr.lead_time_dias AS "proveedorLeadTime"`;
@@ -132,6 +134,7 @@ export function aAlerta(f: FilaAlerta): Alerta {
     atendidaEn: f.atendidaEn?.toISOString() ?? null,
     resueltaEn: f.resueltaEn?.toISOString() ?? null,
     notificadaEn: f.notificadaEn?.toISOString() ?? null,
+    ordenCompraId: f.ordenCompraId,
   };
 }
 

@@ -574,6 +574,99 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/purchase-orders/suggest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sugerencia de órdenes por proveedor más conveniente (HU-07 criterio 1)
+         * @description Agrupa las alertas ACTIVA (CRITICA por defecto) por el proveedor de menor costo vigente; a igual costo, menor lead time y mayor confiabilidad; sin precios, el proveedor principal. Sólo lectura: no crea ni envía nada (RN-06).
+         */
+        get: operations["PurchaseOrdersController_sugerir"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchase-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Órdenes del comercio, de la más reciente a la más antigua */
+        get: operations["PurchaseOrdersController_listar"];
+        put?: never;
+        /** Crear un borrador con el texto redactado automáticamente */
+        post: operations["PurchaseOrdersController_crear"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchase-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle con ítems, texto y datos de confirmación y envío */
+        get: operations["PurchaseOrdersController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Editar un borrador: proveedor, ítems, notas, asunto y texto */
+        patch: operations["PurchaseOrdersController_editar"];
+        trace?: never;
+    };
+    "/api/v1/purchase-orders/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirmar con un clic (RN-06): atiende las alertas y envía el correo al proveedor
+         * @description Con email del proveedor queda ENVIADA; sin email o con envío rechazado queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.
+         */
+        post: operations["PurchaseOrdersController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchase-orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancelar un borrador (se conserva como CANCELADA) */
+        post: operations["PurchaseOrdersController_cancelar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1475,6 +1568,11 @@ export interface components {
             atendidaEn: string | null;
             resueltaEn: string | null;
             notificadaEn: string | null;
+            /**
+             * Format: uuid
+             * @description Orden de compra que la atendió (HU-07); null si se atendió a mano o sigue abierta
+             */
+            ordenCompraId: string | null;
         };
         ListaAlertasDto: {
             items: components["schemas"]["AlertaDto"][];
@@ -1562,6 +1660,173 @@ export interface components {
             actualizados: number;
             omitidos: number;
             detalles: components["schemas"]["DetalleOmitidoDto"][];
+        };
+        ProveedorOrdenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Sur */
+            nombre: string;
+            contacto: string | null;
+            email: string | null;
+            /** @example 7 */
+            leadTimeDias: number;
+            /** @example 3 */
+            confiabilidad: number;
+        };
+        ProductoOrdenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+            /** @example 10 */
+            stockActual: number;
+        };
+        ItemSugeridoDto: {
+            producto: components["schemas"]["ProductoOrdenDto"];
+            /** Format: uuid */
+            alertaId: string;
+            /** @enum {string} */
+            severidad: "PROXIMA" | "CRITICA";
+            diasCobertura: number | null;
+            /**
+             * @description Cantidad sugerida por la alerta (mínimo 1)
+             * @example 64
+             */
+            cantidad: number;
+            /** @example 2000.00 */
+            costoUnitarioNeto: string | null;
+            /** @example 128000.00 */
+            subtotal: string | null;
+            /** @enum {string} */
+            motivoEleccion: "MENOR_COSTO" | "MENOR_LEAD_TIME" | "MAYOR_CONFIABILIDAD" | "PROVEEDOR_PRINCIPAL";
+        };
+        GrupoSugeridoDto: {
+            proveedor: components["schemas"]["ProveedorOrdenDto"];
+            items: components["schemas"]["ItemSugeridoDto"][];
+            /** @example 128000.00 */
+            totalNeto: string;
+        };
+        ProductoSinProveedorDto: {
+            producto: components["schemas"]["ProductoOrdenDto"];
+            /** Format: uuid */
+            alertaId: string;
+            /** @enum {string} */
+            severidad: "PROXIMA" | "CRITICA";
+            /** @example 36 */
+            cantidad: number;
+        };
+        SugerenciaOrdenesDto: {
+            /** @enum {string} */
+            severidad: "CRITICA" | "TODAS";
+            grupos: components["schemas"]["GrupoSugeridoDto"][];
+            sinProveedor: components["schemas"]["ProductoSinProveedorDto"][];
+            calculadasEn: string | null;
+        };
+        ProveedorResumenOrdenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Sur */
+            nombre: string;
+        };
+        OrdenResumenDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example OC-0001 */
+            numero: string;
+            /** @enum {string} */
+            estado: "BORRADOR" | "CONFIRMADA" | "ENVIADA" | "CANCELADA";
+            proveedor: components["schemas"]["ProveedorResumenOrdenDto"];
+            /** @example 2 */
+            cantidadItems: number;
+            /** @example 128000.00 */
+            totalNeto: string;
+            /** @enum {string|null} */
+            motivoNoEnvio: "SIN_EMAIL" | "ENVIO_FALLIDO" | null;
+            confirmadaEn: string | null;
+            enviadaEn: string | null;
+            creadoEn: string;
+        };
+        ListaOrdenesDto: {
+            items: components["schemas"]["OrdenResumenDto"][];
+            siguienteCursor: string | null;
+        };
+        ItemOrdenBodyDto: {
+            /** Format: uuid */
+            productoId: string;
+            /** @example 64 */
+            cantidad: number;
+            /**
+             * Format: uuid
+             * @description Alerta de origen
+             */
+            alertaId?: string | null;
+        };
+        OrdenCreateBodyDto: {
+            /** Format: uuid */
+            proveedorId: string;
+            items: components["schemas"]["ItemOrdenBodyDto"][];
+            notas?: string | null;
+        };
+        ItemOrdenDto: {
+            /** Format: uuid */
+            id: string;
+            producto: components["schemas"]["ProductoOrdenDto"];
+            /** Format: uuid */
+            alertaId: string | null;
+            /** @example 64 */
+            cantidad: number;
+            /** @example 2000.00 */
+            costoUnitarioNeto: string | null;
+            /** @example 128000.00 */
+            subtotal: string | null;
+        };
+        UsuarioOrdenDto: {
+            /** Format: uuid */
+            id: string;
+            nombre: string | null;
+        };
+        OrdenCompraDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example OC-0001 */
+            numero: string;
+            /** @enum {string} */
+            estado: "BORRADOR" | "CONFIRMADA" | "ENVIADA" | "CANCELADA";
+            proveedor: components["schemas"]["ProveedorOrdenDto"];
+            items: components["schemas"]["ItemOrdenDto"][];
+            /** @example 128000.00 */
+            totalNeto: string;
+            /** @example Orden de compra OC-0001 · Repuestos Carlos */
+            asunto: string;
+            /** @description Texto del pedido, generado o editado por el dueño */
+            texto: string;
+            /** @description true si el dueño reemplazó el texto generado */
+            textoEditado: boolean;
+            notas: string | null;
+            /** @enum {string|null} */
+            motivoNoEnvio: "SIN_EMAIL" | "ENVIO_FALLIDO" | null;
+            creadaPor: components["schemas"]["UsuarioOrdenDto"];
+            confirmadaPor: components["schemas"]["UsuarioOrdenDto"] | null;
+            confirmadaEn: string | null;
+            enviadaEn: string | null;
+            enviadaA: string | null;
+            canceladaEn: string | null;
+            creadoEn: string;
+            actualizadoEn: string;
+        };
+        OrdenPatchBodyDto: {
+            /** Format: uuid */
+            proveedorId?: string;
+            /** @description Reemplaza la lista */
+            items?: components["schemas"]["ItemOrdenBodyDto"][];
+            notas?: string | null;
+            asunto?: string;
+            /** @description Marca el texto como editado a mano */
+            texto?: string;
+            /** @description Descarta el texto editado y vuelve al generado */
+            regenerarTexto?: boolean;
         };
     };
     responses: never;
@@ -3801,6 +4066,428 @@ export interface operations {
             };
             /** @description Sólo el DUENIO importa */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_sugerir: {
+        parameters: {
+            query?: {
+                severidad?: "CRITICA" | "TODAS";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SugerenciaOrdenesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+                estado?: "BORRADOR" | "CONFIRMADA" | "ENVIADA" | "CANCELADA" | "TODAS";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaOrdenesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_crear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrdenCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Proveedor o producto de otro comercio */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_editar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrdenPatchBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La orden ya no está en BORRADOR */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_confirmar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La orden ya fue confirmada o cancelada */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_cancelar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo se cancela un BORRADOR */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

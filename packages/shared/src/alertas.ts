@@ -159,6 +159,8 @@ export const AlertaSchema = z.object({
   atendidaEn: z.string().nullable(),
   resueltaEn: z.string().nullable(),
   notificadaEn: z.string().nullable(),
+  /** Orden de compra que la atendió (HU-07); null si se atendió a mano o sigue abierta. */
+  ordenCompraId: z.uuid().nullable(),
 });
 export type Alerta = z.infer<typeof AlertaSchema>;
 

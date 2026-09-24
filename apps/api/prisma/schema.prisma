@@ -32,26 +32,28 @@ enum Rol {
 
 /// Comercio: unidad de aislamiento multi-tenant (RNF-10).
 model Comercio {
-  id                  String   @id @default(uuid()) @db.Uuid
-  nombre              String   @db.VarChar(120)
-  cuit                String?  @db.VarChar(13)
-  plan                Plan     @default(FREE)
+  id                  String    @id @default(uuid()) @db.Uuid
+  nombre              String    @db.VarChar(120)
+  cuit                String?   @db.VarChar(13)
+  plan                Plan      @default(FREE)
   /// Alícuota de IVA por defecto para productos nuevos (RN-03), en porcentaje.
-  ivaDefault          Decimal  @default(21) @map("iva_default") @db.Decimal(5, 2)
-  moneda              String   @default("ARS") @db.Char(3)
+  ivaDefault          Decimal   @default(21) @map("iva_default") @db.Decimal(5, 2)
+  moneda              String    @default("ARS") @db.Char(3)
   /// true hasta que el dueño confirma el nombre del comercio (POST /me/onboarding).
-  onboardingPendiente Boolean  @default(true) @map("onboarding_pendiente")
+  onboardingPendiente Boolean   @default(true) @map("onboarding_pendiente")
   /// Último recálculo de alertas de reposición (HU-06); null si nunca corrió.
   alertasCalculadasEn DateTime? @map("alertas_calculadas_en") @db.Timestamptz(3)
-  creadoEn            DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  creadoEn            DateTime  @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  usuarios    Usuario[]
-  productos   Producto[]
-  movimientos Movimiento[]
-  proveedores Proveedor[]
-  precios     PrecioProveedor[]
-  gastos      Gasto[]
-  alertas     Alerta[]
+  usuarios         Usuario[]
+  productos        Producto[]
+  movimientos      Movimiento[]
+  proveedores      Proveedor[]
+  precios          PrecioProveedor[]
+  ordenesCompra    OrdenCompra[]
+  itemsOrdenCompra OrdenCompraItem[]
+  gastos           Gasto[]
+  alertas          Alerta[]
 
   @@map("comercio")
 }
@@ -59,35 +61,36 @@ model Comercio {
 /// Producto del catálogo (HU-01). El stock sólo cambia por movimientos (RN-07).
 /// costoReposicion es el costo vigente sin IVA; HU-02 lo actualiza desde listas de proveedores (RN-08).
 model Producto {
-  id                   String   @id @default(uuid()) @db.Uuid
-  comercioId           String   @map("comercio_id") @db.Uuid
-  codigo               String   @db.VarChar(64)
+  id                     String   @id @default(uuid()) @db.Uuid
+  comercioId             String   @map("comercio_id") @db.Uuid
+  codigo                 String   @db.VarChar(64)
   /// upper(trim(codigo)): unicidad por comercio sin distinguir mayúsculas (RN-05).
-  codigoNormalizado    String   @map("codigo_normalizado") @db.VarChar(64)
-  nombre               String   @db.VarChar(120)
-  categoria            String?  @db.VarChar(60)
+  codigoNormalizado      String   @map("codigo_normalizado") @db.VarChar(64)
+  nombre                 String   @db.VarChar(120)
+  categoria              String?  @db.VarChar(60)
   /// Precio de venta al público, con IVA incluido.
-  precioVenta          Decimal  @map("precio_venta") @db.Decimal(14, 2)
+  precioVenta            Decimal  @map("precio_venta") @db.Decimal(14, 2)
   /// Alícuota de IVA en porcentaje (RN-03).
-  alicuotaIva          Decimal  @map("alicuota_iva") @db.Decimal(5, 2)
+  alicuotaIva            Decimal  @map("alicuota_iva") @db.Decimal(5, 2)
   /// Costo de reposición vigente, sin IVA.
-  costoReposicion      Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
-  stockActual          Int      @default(0) @map("stock_actual")
-  stockSeguridad       Int      @default(0) @map("stock_seguridad")
+  costoReposicion        Decimal  @map("costo_reposicion") @db.Decimal(14, 2)
+  stockActual            Int      @default(0) @map("stock_actual")
+  stockSeguridad         Int      @default(0) @map("stock_seguridad")
   /// Días de anticipación de la alerta de reposición, 0 a 90 (HU-06 criterio 4; CHECK en la migración).
-  diasAnticipacionAlerta Int    @default(3) @map("dias_anticipacion_alerta") @db.SmallInt
+  diasAnticipacionAlerta Int      @default(3) @map("dias_anticipacion_alerta") @db.SmallInt
   /// Proveedor cuya última lista fija costoReposicion (RN-08, HU-02).
-  proveedorPrincipalId String?  @map("proveedor_principal_id") @db.Uuid
-  activo               Boolean  @default(true)
-  creadoEn             DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
-  actualizadoEn        DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+  proveedorPrincipalId   String?  @map("proveedor_principal_id") @db.Uuid
+  activo                 Boolean  @default(true)
+  creadoEn               DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn          DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
 
   comercio           Comercio          @relation(fields: [comercioId], references: [id])
   movimientos        Movimiento[]
   proveedorPrincipal Proveedor?        @relation("ProveedorPrincipal", fields: [proveedorPrincipalId], references: [id], onDelete: SetNull)
   precios            PrecioProveedor[]
 
-  alertas            Alerta[]
+  alertas          Alerta[]
+  itemsOrdenCompra OrdenCompraItem[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
@@ -107,10 +110,12 @@ model Usuario {
   activo      Boolean  @default(true)
   creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  comercio    Comercio          @relation(fields: [comercioId], references: [id])
-  movimientos Movimiento[]
-  precios     PrecioProveedor[]
-  gastos      Gasto[]
+  comercio           Comercio          @relation(fields: [comercioId], references: [id])
+  movimientos        Movimiento[]
+  precios            PrecioProveedor[]
+  gastos             Gasto[]
+  ordenesCreadas     OrdenCompra[]     @relation("OrdenCreadaPor")
+  ordenesConfirmadas OrdenCompra[]     @relation("OrdenConfirmadaPor")
 
   @@index([comercioId])
   @@map("usuario")
@@ -186,6 +191,7 @@ model Proveedor {
   comercio             Comercio          @relation(fields: [comercioId], references: [id])
   precios              PrecioProveedor[]
   productosPrincipales Producto[]        @relation("ProveedorPrincipal")
+  ordenesCompra        OrdenCompra[]
 
   @@unique([comercioId, nombreNormalizado])
   @@index([comercioId, activo, nombre])
@@ -309,12 +315,17 @@ model Alerta {
   atendidaEn       DateTime?       @map("atendida_en") @db.Timestamptz(3)
   resueltaEn       DateTime?       @map("resuelta_en") @db.Timestamptz(3)
   notificadaEn     DateTime?       @map("notificada_en") @db.Timestamptz(3)
+  /// Orden de compra que la atendió (HU-07); null si se atendió a mano o sigue abierta.
+  ordenCompraId    String?         @map("orden_compra_id") @db.Uuid
 
-  comercio Comercio @relation(fields: [comercioId], references: [id])
-  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  comercio    Comercio          @relation(fields: [comercioId], references: [id])
+  producto    Producto          @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  ordenCompra OrdenCompra?      @relation(fields: [ordenCompraId], references: [id], onDelete: SetNull)
+  itemsOrden  OrdenCompraItem[]
 
   @@index([comercioId, estado, diasCobertura])
   @@index([productoId])
+  @@index([ordenCompraId])
   @@map("alerta")
 }
 
@@ -332,4 +343,78 @@ enum SeveridadAlerta {
   CRITICA
 
   @@map("severidad_alerta")
+}
+
+/// Orden de compra en modo copiloto (HU-07, RF-07). Nada se envía sin confirmación del DUENIO (RN-06).
+/// numero es correlativo por comercio (OC-0001). Las órdenes no se borran: se cancelan.
+model OrdenCompra {
+  id              String            @id @default(uuid()) @db.Uuid
+  comercioId      String            @map("comercio_id") @db.Uuid
+  numero          Int
+  proveedorId     String            @map("proveedor_id") @db.Uuid
+  estado          EstadoOrdenCompra @default(BORRADOR)
+  asunto          String            @db.VarChar(200)
+  texto           String
+  /// true cuando el dueño reemplazó el texto generado: no se regenera al editar ítems.
+  textoEditado    Boolean           @default(false) @map("texto_editado")
+  notas           String?           @db.VarChar(500)
+  totalNeto       Decimal           @default(0) @map("total_neto") @db.Decimal(14, 2)
+  motivoNoEnvio   MotivoNoEnvio?    @map("motivo_no_envio")
+  creadaPorId     String            @map("creada_por_id") @db.Uuid
+  confirmadaPorId String?           @map("confirmada_por_id") @db.Uuid
+  confirmadaEn    DateTime?         @map("confirmada_en") @db.Timestamptz(3)
+  enviadaEn       DateTime?         @map("enviada_en") @db.Timestamptz(3)
+  enviadaA        String?           @map("enviada_a") @db.VarChar(254)
+  canceladaEn     DateTime?         @map("cancelada_en") @db.Timestamptz(3)
+  creadoEn        DateTime          @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn   DateTime          @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio      Comercio          @relation(fields: [comercioId], references: [id])
+  proveedor     Proveedor         @relation(fields: [proveedorId], references: [id])
+  creadaPor     Usuario           @relation("OrdenCreadaPor", fields: [creadaPorId], references: [id])
+  confirmadaPor Usuario?          @relation("OrdenConfirmadaPor", fields: [confirmadaPorId], references: [id])
+  items         OrdenCompraItem[]
+  alertas       Alerta[]
+
+  @@unique([comercioId, numero])
+  @@index([comercioId, creadoEn(sort: Desc), id(sort: Desc)])
+  @@index([comercioId, estado])
+  @@index([proveedorId])
+  @@map("orden_compra")
+}
+
+/// Ítem de una orden: cantidad y costo neto al momento de armarla (snapshot).
+model OrdenCompraItem {
+  id                String   @id @default(uuid()) @db.Uuid
+  comercioId        String   @map("comercio_id") @db.Uuid
+  ordenId           String   @map("orden_id") @db.Uuid
+  productoId        String   @map("producto_id") @db.Uuid
+  alertaId          String?  @map("alerta_id") @db.Uuid
+  cantidad          Int
+  costoUnitarioNeto Decimal? @map("costo_unitario_neto") @db.Decimal(14, 2)
+
+  comercio Comercio    @relation(fields: [comercioId], references: [id])
+  orden    OrdenCompra @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  producto Producto    @relation(fields: [productoId], references: [id])
+  alerta   Alerta?     @relation(fields: [alertaId], references: [id], onDelete: SetNull)
+
+  @@unique([ordenId, productoId])
+  @@index([comercioId, productoId])
+  @@map("orden_compra_item")
+}
+
+enum EstadoOrdenCompra {
+  BORRADOR
+  CONFIRMADA
+  ENVIADA
+  CANCELADA
+
+  @@map("estado_orden_compra")
+}
+
+enum MotivoNoEnvio {
+  SIN_EMAIL
+  ENVIO_FALLIDO
+
+  @@map("motivo_no_envio")
 }

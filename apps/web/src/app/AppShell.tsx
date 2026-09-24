@@ -7,6 +7,7 @@ import {
   Package,
   Receipt,
   Settings,
+  ShoppingCart,
   TrendingUp,
   Truck,
   Users,
@@ -86,6 +87,12 @@ export function AppShell() {
                     {activas}
                   </span>
                 )}
+              </NavLink>
+            )}
+            {conAlertas && (
+              <NavLink to="/ordenes" className={enlace}>
+                <ShoppingCart className="w-4 h-4" aria-hidden />
+                Órdenes
               </NavLink>
             )}
             {esDuenio && (

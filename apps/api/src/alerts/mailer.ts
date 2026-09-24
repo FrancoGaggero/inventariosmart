@@ -8,6 +8,8 @@ export interface Correo {
   asunto: string;
   html: string;
   texto: string;
+  /** Dirección de respuesta (una orden al proveedor responde al dueño, HU-07). */
+  responderA?: string;
 }
 
 /**
@@ -23,9 +25,15 @@ export abstract class Mailer {
 export class LogMailer extends Mailer {
   private readonly logger = new Logger(LogMailer.name);
   readonly enviados: Correo[] = [];
+  /** Destinatarios a los que el doble "rechaza" el envío (simula un proveedor de correo caído). */
+  readonly rechazarA = new Set<string>();
 
   async enviar(correo: Correo): Promise<boolean> {
     this.enviados.push(correo);
+    if (correo.para.some((p) => this.rechazarA.has(p))) {
+      this.logger.warn({ para: correo.para }, 'Envío rechazado por el doble de correo');
+      return false;
+    }
     this.logger.log(
       { para: correo.para, asunto: correo.asunto },
       'Correo registrado sin proveedor configurado (RESEND_API_KEY ausente)',
@@ -54,6 +62,7 @@ export class ResendMailer extends Mailer {
         subject: correo.asunto,
         html: correo.html,
         text: correo.texto,
+        ...(correo.responderA ? { replyTo: correo.responderA } : {}),
       });
       if (error) {
         this.logger.warn({ error: error.message, para: correo.para }, 'Resend rechazó el envío');

@@ -75,6 +75,15 @@ GRANT SELECT, INSERT, UPDATE ON "alerta" TO app_api;
 REVOKE DELETE ON "alerta" FROM app_api;
 ```
 
+`orden_compra` (HU-07, ADR 0011) usa la variante de `alerta` (las órdenes se cancelan, no se borran) y
+`orden_compra_item` conserva los cuatro privilegios porque los ítems de un borrador se reemplazan:
+
+```sql
+GRANT SELECT, INSERT, UPDATE ON "orden_compra" TO app_api;
+REVOKE DELETE ON "orden_compra" FROM app_api;
+GRANT SELECT, INSERT, UPDATE, DELETE ON "orden_compra_item" TO app_api;
+```
+
 `precio_proveedor` (HU-02, ADR 0007) sigue el mismo esquema, sin columna actualizable. El test
 `rls.e2e-spec.ts` (CP-10.7c, CP-02.4c) verifica esos privilegios. Los tests limpian datos con la
 conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede

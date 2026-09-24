@@ -414,6 +414,61 @@ describe('restock-alerts: alertas predictivas de reposición (e2e)', () => {
     await t.http().get(`/api/v1/alerts/${deA.id}`).set(auth(duenioB)).expect(404);
   });
 
+  it('CP-06.5e confirmar una orden de compra atiende las alertas abiertas con referencia', async () => {
+    // Dos productos críticos (velocidad 1, stock 1, lead time 7 por defecto), uno pospuesto.
+    const ids: string[] = [];
+    for (const codigo of ['OC-A', 'OC-B']) {
+      const id = await crearProducto({ codigo, nombre: `Producto ${codigo}`, stockInicial: 31 });
+      await movimiento({ tipo: 'VENTA', productoId: id, cantidad: 30, fecha: haceDias(3) }).expect(
+        201,
+      );
+      ids.push(id);
+    }
+    await recalcular().expect(200);
+    const [alertaA] = await alertaDe(ids[0]!, 'estado=ACTIVA');
+    const [alertaB] = await alertaDe(ids[1]!, 'estado=ACTIVA');
+    await accion(alertaB.id, 'POSPONER').expect(200);
+    const proveedorId = (
+      await t
+        .http()
+        .post('/api/v1/suppliers')
+        .set(auth(duenioA))
+        .send({ nombre: 'Proveedor OC' })
+        .expect(201)
+    ).body.id;
+    const orden = await t
+      .http()
+      .post('/api/v1/purchase-orders')
+      .set(auth(duenioA))
+      .send({
+        proveedorId,
+        items: [
+          { productoId: ids[0], cantidad: 30, alertaId: alertaA.id },
+          { productoId: ids[1], cantidad: 30 },
+        ],
+      })
+      .expect(201);
+    await t
+      .http()
+      .post(`/api/v1/purchase-orders/${orden.body.id}/confirm`)
+      .set(auth(duenioA))
+      .expect(200);
+    const atendidas = (await listar('estado=ATENDIDA').expect(200)).body.items;
+    for (const id of ids) {
+      const a = atendidas.find((x: { producto: { id: string } }) => x.producto.id === id);
+      expect(a).toMatchObject({ estado: 'ATENDIDA', ordenCompraId: orden.body.id });
+      expect(a.atendidaEn).toBeTruthy();
+      expect(a.pospuestaHasta).toBeNull();
+    }
+    // Sin ingreso posterior, el recálculo no vuelve a abrir alertas para esos productos.
+    await recalcular().expect(200);
+    for (const id of ids) {
+      expect((await alertaDe(id, 'estado=TODAS')).map((a: { estado: string }) => a.estado)).toEqual(
+        ['ATENDIDA'],
+      );
+    }
+  }, 120_000);
+
   it('CP-06.7 carga sintética: recálculo de 5.000 productos y 50.000 movimientos en menos de 3 s', async () => {
     await conCargaExclusiva(async () => {
       const duenioP = persona('duenio-perf');

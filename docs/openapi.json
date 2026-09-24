@@ -3275,6 +3275,602 @@
           "importacion"
         ]
       }
+    },
+    "/api/v1/purchase-orders/suggest": {
+      "get": {
+        "description": "Agrupa las alertas ACTIVA (CRITICA por defecto) por el proveedor de menor costo vigente; a igual costo, menor lead time y mayor confiabilidad; sin precios, el proveedor principal. Sólo lectura: no crea ni envía nada (RN-06).",
+        "operationId": "PurchaseOrdersController_sugerir",
+        "parameters": [
+          {
+            "name": "severidad",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "CRITICA",
+                "TODAS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SugerenciaOrdenesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sugerencia de órdenes por proveedor más conveniente (HU-07 criterio 1)",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders": {
+      "get": {
+        "operationId": "PurchaseOrdersController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "estado",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "BORRADOR",
+                "CONFIRMADA",
+                "ENVIADA",
+                "CANCELADA",
+                "TODAS"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaOrdenesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Órdenes del comercio, de la más reciente a la más antigua",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      },
+      "post": {
+        "operationId": "PurchaseOrdersController_crear",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdenCreateBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Proveedor o producto de otro comercio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Crear un borrador con el texto redactado automáticamente",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{id}": {
+      "get": {
+        "operationId": "PurchaseOrdersController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle con ítems, texto y datos de confirmación y envío",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      },
+      "patch": {
+        "operationId": "PurchaseOrdersController_editar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdenPatchBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La orden ya no está en BORRADOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Editar un borrador: proveedor, ítems, notas, asunto y texto",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{id}/confirm": {
+      "post": {
+        "description": "Con email del proveedor queda ENVIADA; sin email o con envío rechazado queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.",
+        "operationId": "PurchaseOrdersController_confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La orden ya fue confirmada o cancelada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar con un clic (RN-06): atiende las alertas y envía el correo al proveedor",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{id}/cancel": {
+      "post": {
+        "operationId": "PurchaseOrdersController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sólo se cancela un BORRADOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar un borrador (se conserva como CANCELADA)",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
     }
   },
   "info": {
@@ -5660,6 +6256,12 @@
           "notificadaEn": {
             "type": "string",
             "nullable": true
+          },
+          "ordenCompraId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Orden de compra que la atendió (HU-07); null si se atendió a mano o sigue abierta"
           }
         },
         "required": [
@@ -5681,7 +6283,8 @@
           "pospuestaHasta",
           "atendidaEn",
           "resueltaEn",
-          "notificadaEn"
+          "notificadaEn",
+          "ordenCompraId"
         ]
       },
       "ListaAlertasDto": {
@@ -5985,6 +6588,566 @@
           "omitidos",
           "detalles"
         ]
+      },
+      "ProveedorOrdenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Sur"
+          },
+          "contacto": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "leadTimeDias": {
+            "type": "number",
+            "example": 7
+          },
+          "confiabilidad": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "contacto",
+          "email",
+          "leadTimeDias",
+          "confiabilidad"
+        ]
+      },
+      "ProductoOrdenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          },
+          "stockActual": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre",
+          "stockActual"
+        ]
+      },
+      "ItemSugeridoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoOrdenDto"
+          },
+          "alertaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "PROXIMA",
+              "CRITICA"
+            ]
+          },
+          "diasCobertura": {
+            "type": "number",
+            "nullable": true
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 64,
+            "description": "Cantidad sugerida por la alerta (mínimo 1)"
+          },
+          "costoUnitarioNeto": {
+            "type": "string",
+            "nullable": true,
+            "example": "2000.00"
+          },
+          "subtotal": {
+            "type": "string",
+            "nullable": true,
+            "example": "128000.00"
+          },
+          "motivoEleccion": {
+            "type": "string",
+            "enum": [
+              "MENOR_COSTO",
+              "MENOR_LEAD_TIME",
+              "MAYOR_CONFIABILIDAD",
+              "PROVEEDOR_PRINCIPAL"
+            ]
+          }
+        },
+        "required": [
+          "producto",
+          "alertaId",
+          "severidad",
+          "diasCobertura",
+          "cantidad",
+          "costoUnitarioNeto",
+          "subtotal",
+          "motivoEleccion"
+        ]
+      },
+      "GrupoSugeridoDto": {
+        "type": "object",
+        "properties": {
+          "proveedor": {
+            "$ref": "#/components/schemas/ProveedorOrdenDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemSugeridoDto"
+            }
+          },
+          "totalNeto": {
+            "type": "string",
+            "example": "128000.00"
+          }
+        },
+        "required": [
+          "proveedor",
+          "items",
+          "totalNeto"
+        ]
+      },
+      "ProductoSinProveedorDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoOrdenDto"
+          },
+          "alertaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "PROXIMA",
+              "CRITICA"
+            ]
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 36
+          }
+        },
+        "required": [
+          "producto",
+          "alertaId",
+          "severidad",
+          "cantidad"
+        ]
+      },
+      "SugerenciaOrdenesDto": {
+        "type": "object",
+        "properties": {
+          "severidad": {
+            "type": "string",
+            "enum": [
+              "CRITICA",
+              "TODAS"
+            ]
+          },
+          "grupos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GrupoSugeridoDto"
+            }
+          },
+          "sinProveedor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoSinProveedorDto"
+            }
+          },
+          "calculadasEn": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "severidad",
+          "grupos",
+          "sinProveedor",
+          "calculadasEn"
+        ]
+      },
+      "ProveedorResumenOrdenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Sur"
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "OrdenResumenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numero": {
+            "type": "string",
+            "example": "OC-0001"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "BORRADOR",
+              "CONFIRMADA",
+              "ENVIADA",
+              "CANCELADA"
+            ]
+          },
+          "proveedor": {
+            "$ref": "#/components/schemas/ProveedorResumenOrdenDto"
+          },
+          "cantidadItems": {
+            "type": "number",
+            "example": 2
+          },
+          "totalNeto": {
+            "type": "string",
+            "example": "128000.00"
+          },
+          "motivoNoEnvio": {
+            "type": "string",
+            "enum": [
+              "SIN_EMAIL",
+              "ENVIO_FALLIDO"
+            ],
+            "nullable": true
+          },
+          "confirmadaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "enviadaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "creadoEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "estado",
+          "proveedor",
+          "cantidadItems",
+          "totalNeto",
+          "motivoNoEnvio",
+          "confirmadaEn",
+          "enviadaEn",
+          "creadoEn"
+        ]
+      },
+      "ListaOrdenesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrdenResumenDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ItemOrdenBodyDto": {
+        "type": "object",
+        "properties": {
+          "productoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 64,
+            "minimum": 1
+          },
+          "alertaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Alerta de origen"
+          }
+        },
+        "required": [
+          "productoId",
+          "cantidad"
+        ]
+      },
+      "OrdenCreateBodyDto": {
+        "type": "object",
+        "properties": {
+          "proveedorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemOrdenBodyDto"
+            }
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "proveedorId",
+          "items"
+        ]
+      },
+      "ItemOrdenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "producto": {
+            "$ref": "#/components/schemas/ProductoOrdenDto"
+          },
+          "alertaId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 64
+          },
+          "costoUnitarioNeto": {
+            "type": "string",
+            "nullable": true,
+            "example": "2000.00"
+          },
+          "subtotal": {
+            "type": "string",
+            "nullable": true,
+            "example": "128000.00"
+          }
+        },
+        "required": [
+          "id",
+          "producto",
+          "alertaId",
+          "cantidad",
+          "costoUnitarioNeto",
+          "subtotal"
+        ]
+      },
+      "UsuarioOrdenDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "OrdenCompraDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numero": {
+            "type": "string",
+            "example": "OC-0001"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "BORRADOR",
+              "CONFIRMADA",
+              "ENVIADA",
+              "CANCELADA"
+            ]
+          },
+          "proveedor": {
+            "$ref": "#/components/schemas/ProveedorOrdenDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemOrdenDto"
+            }
+          },
+          "totalNeto": {
+            "type": "string",
+            "example": "128000.00"
+          },
+          "asunto": {
+            "type": "string",
+            "example": "Orden de compra OC-0001 · Repuestos Carlos"
+          },
+          "texto": {
+            "type": "string",
+            "description": "Texto del pedido, generado o editado por el dueño"
+          },
+          "textoEditado": {
+            "type": "boolean",
+            "description": "true si el dueño reemplazó el texto generado"
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivoNoEnvio": {
+            "type": "string",
+            "enum": [
+              "SIN_EMAIL",
+              "ENVIO_FALLIDO"
+            ],
+            "nullable": true
+          },
+          "creadaPor": {
+            "$ref": "#/components/schemas/UsuarioOrdenDto"
+          },
+          "confirmadaPor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioOrdenDto"
+              }
+            ]
+          },
+          "confirmadaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "enviadaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "enviadaA": {
+            "type": "string",
+            "nullable": true
+          },
+          "canceladaEn": {
+            "type": "string",
+            "nullable": true
+          },
+          "creadoEn": {
+            "type": "string"
+          },
+          "actualizadoEn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "estado",
+          "proveedor",
+          "items",
+          "totalNeto",
+          "asunto",
+          "texto",
+          "textoEditado",
+          "notas",
+          "motivoNoEnvio",
+          "creadaPor",
+          "confirmadaPor",
+          "confirmadaEn",
+          "enviadaEn",
+          "enviadaA",
+          "canceladaEn",
+          "creadoEn",
+          "actualizadoEn"
+        ]
+      },
+      "OrdenPatchBodyDto": {
+        "type": "object",
+        "properties": {
+          "proveedorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "description": "Reemplaza la lista",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemOrdenBodyDto"
+            }
+          },
+          "notas": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          },
+          "asunto": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "texto": {
+            "type": "string",
+            "maxLength": 10000,
+            "description": "Marca el texto como editado a mano"
+          },
+          "regenerarTexto": {
+            "type": "boolean",
+            "description": "Descarta el texto editado y vuelve al generado"
+          }
+        }
       }
     }
   }

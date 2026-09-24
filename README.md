@@ -39,6 +39,14 @@ pnpm dev
   recalculan a las 07:00 de Buenos Aires, al leer si el último cálculo tiene más de una hora, y a pedido; el panel suma
   `alertas.reposicion` (null en plan FREE). Correo de resumen a los dueños con Resend (`RESEND_API_KEY`); sin la key,
   el envío queda en el log. Cambiar el plan de un comercio: ver `docs/runbooks/deploy.md`.
+  Rutas de HU-07 (plan PRO): `GET /purchase-orders/suggest?severidad` (CRITICA | TODAS; agrupa las alertas por el
+  proveedor más conveniente: menor costo vigente, luego menor lead time y mayor confiabilidad, o el principal),
+  `GET/POST /purchase-orders`, `GET/PATCH /purchase-orders/:id`, `POST /purchase-orders/:id/confirm` y
+  `POST /purchase-orders/:id/cancel`. El borrador (`OC-0001`) trae el texto redactado automáticamente y se edita
+  libre; nada se envía hasta confirmar (RN-06): con email del proveedor sale por Resend y queda `ENVIADA`, si no
+  queda `CONFIRMADA` con `motivoNoEnvio` y el texto para copiar. Confirmar atiende las alertas de esos productos.
+  Para que el correo llegue a proveedores reales hay que verificar un dominio en Resend y cambiar `MAIL_FROM`;
+  sin dominio, Resend sólo entrega a la casilla del dueño de la cuenta.
   Rutas de HU-03: `GET /profitability/products?periodo&q` y `GET /profitability/summary?periodo` (márgenes bruto y
   neto sobre importes netos de IVA; nada se almacena).
   Rutas de HU-13: `GET/POST /expenses`, `GET/PATCH/DELETE /expenses/:id`, `GET /expenses/summary` (todas con

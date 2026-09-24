@@ -18,6 +18,7 @@ import { MovementsModule } from './movements/movements.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { ProfitabilityModule } from './profitability/profitability.module';
+import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { UsersModule } from './users/users.module';
 
@@ -54,6 +55,7 @@ import { UsersModule } from './users/users.module';
     DashboardModule,
     ImportModule,
     AlertsModule,
+    PurchaseOrdersModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

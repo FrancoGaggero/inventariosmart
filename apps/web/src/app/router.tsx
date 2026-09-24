@@ -13,6 +13,9 @@ import { HomePage } from '@/features/home/HomePage';
 import { ImportarProductosPage } from '@/features/importacion/ImportarProductosPage';
 import { MovimientoFormPage } from '@/features/movimientos/MovimientoFormPage';
 import { MovimientosPage } from '@/features/movimientos/MovimientosPage';
+import { OrdenPage } from '@/features/ordenes/OrdenPage';
+import { OrdenesPage } from '@/features/ordenes/OrdenesPage';
+import { SugerenciaPage } from '@/features/ordenes/SugerenciaPage';
 import { ProductoFormPage } from '@/features/productos/ProductoFormPage';
 import { ProductosPage } from '@/features/productos/ProductosPage';
 import { ImportarListaPage } from '@/features/proveedores/ImportarListaPage';
@@ -40,6 +43,9 @@ export const router = createBrowserRouter([
               { path: '/gastos', element: <GastosPage /> },
               { path: '/rentabilidad', element: <RentabilidadPage /> },
               { path: '/alertas', element: <AlertasPage /> },
+              { path: '/ordenes', element: <OrdenesPage /> },
+              { path: '/ordenes/nueva', element: <SugerenciaPage /> },
+              { path: '/ordenes/:id', element: <OrdenPage /> },
             ],
           },
           {
