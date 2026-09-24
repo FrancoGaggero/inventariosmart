@@ -22,6 +22,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0011 (órdenes en modo copiloto), README (rutas de HU-07, verificación de dominio para enviar a proveedores), `docs/arquitectura.html` (§6 `purchase-orders`, RN-06 construida), `docs/runbooks/rls.md` (tablas nuevas), `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D8
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: migración aplicada por Render; proveedor de prueba con el email de Franco; sugerencia, borrador, edición, confirmación y correo recibido; orden `SIN_EMAIL` con texto copiable; alerta "Atendida · OC-0001". Listo cuando: CP-07.1, CP-07.2, CP-07.3, CP-07.4 y CP-07.4b se cumplen en `https://inventariosmart0.vercel.app/ordenes`
-- [ ] 4.4 (manual, Franco) Mover HU-07 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: Trello, backlog y Gantt coinciden
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Producción: migración aplicada por Render; proveedor de prueba con el email de Franco; sugerencia, borrador, edición, confirmación y correo recibido; orden `SIN_EMAIL` con texto copiable; alerta "Atendida · OC-0001". Listo cuando: CP-07.1, CP-07.2, CP-07.3, CP-07.4 y CP-07.4b se cumplen en `https://inventariosmart0.vercel.app/ordenes`
+- [x] 4.4 (manual, Franco) Mover HU-07 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: Trello, backlog y Gantt coinciden
