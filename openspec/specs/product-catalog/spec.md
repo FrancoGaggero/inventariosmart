@@ -70,7 +70,7 @@ El sistema SHALL listar los productos del comercio con búsqueda por código o n
 - **THEN** sólo obtiene los activos; con `?activo=false` obtiene los dados de baja
 
 ### Requirement: Modificación de producto
-El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio de venta, alícuota, costo de reposición, stock de seguridad y proveedor principal, con las mismas validaciones del alta, y SHALL rechazar cambios directos al stock actual, que sólo se modifica por movimientos (RF-02, RN-07). El producto SHALL exponer `proveedorPrincipal` (id y nombre, o null); al cambiar el proveedor principal el costo de reposición SHALL pasar al último costo informado por ese proveedor, si existe (RN-08, ver `suppliers-price-lists`).
+El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio de venta, alícuota, costo de reposición, stock de seguridad, proveedor principal y días de anticipación de la alerta de reposición (`diasAnticipacionAlerta`, entero de 0 a 90, 3 por defecto en el alta; HU-06 criterio 4), con las mismas validaciones del alta, y SHALL rechazar cambios directos al stock actual, que sólo se modifica por movimientos (RF-02, RN-07). El producto SHALL exponer `proveedorPrincipal` (id y nombre, o null) y `diasAnticipacionAlerta`; al cambiar el proveedor principal el costo de reposición SHALL pasar al último costo informado por ese proveedor, si existe (RN-08, ver `suppliers-price-lists`).
 
 #### Scenario: CP-01.4 Edición reflejada de inmediato
 - **GIVEN** un producto existente
@@ -91,6 +91,11 @@ El sistema SHALL permitir al DUENIO editar código, nombre, categoría, precio d
 - **GIVEN** un producto sin proveedor principal y un proveedor "Norte" del comercio
 - **WHEN** el DUENIO envía `PATCH /api/v1/products/:id` con `proveedorPrincipalId` de "Norte", y luego con `proveedorPrincipalId` de un proveedor de otro comercio
 - **THEN** la primera responde 200 con `proveedorPrincipal: { id, nombre: "Norte" }` y la segunda 404 `NO_ENCONTRADO`
+
+#### Scenario: CP-01.4e Días de anticipación de la alerta
+- **GIVEN** un producto recién creado sin indicar anticipación
+- **WHEN** el DUENIO lo consulta, luego envía `PATCH` con `diasAnticipacionAlerta: 10` y después con `diasAnticipacionAlerta: 120`
+- **THEN** el `GET` inicial muestra `diasAnticipacionAlerta: 3`, el primer `PATCH` responde 200 con 10 y el segundo 400 `VALIDACION` con `details.diasAnticipacionAlerta`
 
 ### Requirement: Baja lógica y reactivación
 El sistema SHALL dar de baja un producto marcándolo inactivo sin borrarlo, conservando su código y su historial, y SHALL permitir reactivarlo; el producto dado de baja no aparece en el listado por defecto (HU-01 criterio 4).

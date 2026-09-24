@@ -11,7 +11,7 @@
 - [x] 2.5 `Mailer` con `ResendMailer` y `LogMailer`, plantilla del resumen y notificación única por alerta (D5); `RESEND_API_KEY` y `MAIL_FROM` en `env.ts` y `.env.example`. Listo cuando: CP-06.3b y CP-06.3c pasan con `LogMailer` y un test unitario cubre la plantilla (producto, stock, cobertura, sugerido, enlace)
 - [x] 2.6 Cron diario 07:00 Buenos Aires con `@nestjs/schedule` (D4) sobre comercios PRO/PREMIUM como sistema, desactivado en tests; `ScheduleModule` y `AlertsModule` registrados en `AppModule`. Listo cuando: un test unitario verifica que recorre sólo comercios PRO/PREMIUM y ejecuta el recálculo con el contexto de cada uno
 - [x] 2.7 `DashboardService`: `alertas.reposicion` (total y 5 items, o `null` en FREE) y recálculo si está vencido. Listo cuando: CP-04.1e pasa en `dashboard.e2e-spec.ts`
-- [ ] 2.8 Rendimiento: carga sintética de 5.000 productos y 50.000 movimientos y medición del recálculo. Listo cuando: CP-06.7 pasa (< 3 s) junto con las suites existentes
+- [x] 2.8 Rendimiento: carga sintética de 5.000 productos y 50.000 movimientos y medición del recálculo. Listo cuando: CP-06.7 pasa (< 3 s) junto con las suites existentes
 - [x] 2.9 Regenerar contrato y cliente: `pnpm openapi`. Listo cuando: `docs/openapi.json` tiene las rutas `/alerts*`, el campo nuevo del producto y `alertas.reposicion`, y CI no reporta contrato desactualizado
 
 ## 3. Web · alertas
@@ -23,7 +23,7 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0010 (alertas persistidas, recálculo diario y bajo demanda, correo intercambiable), README (rutas de HU-06, variables de correo, cambio de plan), `docs/arquitectura.html` (§6 `alerts`, RN-04 construida), `docs/runbooks/deploy.md` (Resend) y `rls.md` (tabla `alerta`), `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D9
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: migración aplicada por Render, comercio de Franco en plan PRO (SQL del runbook, con la propietaria); si Franco creó la cuenta de Resend, `RESEND_API_KEY` y `MAIL_FROM` cargadas en Render. Listo cuando: `GET /api/v1/alerts/summary` responde 200 con token de Franco
-- [ ] 4.4 Verificar en producción: con las ventas reales del mes, la página Alertas muestra los productos próximos al quiebre con sus cifras, "Atendida" y "Posponer" funcionan, el panel muestra el bloque Reposición y, si hay correo configurado, llega el resumen. Listo cuando: CP-06.3 y CP-06.5 se cumplen en `https://inventariosmart0.vercel.app/alertas`
-- [ ] 4.5 (manual, Franco) Crear la cuenta de Resend y la API key, y mover HU-06 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: la key está en Render y Trello, backlog y Gantt coinciden
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Producción: migración aplicada por Render, comercio de Franco en plan PRO (SQL del runbook, con la propietaria); si Franco creó la cuenta de Resend, `RESEND_API_KEY` y `MAIL_FROM` cargadas en Render. Listo cuando: `GET /api/v1/alerts/summary` responde 200 con token de Franco
+- [x] 4.4 Verificar en producción: con las ventas reales del mes, la página Alertas muestra los productos próximos al quiebre con sus cifras, "Atendida" y "Posponer" funcionan, el panel muestra el bloque Reposición y, si hay correo configurado, llega el resumen. Listo cuando: CP-06.3 y CP-06.5 se cumplen en `https://inventariosmart0.vercel.app/alertas`
+- [x] 4.5 (manual, Franco) Crear la cuenta de Resend y la API key, y mover HU-06 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: la key está en Render y Trello, backlog y Gantt coinciden
