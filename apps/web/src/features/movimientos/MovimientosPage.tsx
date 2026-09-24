@@ -5,7 +5,7 @@ import {
   esAnulable,
   type TipoMovimiento,
 } from '@inventariosmart/shared';
-import { ArrowLeftRight, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -21,6 +21,7 @@ import {
 } from '@/lib/movimientos';
 import { useProducto } from '@/lib/productos';
 import { Aviso } from '@/ui/Aviso';
+import { EstadoVacio } from '@/ui/EstadoVacio';
 
 type Chip = 'TODOS' | TipoMovimiento;
 
@@ -29,8 +30,7 @@ const CHIPS: { valor: Chip; texto: string }[] = [
   ...TIPOS_MOVIMIENTO.map((t) => ({ valor: t, texto: ETIQUETA_TIPO[t] })),
 ];
 
-const inputClase =
-  'rounded-xl bg-[#070C16] border border-white/12 px-3 py-2 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15';
+const inputClase = 'campo !px-3 !py-2';
 
 /** Historial de movimientos del comercio (HU-10). CONTADOR sólo consulta. */
 export function MovimientosPage() {
@@ -103,11 +103,7 @@ export function MovimientosPage() {
               role="tab"
               aria-selected={chip === c.valor}
               onClick={() => setChip(c.valor)}
-              className={`px-3 py-2 rounded-full text-xs font-semibold border whitespace-nowrap transition ${
-                chip === c.valor
-                  ? 'bg-brand border-brand text-white'
-                  : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
-              }`}
+              className={`chip ${chip === c.valor ? 'chip-activo' : ''}`}
             >
               {c.texto}
             </button>
@@ -149,7 +145,7 @@ export function MovimientosPage() {
                 params.delete('productoId');
                 setParams(params);
               }}
-              className="hover:text-white"
+              className="hover:text-t1"
             >
               <X className="w-3.5 h-3.5" aria-hidden />
             </button>
@@ -164,7 +160,7 @@ export function MovimientosPage() {
 
       <section className="card overflow-x-auto">
         <table className="w-full text-sm min-w-[760px]">
-          <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+          <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
             <tr>
               <th className="text-left px-5 py-3">Fecha</th>
               <th className="text-left px-3 py-3">Tipo</th>
@@ -193,20 +189,24 @@ export function MovimientosPage() {
             )}
             {movimientos.isSuccess && items.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-t2">
-                  <ArrowLeftRight className="w-8 h-8 mx-auto mb-2 text-t3" aria-hidden />
-                  {chip !== 'TODOS' || desde || hasta || productoId
-                    ? 'No hay movimientos que coincidan.'
-                    : 'Todavía no hay movimientos registrados.'}
-                  {registra && (
-                    <>
-                      {' '}
-                      <Link to={nuevoHref} className="text-brand-3 font-semibold">
-                        Registrá el primero
-                      </Link>
-                      .
-                    </>
-                  )}
+                <td colSpan={8}>
+                  <EstadoVacio
+                    ilustracion="flechas"
+                    titulo={
+                      chip !== 'TODOS' || desde || hasta || productoId
+                        ? 'No hay movimientos que coincidan.'
+                        : 'Todavía no hay movimientos registrados.'
+                    }
+                    texto="Cada venta, ingreso o ajuste queda en el historial; nada se borra."
+                    accion={
+                      registra && (
+                        <Link to={nuevoHref} className="btn btn-primary">
+                          <Plus className="w-4 h-4" aria-hidden />
+                          Registrar el primero
+                        </Link>
+                      )
+                    }
+                  />
                 </td>
               </tr>
             )}
@@ -214,7 +214,7 @@ export function MovimientosPage() {
               const anulado = m.anuladoPorId !== null;
               const esAnulacion = m.corrigeAId !== null;
               return (
-                <tr key={m.id} className={`border-t border-white/6 ${anulado ? 'opacity-50' : ''}`}>
+                <tr key={m.id} className={`border-t border-line ${anulado ? 'opacity-50' : ''}`}>
                   <td className="px-5 py-3 whitespace-nowrap tabular-nums text-t2">
                     {formatearFechaHora(m.fecha)}
                   </td>
@@ -274,7 +274,7 @@ export function MovimientosPage() {
           </tbody>
         </table>
         {movimientos.hasNextPage && (
-          <div className="p-4 border-t border-white/6 text-center">
+          <div className="p-4 border-t border-line text-center">
             <button
               type="button"
               className="btn btn-ghost"

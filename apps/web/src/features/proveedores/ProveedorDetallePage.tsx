@@ -131,7 +131,7 @@ export function ProveedorDetallePage() {
         </p>
         <div className="card overflow-x-auto">
           <table className="w-full text-sm min-w-[560px]">
-            <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+            <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
               <tr>
                 <th className="text-left px-5 py-3">Producto</th>
                 <th className="text-right px-3 py-3">Costo neto</th>
@@ -162,7 +162,7 @@ export function ProveedorDetallePage() {
                 </tr>
               )}
               {items.map((f) => (
-                <tr key={f.id} className="border-t border-white/6">
+                <tr key={f.id} className="border-t border-line">
                   <td className="px-5 py-3">
                     <div className="font-semibold">{f.producto.nombre}</div>
                     <div className="text-xs text-t2 font-mono">{f.producto.codigo}</div>
@@ -179,7 +179,7 @@ export function ProveedorDetallePage() {
             </tbody>
           </table>
           {precios.hasNextPage && (
-            <div className="p-4 border-t border-white/6 text-center">
+            <div className="p-4 border-t border-line text-center">
               <button
                 type="button"
                 className="btn btn-ghost"
@@ -269,10 +269,10 @@ function CargaManual({
             placeholder="Buscar producto por código o nombre…"
             aria-label="Buscar producto"
             autoFocus
-            className="w-full rounded-xl bg-[#070C16] border border-white/12 pl-9 pr-4 py-3 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+            className="w-full rounded-xl bg-field border border-line pl-9 pr-4 py-3 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
           />
           {q && (
-            <ul className="mt-2 rounded-xl border border-white/10 divide-y divide-white/6 overflow-hidden">
+            <ul className="mt-2 rounded-xl border border-line divide-y divide-line overflow-hidden">
               {candidatos.isSuccess && resultados.length === 0 && (
                 <li className="px-4 py-2 text-sm text-t2">Ningún producto coincide.</li>
               )}
@@ -281,7 +281,7 @@ function CargaManual({
                   <button
                     type="button"
                     onClick={() => setProducto(r)}
-                    className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-white/5"
+                    className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-fill"
                   >
                     <span>
                       <span className="font-semibold">{r.nombre}</span>{' '}

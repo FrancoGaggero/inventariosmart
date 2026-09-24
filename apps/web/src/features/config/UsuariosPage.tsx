@@ -114,11 +114,7 @@ export function UsuariosPage() {
           />
           <label className="block">
             <span className="block text-xs font-semibold text-t2 mb-1.5">Rol</span>
-            <select
-              value={rol}
-              onChange={(e) => setRol(e.target.value as Rol)}
-              className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2"
-            >
+            <select value={rol} onChange={(e) => setRol(e.target.value as Rol)} className="campo">
               {ROLES.map((r) => (
                 <option key={r} value={r}>
                   {NOMBRE_ROL[r]}
@@ -150,7 +146,7 @@ export function UsuariosPage() {
 
       <section className="card overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+          <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
             <tr>
               <th className="text-left px-5 py-3">Usuario</th>
               <th className="text-left px-3 py-3">Rol</th>
@@ -205,7 +201,7 @@ function FilaUsuario({
 }) {
   const estado = ESTADO[u.estado];
   return (
-    <tr className="border-t border-white/6">
+    <tr className="border-t border-line">
       <td className="px-5 py-3">
         <div className="font-semibold">{u.nombre ?? u.email}</div>
         <div className="text-xs text-t2">
@@ -218,7 +214,7 @@ function FilaUsuario({
           value={u.rol}
           disabled={ocupado}
           onChange={(e) => onRol(e.target.value as Rol)}
-          className="rounded-lg bg-[#070C16] border border-white/12 px-2 py-1.5 text-sm"
+          className="rounded-lg bg-field border border-line px-2 py-1.5 text-sm"
           aria-label={`Rol de ${u.email}`}
         >
           {ROLES.map((r) => (

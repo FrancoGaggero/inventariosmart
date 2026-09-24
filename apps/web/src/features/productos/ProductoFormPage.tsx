@@ -243,7 +243,7 @@ export function ProductoFormPage() {
           ) : (
             <label className="block">
               <span className="block text-xs font-semibold text-t2 mb-1.5">Stock actual</span>
-              <div className="w-full rounded-xl bg-white/[0.03] border border-white/8 px-4 py-3 text-sm text-t2">
+              <div className="w-full rounded-xl bg-fill border border-line px-4 py-3 text-sm text-t2">
                 {v.stockInicial} unidades
                 <span className="block text-xs text-t3 mt-1">
                   Se ajusta con movimientos de stock, no desde acá.
@@ -276,7 +276,7 @@ export function ProductoFormPage() {
             <select
               value={v.proveedorPrincipalId}
               onChange={(e) => set('proveedorPrincipalId')(e.target.value)}
-              className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+              className="campo"
             >
               <option value="">Sin proveedor</option>
               {principalInactivo && principalActual && (
@@ -312,7 +312,7 @@ export function ProductoFormPage() {
           <h2 className="font-bold">Historial de costos</h2>
           <div className="card overflow-x-auto">
             <table className="w-full text-sm min-w-[520px]">
-              <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+              <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
                 <tr>
                   <th className="text-left px-5 py-3">Vigente desde</th>
                   <th className="text-left px-3 py-3">Proveedor</th>
@@ -329,7 +329,7 @@ export function ProductoFormPage() {
                   </tr>
                 )}
                 {costos.map((c) => (
-                  <tr key={c.id} className="border-t border-white/6">
+                  <tr key={c.id} className="border-t border-line">
                     <td className="px-5 py-2.5 text-t2 whitespace-nowrap">
                       {formatearFecha(c.vigenteDesde)}
                     </td>
@@ -347,7 +347,7 @@ export function ProductoFormPage() {
               </tbody>
             </table>
             {historial.hasNextPage && (
-              <div className="p-4 border-t border-white/6 text-center">
+              <div className="p-4 border-t border-line text-center">
                 <button
                   type="button"
                   className="btn btn-ghost"

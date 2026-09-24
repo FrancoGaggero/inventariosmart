@@ -19,6 +19,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `mobile-app`            | —     | RNF-06        | 1    | 10 · `mobile-mvp` (24/09/2026; app Android sobre las specs existentes) |
 | `restock-alerts`        | HU-06 | RF-06         | 2    | 11 · `restock-alerts` (24/09/2026) |
 | `purchase-orders`       | HU-07 | RF-07         | 2    | 12 · `purchase-orders-copilot` (26/09/2026) |
+| (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2    | 13 · `web-visual-polish` (26/09/2026, skip_specs) |
 | `weekly-reports`        | HU-09 | RF-09         | 2    | 13 · `weekly-reports`            |
 | `supplier-comparison`   | HU-12 | RF-12         | 2    | 14 · `supplier-comparison`       |
 | `ai-assistant`          | HU-08 | RF-10         | 3    | 15 · `ai-assistant`              |

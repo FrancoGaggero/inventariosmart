@@ -62,8 +62,8 @@ function Segmentos<T extends string>({
           onClick={() => onChange(o)}
           className={`py-2.5 rounded-xl text-sm font-bold border transition ${
             valor === o
-              ? 'bg-brand border-brand text-white'
-              : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
+              ? 'bg-brand border-brand text-on-brand'
+              : 'border-line text-t2 hover:text-t1 hover:border-brand-2'
           }`}
         >
           {etiqueta(o)}

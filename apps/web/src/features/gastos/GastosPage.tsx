@@ -7,7 +7,7 @@ import {
   type Mes,
   type TipoGasto,
 } from '@inventariosmart/shared';
-import { Plus, Receipt } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -21,6 +21,7 @@ import {
 import { useMe } from '@/lib/me';
 import { formatearPesos } from '@/lib/productos';
 import { Aviso } from '@/ui/Aviso';
+import { EstadoVacio } from '@/ui/EstadoVacio';
 import { SelectorMes } from '@/ui/SelectorMes';
 
 type Chip = 'TODOS' | TipoGasto;
@@ -83,11 +84,7 @@ export function GastosPage() {
               role="tab"
               aria-selected={chip === valor}
               onClick={() => setChip(valor)}
-              className={`px-3 py-2 rounded-full text-xs font-semibold border whitespace-nowrap transition ${
-                chip === valor
-                  ? 'bg-brand border-brand text-white'
-                  : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
-              }`}
+              className={`chip ${chip === valor ? 'chip-activo' : ''}`}
             >
               {etiqueta}
             </button>
@@ -102,7 +99,7 @@ export function GastosPage() {
         ) : (
           <>
             <dl className="mt-3 grid gap-3 sm:grid-cols-3 text-sm">
-              <div className="rounded-xl bg-white/5 p-4">
+              <div className="rounded-xl bg-fill p-4">
                 <dt className="text-t2">Gastos del mes</dt>
                 <dd className="text-xl font-extrabold tabular-nums">
                   {r ? formatearPesos(r.total) : '…'}
@@ -114,14 +111,14 @@ export function GastosPage() {
                   </dd>
                 )}
               </div>
-              <div className="rounded-xl bg-white/5 p-4">
+              <div className="rounded-xl bg-fill p-4">
                 <dt className="text-t2">Unidades vendidas</dt>
                 <dd className="text-xl font-extrabold tabular-nums">
                   {r?.unidadesVendidas ?? '…'}
                 </dd>
                 <dd className="text-xs text-t3 mt-1">Ventas del mes, sin las anuladas</dd>
               </div>
-              <div className="rounded-xl bg-white/5 p-4">
+              <div className="rounded-xl bg-fill p-4">
                 <dt className="text-t2">Gasto por unidad vendida</dt>
                 <dd className="text-xl font-extrabold tabular-nums">
                   {r ? (r.gastoPorUnidad ? formatearPesos(r.gastoPorUnidad) : '—') : '…'}
@@ -142,7 +139,7 @@ export function GastosPage() {
 
       <section className="card overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
-          <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+          <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
             <tr>
               <th className="text-left px-5 py-3">Concepto</th>
               <th className="text-left px-3 py-3">Tipo</th>
@@ -168,26 +165,25 @@ export function GastosPage() {
             )}
             {gastos.isSuccess && items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-t2">
-                  <Receipt className="w-8 h-8 mx-auto mb-2 text-t3" aria-hidden />
-                  No hay gastos cargados para este mes.
-                  {esDuenio && (
-                    <>
-                      {' '}
-                      <Link
-                        to={`/gastos/nuevo?periodo=${periodo}`}
-                        className="text-brand-3 font-semibold"
-                      >
-                        Cargá el primero
-                      </Link>
-                      .
-                    </>
-                  )}
+                <td colSpan={5}>
+                  <EstadoVacio
+                    ilustracion="recibo"
+                    titulo="No hay gastos cargados para este mes."
+                    texto="Sin gastos el margen neto queda como no calculable (RN-02)."
+                    accion={
+                      esDuenio && (
+                        <Link to={`/gastos/nuevo?periodo=${periodo}`} className="btn btn-primary">
+                          <Plus className="w-4 h-4" aria-hidden />
+                          Cargar el primero
+                        </Link>
+                      )
+                    }
+                  />
                 </td>
               </tr>
             )}
             {items.map((g) => (
-              <tr key={g.id} className="border-t border-white/6">
+              <tr key={g.id} className="border-t border-line">
                 <td className="px-5 py-3">
                   <div className="font-semibold">
                     {esDuenio ? (
@@ -242,7 +238,7 @@ export function GastosPage() {
             ))}
           </tbody>
           {gastos.data && items.length > 0 && (
-            <tfoot className="text-sm font-bold bg-white/[0.03]">
+            <tfoot className="text-sm font-bold bg-fill">
               <tr>
                 <td className="px-5 py-3" colSpan={3}>
                   Total del mes

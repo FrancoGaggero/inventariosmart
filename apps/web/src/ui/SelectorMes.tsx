@@ -18,7 +18,7 @@ export function SelectorMes({ valor, onChange }: { valor: Mes; onChange: (mes: M
         value={valor}
         onChange={(e) => e.target.value && onChange(e.target.value as Mes)}
         aria-label="Mes"
-        className="rounded-xl bg-[#070C16] border border-white/12 px-3 py-2 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+        className="campo !px-3 !py-2"
       />
       <button
         type="button"

@@ -19,7 +19,7 @@ type Filtro = 'TODAS' | EstadoFilaImportacion;
 const CLASE_ESTADO: Record<EstadoFilaImportacion, string> = {
   NUEVO: 'bg-ok/15 text-ok',
   CAMBIA: 'bg-brand/15 text-brand-3',
-  IGUAL: 'bg-white/10 text-t2',
+  IGUAL: 'bg-fill text-t2',
   SIN_PRODUCTO: 'bg-warn/15 text-warn',
   INVALIDA: 'bg-crit/15 text-crit',
 };
@@ -160,11 +160,7 @@ export function ImportarListaPage() {
                 role="tab"
                 aria-selected={filtro === valor}
                 onClick={() => setFiltro(valor)}
-                className={`px-3 py-2 rounded-full text-xs font-semibold border whitespace-nowrap transition ${
-                  filtro === valor
-                    ? 'bg-brand border-brand text-white'
-                    : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
-                }`}
+                className={`chip ${filtro === valor ? 'chip-activo' : ''}`}
               >
                 {etiqueta}
               </button>
@@ -173,7 +169,7 @@ export function ImportarListaPage() {
 
           <div className="card overflow-x-auto">
             <table className="w-full text-sm min-w-[680px]">
-              <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+              <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
                 <tr>
                   <th className="text-right px-4 py-3">Fila</th>
                   <th className="text-left px-3 py-3">Código</th>
@@ -192,7 +188,7 @@ export function ImportarListaPage() {
                   </tr>
                 )}
                 {filas.map((f) => (
-                  <tr key={f.fila} className="border-t border-white/6">
+                  <tr key={f.fila} className="border-t border-line">
                     <td className="px-4 py-2.5 text-right tabular-nums text-t3">{f.fila}</td>
                     <td className="px-3 py-2.5 font-mono text-xs">{f.codigo || '—'}</td>
                     <td className="px-3 py-2.5">
@@ -247,11 +243,11 @@ export function ImportarListaPage() {
             <h2 className="font-bold text-lg">Lista importada</h2>
           </div>
           <dl className="grid gap-2 sm:grid-cols-2 text-sm">
-            <div className="rounded-xl bg-white/5 p-4">
+            <div className="rounded-xl bg-fill p-4">
               <dt className="text-t2">Costos registrados</dt>
               <dd className="text-2xl font-extrabold tabular-nums">{resultado.insertados}</dd>
             </div>
-            <div className="rounded-xl bg-white/5 p-4">
+            <div className="rounded-xl bg-fill p-4">
               <dt className="text-t2">Productos con costo vigente nuevo</dt>
               <dd className="text-2xl font-extrabold tabular-nums">
                 {resultado.productosActualizados}

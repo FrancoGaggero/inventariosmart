@@ -68,7 +68,7 @@ export function RegistroPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-violet grid place-items-center">
-            <BarChart3 className="w-5 h-5 text-white" aria-hidden />
+            <BarChart3 className="w-5 h-5 text-on-brand" aria-hidden />
           </div>
           <span className="font-extrabold text-lg">InventarioSmart</span>
         </div>

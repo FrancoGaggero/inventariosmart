@@ -21,8 +21,8 @@ export function Campo({ label, value, onChange, ayuda, error, className, ...rest
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}
-        className={`w-full rounded-xl bg-[#070C16] border px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15 ${
-          error ? 'border-crit/60 focus:border-crit' : 'border-white/12 focus:border-brand-2'
+        className={`w-full rounded-xl bg-field border px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15 ${
+          error ? 'border-crit/60 focus:border-crit' : 'border-line focus:border-brand-2'
         }`}
       />
       {error ? (

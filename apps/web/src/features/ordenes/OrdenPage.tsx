@@ -318,7 +318,7 @@ export function OrdenPage() {
                   <select
                     value={proveedorId}
                     onChange={(e) => setProveedorId(e.target.value)}
-                    className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2"
+                    className="campo"
                   >
                     {!listaProveedores.some((p) => p.id === o.proveedor.id) && (
                       <option value={o.proveedor.id}>{o.proveedor.nombre}</option>
@@ -346,7 +346,7 @@ export function OrdenPage() {
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
                     placeholder="No van en el correo"
-                    className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2"
+                    className="campo"
                   />
                 ) : (
                   <p className="text-sm py-3 text-t2">{o.notas ?? '—'}</p>
@@ -366,7 +366,7 @@ export function OrdenPage() {
               </thead>
               <tbody>
                 {items.map((i, idx) => (
-                  <tr key={i.productoId} className="border-t border-white/8">
+                  <tr key={i.productoId} className="border-t border-line">
                     <td className="py-2">
                       <Link
                         to={`/productos/${i.productoId}`}
@@ -391,7 +391,7 @@ export function OrdenPage() {
                               ),
                             )
                           }
-                          className="w-24 rounded-lg bg-[#070C16] border border-white/12 px-2 py-1 text-right text-sm outline-none focus:border-brand-2"
+                          className="w-24 rounded-lg bg-field border border-line px-2 py-1 text-right text-sm outline-none focus:border-brand-2"
                         />
                       ) : (
                         <span className="tabular-nums">{i.cantidad}</span>
@@ -423,7 +423,7 @@ export function OrdenPage() {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-white/12">
+                <tr className="border-t border-line">
                   <td className="py-2 font-semibold" colSpan={3}>
                     Total neto estimado (sin IVA)
                   </td>
@@ -443,15 +443,15 @@ export function OrdenPage() {
                   onChange={(e) => setBusqueda(e.target.value)}
                   placeholder="Agregar producto por código o nombre…"
                   aria-label="Agregar producto"
-                  className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2"
+                  className="campo"
                 />
                 {q && resultados.length > 0 && (
-                  <ul className="absolute z-10 mt-1 w-full card divide-y divide-white/8 max-h-64 overflow-auto">
+                  <ul className="absolute z-10 mt-1 w-full card divide-y divide-line max-h-64 overflow-auto">
                     {resultados.map((p) => (
                       <li key={p.id}>
                         <button
                           type="button"
-                          className="w-full text-left px-4 py-2 hover:bg-white/5 text-sm"
+                          className="w-full text-left px-4 py-2 hover:bg-fill text-sm"
                           onClick={() => agregar(p)}
                         >
                           <span className="font-semibold">{p.nombre}</span>
@@ -500,7 +500,7 @@ export function OrdenPage() {
                   value={asunto}
                   onChange={(e) => setAsunto(e.target.value)}
                   aria-label="Asunto"
-                  className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm font-semibold outline-none focus:border-brand-2"
+                  className="campo font-semibold"
                 />
                 {errores['asunto'] && (
                   <span className="text-xs text-crit">{errores['asunto']}</span>
@@ -510,7 +510,7 @@ export function OrdenPage() {
                   onChange={(e) => setTexto(e.target.value)}
                   aria-label="Texto"
                   rows={14}
-                  className="w-full rounded-xl bg-[#070C16] border border-white/12 px-4 py-3 text-sm outline-none focus:border-brand-2 font-mono"
+                  className="campo font-mono"
                 />
                 {errores['texto'] && <span className="text-xs text-crit">{errores['texto']}</span>}
               </>

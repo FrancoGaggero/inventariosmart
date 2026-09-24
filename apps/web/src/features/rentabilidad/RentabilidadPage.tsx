@@ -123,7 +123,7 @@ export function RentabilidadPage() {
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Buscar por código o nombre…"
             aria-label="Buscar producto"
-            className="w-full rounded-xl bg-[#070C16] border border-white/12 pl-9 pr-4 py-2.5 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+            className="campo !pl-9 !py-2.5"
           />
         </label>
         {cabecera && (
@@ -138,7 +138,7 @@ export function RentabilidadPage() {
 
       <section className="card overflow-x-auto">
         <table className="w-full text-sm min-w-[860px]">
-          <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+          <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
             <tr>
               <th className="text-left px-5 py-3">Producto</th>
               <th className="text-right px-3 py-3">Precio neto</th>
@@ -175,7 +175,7 @@ export function RentabilidadPage() {
               </tr>
             )}
             {items.map((i) => (
-              <tr key={i.producto.id} className="border-t border-white/6">
+              <tr key={i.producto.id} className="border-t border-line">
                 <td className="px-5 py-3">
                   <div className="font-semibold">{i.producto.nombre}</div>
                   <div className="text-xs text-t2 font-mono">
@@ -213,7 +213,7 @@ export function RentabilidadPage() {
           </tbody>
         </table>
         {lista.hasNextPage && (
-          <div className="p-4 border-t border-white/6 text-center">
+          <div className="p-4 border-t border-line text-center">
             <button
               type="button"
               className="btn btn-ghost"

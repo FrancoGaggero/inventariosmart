@@ -185,11 +185,7 @@ export function ImportarProductosPage() {
                 role="tab"
                 aria-selected={filtro === valor}
                 onClick={() => setFiltro(valor)}
-                className={`px-3 py-2 rounded-full text-xs font-semibold border whitespace-nowrap transition ${
-                  filtro === valor
-                    ? 'bg-brand border-brand text-white'
-                    : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
-                }`}
+                className={`chip ${filtro === valor ? 'chip-activo' : ''}`}
               >
                 {etiqueta}
               </button>
@@ -198,7 +194,7 @@ export function ImportarProductosPage() {
 
           <div className="card overflow-x-auto">
             <table className="w-full text-sm min-w-[760px]">
-              <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+              <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
                 <tr>
                   <th className="text-right px-4 py-3">Fila</th>
                   <th className="text-left px-3 py-3">Código</th>
@@ -218,7 +214,7 @@ export function ImportarProductosPage() {
                   </tr>
                 )}
                 {filas.map((f) => (
-                  <tr key={f.fila} className="border-t border-white/6">
+                  <tr key={f.fila} className="border-t border-line">
                     <td className="px-4 py-2.5 text-right tabular-nums text-t3">{f.fila}</td>
                     <td className="px-3 py-2.5 font-mono text-xs">{f.codigo || '—'}</td>
                     <td className="px-3 py-2.5">
@@ -280,15 +276,15 @@ export function ImportarProductosPage() {
             <h2 className="font-bold text-lg">Inventario importado</h2>
           </div>
           <dl className="grid gap-2 sm:grid-cols-3 text-sm">
-            <div className="rounded-xl bg-white/5 p-4">
+            <div className="rounded-xl bg-fill p-4">
               <dt className="text-t2">Productos creados</dt>
               <dd className="text-2xl font-extrabold tabular-nums">{resultado.creados}</dd>
             </div>
-            <div className="rounded-xl bg-white/5 p-4">
+            <div className="rounded-xl bg-fill p-4">
               <dt className="text-t2">Actualizados</dt>
               <dd className="text-2xl font-extrabold tabular-nums">{resultado.actualizados}</dd>
             </div>
-            <div className="rounded-xl bg-white/5 p-4">
+            <div className="rounded-xl bg-fill p-4">
               <dt className="text-t2">Omitidos</dt>
               <dd className="text-2xl font-extrabold tabular-nums">{resultado.omitidos}</dd>
             </div>

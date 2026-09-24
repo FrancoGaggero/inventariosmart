@@ -110,7 +110,7 @@ export function useCancelarOrden() {
 }
 
 export const CLASE_ESTADO_ORDEN: Record<EstadoOrden, string> = {
-  BORRADOR: 'bg-white/10 text-t2',
+  BORRADOR: 'bg-fill text-t2',
   CONFIRMADA: 'bg-brand/15 text-brand-3',
   ENVIADA: 'bg-ok/15 text-ok',
   CANCELADA: 'bg-crit/15 text-crit',

@@ -20,6 +20,9 @@ import {
 } from '@/lib/ordenes';
 import { formatearPesos } from '@/lib/productos';
 import { Aviso } from '@/ui/Aviso';
+import { Entrada } from '@/ui/Entrada';
+import { EstadoVacio } from '@/ui/EstadoVacio';
+import { SkeletonFilas } from '@/ui/Skeleton';
 
 /** Sugerencia de órdenes por proveedor más conveniente (/ordenes/nueva, HU-07 criterio 1). */
 export function SugerenciaPage() {
@@ -102,28 +105,38 @@ export function SugerenciaPage() {
       {me.data && !tienePlan && <Aviso tono="plan">Disponible en el plan PRO.</Aviso>}
       {aviso && <Aviso tono="error">{aviso}</Aviso>}
 
-      {s && s.grupos.length === 0 && s.sinProveedor.length === 0 && (
-        <div className="card p-8 text-center">
-          <p className="font-semibold">Nada para pedir por ahora.</p>
-          <p className="text-t2 text-sm mt-1">
-            La sugerencia toma las alertas activas{' '}
-            {severidad === 'CRITICA' ? 'críticas (por debajo del punto de reposición)' : ''}.{' '}
-            <Link to="/alertas" className="text-brand-3 hover:underline">
-              Ver alertas
-            </Link>
-          </p>
+      {sugerencia.isPending && tienePlan && (
+        <div className="card">
+          <SkeletonFilas filas={3} />
         </div>
       )}
 
-      {s?.grupos.map((g) => {
+      {s && s.grupos.length === 0 && s.sinProveedor.length === 0 && (
+        <div className="card">
+          <EstadoVacio
+            ilustracion="carrito"
+            titulo="Nada para pedir por ahora."
+            texto={`La sugerencia toma las alertas activas${
+              severidad === 'CRITICA' ? ' críticas (por debajo del punto de reposición)' : ''
+            }.`}
+            accion={
+              <Link to="/alertas" className="btn btn-ghost">
+                Ver alertas
+              </Link>
+            }
+          />
+        </div>
+      )}
+
+      {s?.grupos.map((g, gi) => {
         const items = g.items.map((i) => ({
           cantidad: cantidadDe(g, i.producto.id),
           costoUnitarioNeto: i.costoUnitarioNeto,
         }));
         const total = totalOrden(items);
         return (
-          <section key={g.proveedor.id} className="card overflow-hidden">
-            <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-white/8">
+          <Entrada as="section" indice={gi} key={g.proveedor.id} className="card overflow-hidden">
+            <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-line">
               <div>
                 <h2 className="font-bold">{g.proveedor.nombre}</h2>
                 <p className="text-xs text-t3">
@@ -162,7 +175,7 @@ export function SugerenciaPage() {
                 {g.items.map((i) => {
                   const cantidad = cantidadDe(g, i.producto.id);
                   return (
-                    <tr key={i.producto.id} className="border-t border-white/8 align-top">
+                    <tr key={i.producto.id} className="border-t border-line align-top">
                       <td className="px-4 py-2">
                         <Link
                           to={`/productos/${i.producto.id}`}
@@ -196,7 +209,7 @@ export function SugerenciaPage() {
                             onChange={(e) =>
                               setCantidades((c) => ({ ...c, [i.producto.id]: e.target.value }))
                             }
-                            className="w-24 rounded-lg bg-[#070C16] border border-white/12 px-2 py-1 text-right text-sm outline-none focus:border-brand-2"
+                            className="w-24 rounded-lg bg-field border border-line px-2 py-1 text-right text-sm outline-none focus:border-brand-2"
                           />
                         ) : (
                           <span className="tabular-nums">{cantidad}</span>
@@ -218,7 +231,7 @@ export function SugerenciaPage() {
                 })}
               </tbody>
             </table>
-          </section>
+          </Entrada>
         );
       })}
 
@@ -229,7 +242,7 @@ export function SugerenciaPage() {
             Estos productos están en alerta pero no tienen precios cargados ni proveedor principal.
             Asignales uno desde la ficha del producto para incluirlos en una orden.
           </p>
-          <ul className="text-sm divide-y divide-white/8">
+          <ul className="text-sm divide-y divide-line">
             {s.sinProveedor.map((x) => (
               <li key={x.producto.id} className="py-2 flex items-center justify-between gap-3">
                 <span>

@@ -4,7 +4,7 @@ type Tono = 'error' | 'info' | 'plan' | 'ok' | 'warn';
 
 const ESTILO: Record<Tono, string> = {
   error: 'text-crit bg-crit/10 border-crit/30',
-  info: 'text-t1 bg-white/5 border-white/10',
+  info: 'text-t1 bg-fill border-line',
   plan: 'text-violet bg-violet/10 border-violet/30',
   ok: 'text-ok bg-ok/10 border-ok/30',
   warn: 'text-warn bg-warn/10 border-warn/30',

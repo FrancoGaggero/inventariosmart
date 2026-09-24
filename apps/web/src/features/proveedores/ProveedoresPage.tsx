@@ -1,4 +1,4 @@
-import { Plus, Search, Truck } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -10,6 +10,7 @@ import {
   useProveedores,
 } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
+import { EstadoVacio } from '@/ui/EstadoVacio';
 
 type Chip = 'ACTIVOS' | 'BAJAS';
 
@@ -77,7 +78,7 @@ export function ProveedoresPage() {
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Buscar por nombre…"
             aria-label="Buscar proveedor"
-            className="w-full rounded-xl bg-[#070C16] border border-white/12 pl-9 pr-4 py-2.5 text-sm outline-none focus:border-brand-2 focus:ring-4 focus:ring-brand/15"
+            className="campo !pl-9 !py-2.5"
           />
         </label>
         <div className="flex gap-2" role="tablist" aria-label="Filtrar por estado">
@@ -93,11 +94,7 @@ export function ProveedoresPage() {
               role="tab"
               aria-selected={chip === valor}
               onClick={() => setChip(valor)}
-              className={`px-3 py-2 rounded-full text-xs font-semibold border whitespace-nowrap transition ${
-                chip === valor
-                  ? 'bg-brand border-brand text-white'
-                  : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
-              }`}
+              className={`chip ${chip === valor ? 'chip-activo' : ''}`}
             >
               {etiqueta}
             </button>
@@ -109,7 +106,7 @@ export function ProveedoresPage() {
 
       <section className="card overflow-x-auto">
         <table className="w-full text-sm min-w-[640px]">
-          <thead className="text-xs uppercase tracking-wider text-t3 bg-white/[0.03]">
+          <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">
             <tr>
               <th className="text-left px-5 py-3">Proveedor</th>
               <th className="text-left px-3 py-3">Contacto</th>
@@ -135,25 +132,30 @@ export function ProveedoresPage() {
             )}
             {proveedores.isSuccess && items.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-t2">
-                  <Truck className="w-8 h-8 mx-auto mb-2 text-t3" aria-hidden />
-                  {q || chip === 'BAJAS'
-                    ? 'No hay proveedores que coincidan.'
-                    : 'Todavía no cargaste proveedores.'}
-                  {!q && chip === 'ACTIVOS' && (
-                    <>
-                      {' '}
-                      <Link to="/proveedores/nuevo" className="text-brand-3 font-semibold">
-                        Cargá el primero
-                      </Link>
-                      .
-                    </>
-                  )}
+                <td colSpan={5}>
+                  <EstadoVacio
+                    ilustracion="camion"
+                    titulo={
+                      q || chip === 'BAJAS'
+                        ? 'No hay proveedores que coincidan.'
+                        : 'Todavía no cargaste proveedores.'
+                    }
+                    texto="Con sus listas de precios y plazos de entrega el sistema elige a quién pedir."
+                    accion={
+                      !q &&
+                      chip === 'ACTIVOS' && (
+                        <Link to="/proveedores/nuevo" className="btn btn-primary">
+                          <Plus className="w-4 h-4" aria-hidden />
+                          Cargar el primero
+                        </Link>
+                      )
+                    }
+                  />
                 </td>
               </tr>
             )}
             {items.map((p) => (
-              <tr key={p.id} className={`border-t border-white/6 ${p.activo ? '' : 'opacity-60'}`}>
+              <tr key={p.id} className={`border-t border-line ${p.activo ? '' : 'opacity-60'}`}>
                 <td className="px-5 py-3">
                   <Link to={`/proveedores/${p.id}`} className="font-semibold hover:text-brand-3">
                     {p.nombre}
@@ -207,7 +209,7 @@ export function ProveedoresPage() {
           </tbody>
         </table>
         {proveedores.hasNextPage && (
-          <div className="p-4 border-t border-white/6 text-center">
+          <div className="p-4 border-t border-line text-center">
             <button
               type="button"
               className="btn btn-ghost"

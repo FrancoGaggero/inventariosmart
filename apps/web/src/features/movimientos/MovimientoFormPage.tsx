@@ -27,7 +27,7 @@ const AYUDA_CANTIDAD: Record<TipoMovimiento, string> = {
 };
 
 const selectClase =
-  'w-full rounded-xl bg-[#070C16] border px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15';
+  'w-full rounded-xl bg-field border px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15';
 
 /** Formulario rápido de registro: /movimientos/nuevo?productoId=&tipo= (HU-10). */
 export function MovimientoFormPage() {
@@ -161,8 +161,8 @@ export function MovimientoFormPage() {
               onClick={() => setTipo(t)}
               className={`py-2.5 rounded-xl text-sm font-bold border transition ${
                 tipo === t
-                  ? 'bg-brand border-brand text-white'
-                  : 'border-white/12 text-t2 hover:text-t1 hover:border-brand-2'
+                  ? 'bg-brand border-brand text-on-brand'
+                  : 'border-line text-t2 hover:text-t1 hover:border-brand-2'
               }`}
             >
               {ETIQUETA_TIPO[t]}
@@ -211,17 +211,17 @@ export function MovimientoFormPage() {
                 aria-label="Buscar producto"
                 autoFocus
                 aria-invalid={errores['productoId'] ? true : undefined}
-                className={`w-full rounded-xl bg-[#070C16] border pl-9 pr-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15 ${
+                className={`w-full rounded-xl bg-field border pl-9 pr-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15 ${
                   errores['productoId']
                     ? 'border-crit/60 focus:border-crit'
-                    : 'border-white/12 focus:border-brand-2'
+                    : 'border-line focus:border-brand-2'
                 }`}
               />
               {errores['productoId'] && (
                 <span className="block text-xs text-crit mt-1.5">{errores['productoId']}</span>
               )}
               {(q || resultados.length > 0) && (
-                <ul className="mt-2 rounded-xl border border-white/10 divide-y divide-white/6 overflow-hidden">
+                <ul className="mt-2 rounded-xl border border-line divide-y divide-line overflow-hidden">
                   {candidatos.isPending && <li className="px-4 py-2 text-sm text-t2">Buscando…</li>}
                   {candidatos.isSuccess && resultados.length === 0 && (
                     <li className="px-4 py-2 text-sm text-t2">Ningún producto coincide.</li>
@@ -231,7 +231,7 @@ export function MovimientoFormPage() {
                       <button
                         type="button"
                         onClick={() => elegir(r)}
-                        className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-white/5"
+                        className="w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left text-sm hover:bg-fill"
                       >
                         <span>
                           <span className="font-semibold">{r.nombre}</span>{' '}
@@ -282,7 +282,7 @@ export function MovimientoFormPage() {
               className={`${selectClase} ${
                 errores['motivo']
                   ? 'border-crit/60 focus:border-crit'
-                  : 'border-white/12 focus:border-brand-2'
+                  : 'border-line focus:border-brand-2'
               }`}
             >
               <option value="">{tipo === 'AJUSTE' ? 'Elegí un motivo…' : 'Sin motivo'}</option>
