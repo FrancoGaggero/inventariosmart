@@ -7,7 +7,7 @@
 - [x] 2.1 `SupplierComparisonService.producto` (D2, D3). Listo cuando: CP-12.1, CP-12.1b, CP-12.1c, CP-12.2, CP-12.2b, CP-12.4 y CP-12.4b pasan
 - [x] 2.2 `SupplierComparisonService.resumen` con filtro, búsqueda, orden por ahorro, cursor y totales. Listo cuando: CP-12.3 y CP-12.3b pasan y la segunda página continúa donde terminó la primera
 - [x] 2.3 `SupplierComparisonController` y DTOs Swagger (D4) con `@RequierePlan('PREMIUM')` y `@Roles('DUENIO')`; módulo en `AppModule`. Listo cuando: CP-12.5, CP-12.5b y CP-12.5c pasan, y cambiar el principal con `PATCH /products/:id` saca al producto de las oportunidades
-- [ ] 2.4 Rendimiento: 5.000 productos con 3 proveedores cada uno y tablas recién cargadas. Listo cuando: el resumen responde en menos de 3 segundos en CI
+- [x] 2.4 Rendimiento: 5.000 productos con 3 proveedores cada uno y tablas recién cargadas. Listo cuando: el resumen responde en menos de 3 segundos en CI
 - [x] 2.5 Regenerar contrato y cliente: `pnpm openapi`. Listo cuando: `docs/openapi.json` tiene `/supplier-comparison` y `/products/{id}/supplier-comparison`, y CI no reporta contrato desactualizado
 
 ## 3. Web
@@ -19,6 +19,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0017, README, `docs/arquitectura.html`, `openspec/config.yaml` (RN-13) y `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D7
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.3 Producción: el comercio de la demo en plan PREMIUM (con aprobación de Franco); Franco carga el mismo producto en las listas de dos proveedores, abre el comparador y marca al recomendado como principal. Listo cuando: CP-12.1, CP-12.3 y CP-12.6 se cumplen en `https://inventariosmart0.vercel.app` y el producto tiene el principal nuevo en la base de producción
 - [ ] 4.4 (manual, Franco) Mover HU-12 a Hecho y sumar RN-13 al backlog, a la Propuesta y al Gantt, y mover la tarjeta en Trello. Listo cuando: Trello, backlog y Gantt coinciden
