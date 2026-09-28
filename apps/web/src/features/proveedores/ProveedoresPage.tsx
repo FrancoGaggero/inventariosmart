@@ -1,4 +1,4 @@
-import { Plus, Search } from 'lucide-react';
+import { Plus, Scale, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -61,10 +61,16 @@ export function ProveedoresPage() {
             Contactos, plazos de entrega y listas de precios que fijan tus costos.
           </p>
         </div>
-        <Link to="/proveedores/nuevo" className="btn btn-primary">
-          <Plus className="w-4 h-4" aria-hidden />
-          Nuevo proveedor
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/proveedores/comparador" className="btn btn-ghost">
+            <Scale className="w-4 h-4" aria-hidden />
+            Comparar precios
+          </Link>
+          <Link to="/proveedores/nuevo" className="btn btn-primary">
+            <Plus className="w-4 h-4" aria-hidden />
+            Nuevo proveedor
+          </Link>
+        </div>
       </header>
 
       <div className="flex flex-col md:flex-row gap-3">

@@ -23,6 +23,7 @@ import { ProfitabilityModule } from './profitability/profitability.module';
 import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
 import { ReportsModule } from './reports/reports.module';
 import { RepricingModule } from './repricing/repricing.module';
+import { SupplierComparisonModule } from './supplier-comparison/supplier-comparison.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { UsersModule } from './users/users.module';
 
@@ -64,6 +65,7 @@ import { UsersModule } from './users/users.module';
     IndicatorsModule,
     InsightsModule,
     RepricingModule,
+    SupplierComparisonModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

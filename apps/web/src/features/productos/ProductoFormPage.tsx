@@ -309,7 +309,15 @@ export function ProductoFormPage() {
 
       {!esNuevo && (
         <section className="space-y-3">
-          <h2 className="font-bold">Historial de costos</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-bold">Historial de costos</h2>
+            <Link
+              to={`/proveedores/comparador/${id}`}
+              className="text-sm font-semibold text-brand-3 hover:underline"
+            >
+              Comparar proveedores
+            </Link>
+          </div>
           <div className="card overflow-x-auto">
             <table className="w-full text-sm min-w-[520px]">
               <thead className="text-xs uppercase tracking-wider text-t3 bg-fill">

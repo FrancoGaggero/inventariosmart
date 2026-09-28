@@ -5043,6 +5043,186 @@
           "remarcación"
         ]
       }
+    },
+    "/api/v1/supplier-comparison": {
+      "get": {
+        "description": "Ordenados por ahorro mensual estimado. El puntaje pondera precio (60 %), plazo (25 %) y confiabilidad (15 %) (RN-13). Se calcula al consultar con el último costo de cada proveedor activo.",
+        "operationId": "SupplierComparisonController_resumen",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Código o nombre del producto",
+            "schema": {}
+          },
+          {
+            "name": "soloOportunidades",
+            "required": false,
+            "in": "query",
+            "description": "Sólo los insumos cuyo recomendado no es su proveedor principal",
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenComparadorDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Planes FREE y PRO: el comparador requiere PREMIUM (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño: proveedores y costos no son para EMPLEADO ni CONTADOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Insumos con dos o más proveedores y su proveedor recomendado (HU-12)",
+        "tags": [
+          "comparador"
+        ]
+      }
+    },
+    "/api/v1/products/{id}/supplier-comparison": {
+      "get": {
+        "description": "Para usar al recomendado como proveedor principal se edita el producto con `PATCH /products/:id` (`proveedorPrincipalId`), que además actualiza el costo de reposición (RN-08).",
+        "operationId": "SupplierComparisonController_producto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparacionProductoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Planes FREE y PRO: el comparador requiere PREMIUM (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño: proveedores y costos no son para EMPLEADO ni CONTADOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Proveedores de un insumo, puntuados de mayor a menor (HU-12)",
+        "tags": [
+          "comparador"
+        ]
+      }
     }
   },
   "info": {
@@ -10154,6 +10334,318 @@
           "omitidos",
           "items",
           "productosOmitidos"
+        ]
+      },
+      "ProductoComparadorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "ProveedorResumidoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Este"
+          },
+          "costoNeto": {
+            "type": "string",
+            "example": "2100.00"
+          },
+          "puntaje": {
+            "type": "string",
+            "example": "97.14"
+          }
+        },
+        "required": [
+          "id",
+          "nombre",
+          "costoNeto",
+          "puntaje"
+        ]
+      },
+      "InsumoComparadoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoComparadorDto"
+          },
+          "proveedores": {
+            "type": "number",
+            "example": 3,
+            "description": "Cantidad de proveedores comparados"
+          },
+          "recomendado": {
+            "$ref": "#/components/schemas/ProveedorResumidoDto"
+          },
+          "masBarato": {
+            "$ref": "#/components/schemas/ProveedorResumidoDto"
+          },
+          "principal": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProveedorResumidoDto"
+              }
+            ]
+          },
+          "cambiaProveedor": {
+            "type": "boolean"
+          },
+          "unidades30d": {
+            "type": "number",
+            "example": 60
+          },
+          "ahorroEstimado": {
+            "type": "string",
+            "nullable": true,
+            "example": "14400.00"
+          }
+        },
+        "required": [
+          "producto",
+          "proveedores",
+          "recomendado",
+          "masBarato",
+          "principal",
+          "cambiaProveedor",
+          "unidades30d",
+          "ahorroEstimado"
+        ]
+      },
+      "TotalesComparadorDto": {
+        "type": "object",
+        "properties": {
+          "comparables": {
+            "type": "number",
+            "example": 23,
+            "description": "Insumos con dos o más proveedores"
+          },
+          "conCambio": {
+            "type": "number",
+            "example": 4,
+            "description": "Insumos cuyo recomendado no es su principal"
+          },
+          "ahorroEstimado": {
+            "type": "string",
+            "example": "86400.00"
+          }
+        },
+        "required": [
+          "comparables",
+          "conCambio",
+          "ahorroEstimado"
+        ]
+      },
+      "ResumenComparadorDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InsumoComparadoDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "totales": {
+            "description": "Sobre todos los insumos comparables del comercio, sin filtros",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TotalesComparadorDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor",
+          "totales"
+        ]
+      },
+      "ProveedorRefComparadorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Este"
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "ProveedorComparadoDto": {
+        "type": "object",
+        "properties": {
+          "proveedor": {
+            "$ref": "#/components/schemas/ProveedorRefComparadorDto"
+          },
+          "costoNeto": {
+            "type": "string",
+            "description": "Último costo neto del proveedor",
+            "example": "2100.00"
+          },
+          "vigenteDesde": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Desde cuándo rige ese costo"
+          },
+          "leadTimeDias": {
+            "type": "number",
+            "example": 2
+          },
+          "confiabilidad": {
+            "type": "number",
+            "example": 5,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "diferenciaPct": {
+            "type": "string",
+            "description": "Cuánto más caro que el más barato, en %",
+            "example": "5.00"
+          },
+          "esPrincipal": {
+            "type": "boolean",
+            "description": "Es el proveedor principal del producto"
+          },
+          "puntajePrecio": {
+            "type": "string",
+            "description": "100 × costo mínimo ÷ costo",
+            "example": "95.24"
+          },
+          "puntajePlazo": {
+            "type": "string",
+            "description": "100 × (plazo mínimo + 1) ÷ (plazo + 1)",
+            "example": "100.00"
+          },
+          "puntajeConfiabilidad": {
+            "type": "string",
+            "description": "100 × confiabilidad ÷ 5",
+            "example": "100.00"
+          },
+          "puntaje": {
+            "type": "string",
+            "description": "RN-13: 0,60 × precio + 0,25 × plazo + 0,15 × confiabilidad",
+            "example": "97.14"
+          }
+        },
+        "required": [
+          "proveedor",
+          "costoNeto",
+          "vigenteDesde",
+          "leadTimeDias",
+          "confiabilidad",
+          "diferenciaPct",
+          "esPrincipal",
+          "puntajePrecio",
+          "puntajePlazo",
+          "puntajeConfiabilidad",
+          "puntaje"
+        ]
+      },
+      "ComparacionProductoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoComparadorDto"
+          },
+          "proveedores": {
+            "description": "Proveedores activos con costo cargado, de mayor a menor puntaje",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProveedorComparadoDto"
+            }
+          },
+          "recomendado": {
+            "nullable": true,
+            "description": "Mayor puntaje",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProveedorResumidoDto"
+              }
+            ]
+          },
+          "masBarato": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProveedorResumidoDto"
+              }
+            ]
+          },
+          "principal": {
+            "nullable": true,
+            "description": "Proveedor principal, si está activo y tiene costo cargado",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProveedorResumidoDto"
+              }
+            ]
+          },
+          "comparable": {
+            "type": "boolean",
+            "description": "Tiene dos o más proveedores"
+          },
+          "cambiaProveedor": {
+            "type": "boolean",
+            "description": "El recomendado no es el proveedor principal"
+          },
+          "unidades30d": {
+            "type": "number",
+            "example": 60,
+            "description": "Unidades vendidas en los últimos 30 días"
+          },
+          "ahorroEstimado": {
+            "type": "string",
+            "nullable": true,
+            "description": "(costo del principal − costo del recomendado) × unidades de 30 días",
+            "example": "14400.00"
+          }
+        },
+        "required": [
+          "producto",
+          "proveedores",
+          "recomendado",
+          "masBarato",
+          "principal",
+          "comparable",
+          "cambiaProveedor",
+          "unidades30d",
+          "ahorroEstimado"
         ]
       }
     }

@@ -933,6 +933,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/supplier-comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Insumos con dos o más proveedores y su proveedor recomendado (HU-12)
+         * @description Ordenados por ahorro mensual estimado. El puntaje pondera precio (60 %), plazo (25 %) y confiabilidad (15 %) (RN-13). Se calcula al consultar con el último costo de cada proveedor activo.
+         */
+        get: operations["SupplierComparisonController_resumen"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{id}/supplier-comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Proveedores de un insumo, puntuados de mayor a menor (HU-12)
+         * @description Para usar al recomendado como proveedor principal se edita el producto con `PATCH /products/:id` (`proveedorPrincipalId`), que además actualiza el costo de reposición (RN-08).
+         */
+        get: operations["SupplierComparisonController_producto"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2771,6 +2811,134 @@ export interface components {
             omitidos: number | null;
             items: components["schemas"]["ItemLoteDto"][];
             productosOmitidos: components["schemas"]["ProductoOmitidoDto"][];
+        };
+        ProductoComparadorDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        ProveedorResumidoDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Este */
+            nombre: string;
+            /** @example 2100.00 */
+            costoNeto: string;
+            /** @example 97.14 */
+            puntaje: string;
+        };
+        InsumoComparadoDto: {
+            producto: components["schemas"]["ProductoComparadorDto"];
+            /**
+             * @description Cantidad de proveedores comparados
+             * @example 3
+             */
+            proveedores: number;
+            recomendado: components["schemas"]["ProveedorResumidoDto"];
+            masBarato: components["schemas"]["ProveedorResumidoDto"];
+            principal: components["schemas"]["ProveedorResumidoDto"] | null;
+            cambiaProveedor: boolean;
+            /** @example 60 */
+            unidades30d: number;
+            /** @example 14400.00 */
+            ahorroEstimado: string | null;
+        };
+        TotalesComparadorDto: {
+            /**
+             * @description Insumos con dos o más proveedores
+             * @example 23
+             */
+            comparables: number;
+            /**
+             * @description Insumos cuyo recomendado no es su principal
+             * @example 4
+             */
+            conCambio: number;
+            /** @example 86400.00 */
+            ahorroEstimado: string;
+        };
+        ResumenComparadorDto: {
+            items: components["schemas"]["InsumoComparadoDto"][];
+            siguienteCursor: string | null;
+            /** @description Sobre todos los insumos comparables del comercio, sin filtros */
+            totales: components["schemas"]["TotalesComparadorDto"];
+        };
+        ProveedorRefComparadorDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Este */
+            nombre: string;
+        };
+        ProveedorComparadoDto: {
+            proveedor: components["schemas"]["ProveedorRefComparadorDto"];
+            /**
+             * @description Último costo neto del proveedor
+             * @example 2100.00
+             */
+            costoNeto: string;
+            /**
+             * Format: date-time
+             * @description Desde cuándo rige ese costo
+             */
+            vigenteDesde: string;
+            /** @example 2 */
+            leadTimeDias: number;
+            /** @example 5 */
+            confiabilidad: number;
+            /**
+             * @description Cuánto más caro que el más barato, en %
+             * @example 5.00
+             */
+            diferenciaPct: string;
+            /** @description Es el proveedor principal del producto */
+            esPrincipal: boolean;
+            /**
+             * @description 100 × costo mínimo ÷ costo
+             * @example 95.24
+             */
+            puntajePrecio: string;
+            /**
+             * @description 100 × (plazo mínimo + 1) ÷ (plazo + 1)
+             * @example 100.00
+             */
+            puntajePlazo: string;
+            /**
+             * @description 100 × confiabilidad ÷ 5
+             * @example 100.00
+             */
+            puntajeConfiabilidad: string;
+            /**
+             * @description RN-13: 0,60 × precio + 0,25 × plazo + 0,15 × confiabilidad
+             * @example 97.14
+             */
+            puntaje: string;
+        };
+        ComparacionProductoDto: {
+            producto: components["schemas"]["ProductoComparadorDto"];
+            /** @description Proveedores activos con costo cargado, de mayor a menor puntaje */
+            proveedores: components["schemas"]["ProveedorComparadoDto"][];
+            /** @description Mayor puntaje */
+            recomendado: components["schemas"]["ProveedorResumidoDto"] | null;
+            masBarato: components["schemas"]["ProveedorResumidoDto"] | null;
+            /** @description Proveedor principal, si está activo y tiene costo cargado */
+            principal: components["schemas"]["ProveedorResumidoDto"] | null;
+            /** @description Tiene dos o más proveedores */
+            comparable: boolean;
+            /** @description El recomendado no es el proveedor principal */
+            cambiaProveedor: boolean;
+            /**
+             * @description Unidades vendidas en los últimos 30 días
+             * @example 60
+             */
+            unidades30d: number;
+            /**
+             * @description (costo del principal − costo del recomendado) × unidades de 30 días
+             * @example 14400.00
+             */
+            ahorroEstimado: string | null;
         };
     };
     responses: never;
@@ -6273,6 +6441,121 @@ export interface operations {
             };
             /** @description La remarcación ya se deshizo */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SupplierComparisonController_resumen: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+                /** @description Código o nombre del producto */
+                q?: unknown;
+                /** @description Sólo los insumos cuyo recomendado no es su proveedor principal */
+                soloOportunidades?: "true" | "false";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResumenComparadorDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Planes FREE y PRO: el comparador requiere PREMIUM (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño: proveedores y costos no son para EMPLEADO ni CONTADOR */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    SupplierComparisonController_producto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparacionProductoDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Planes FREE y PRO: el comparador requiere PREMIUM (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño: proveedores y costos no son para EMPLEADO ni CONTADOR */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

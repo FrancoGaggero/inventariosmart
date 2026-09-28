@@ -161,3 +161,4 @@ export * from './reportes';
 export * from './inflacion';
 export * from './whatsapp';
 export * from './remarcacion';
+export * from './comparador';

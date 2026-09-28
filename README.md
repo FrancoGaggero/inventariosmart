@@ -58,6 +58,12 @@ pnpm dev
   `GET /repricing/batches`, `GET /repricing/batches/:id` y `POST /repricing/batches/:id/revert` (deshace una vez,
   sin tocar los productos que cambiaron después). El dueño aplica y deshace; el contador sólo consulta. Cada cambio
   queda en el historial de precios con origen `REMARCACION` (RN-12, ADR 0016). La API acepta cuerpos JSON de hasta 2 MB.
+  Rutas de HU-12 (plan PREMIUM, sólo el dueño): `GET /supplier-comparison?soloOportunidades&q&cursor&limit` (insumos
+  con dos o más proveedores, ordenados por ahorro mensual estimado, con totales) y
+  `GET /products/:id/supplier-comparison` (proveedores de un insumo de mayor a menor puntaje, con el recomendado, el
+  más barato y el principal). El puntaje pondera precio (60 %), plazo (25 %) y confiabilidad (15 %) y se calcula al
+  consultar con el último costo de cada proveedor activo; no se guarda nada (RN-13, ADR 0017). Para usar al
+  recomendado como principal se edita el producto con `PATCH /products/:id`.
   Rutas de HU-16 (plan PRO): `POST /purchase-orders/:id/confirm` acepta `{ canal? }` (`EMAIL` o `WHATSAPP`; sin
   indicarlo, el que corresponde al proveedor) y `POST /purchase-orders/:id/mark-sent` marca como enviada una orden
   confirmada. Por WhatsApp la orden queda `CONFIRMADA` con `whatsappUrl`, un enlace `wa.me` con el mensaje redactado

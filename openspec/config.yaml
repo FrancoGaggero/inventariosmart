@@ -54,6 +54,9 @@ context: |
   RN-12 una remarcación en lote no baja precios salvo pedido explícito, se
         aplica completa o no se aplica, y puede deshacerse mientras los precios
         remarcados no hayan vuelto a cambiar.
+  RN-13 puntaje de un proveedor para un insumo = 0,60 × precio + 0,25 × plazo +
+        0,15 × confiabilidad (cada componente de 0 a 100, relativo a los
+        proveedores comparados); se recomienda el de mayor puntaje.
 
   Convenciones de API: paginación por cursor; errores { code, message, details }
   con message en español; montos decimal(14,2) como string en JSON; fechas ISO

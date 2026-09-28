@@ -19,6 +19,8 @@ import { OrdenesPage } from '@/features/ordenes/OrdenesPage';
 import { SugerenciaPage } from '@/features/ordenes/SugerenciaPage';
 import { ProductoFormPage } from '@/features/productos/ProductoFormPage';
 import { ProductosPage } from '@/features/productos/ProductosPage';
+import { ComparacionProductoPage } from '@/features/proveedores/ComparacionProductoPage';
+import { ComparadorPage } from '@/features/proveedores/ComparadorPage';
 import { ImportarListaPage } from '@/features/proveedores/ImportarListaPage';
 import { ProveedorDetallePage } from '@/features/proveedores/ProveedorDetallePage';
 import { ProveedorFormPage } from '@/features/proveedores/ProveedorFormPage';
@@ -73,6 +75,11 @@ export const router = createBrowserRouter([
               { path: '/productos/:id', element: <ProductoFormPage /> },
               { path: '/proveedores', element: <ProveedoresPage /> },
               { path: '/proveedores/nuevo', element: <ProveedorFormPage /> },
+              { path: '/proveedores/comparador', element: <ComparadorPage /> },
+              {
+                path: '/proveedores/comparador/:productoId',
+                element: <ComparacionProductoPage />,
+              },
               { path: '/proveedores/:id', element: <ProveedorDetallePage /> },
               { path: '/proveedores/:id/editar', element: <ProveedorFormPage /> },
               { path: '/proveedores/:id/importar', element: <ImportarListaPage /> },
