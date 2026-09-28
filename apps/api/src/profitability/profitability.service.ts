@@ -19,7 +19,7 @@ import { codificarCursor, decodificarCursor } from '../common/cursor';
 import { ExpensesService, inicioMesBuenosAires } from '../expenses/expenses.service';
 import { Prisma } from '../generated/prisma/client';
 import { normalizarCodigo } from '../products/products.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
 
 /** Fila del listado: producto más las ventas del mes agregadas en SQL (D2). */
 interface FilaRentabilidad {
@@ -32,11 +32,40 @@ interface FilaRentabilidad {
   unidades: number;
 }
 
-interface FilaResumen {
+/** Ventas no anuladas de un producto en un rango: unidades e importe con IVA. */
+interface VentasProducto {
+  productoId: string;
   unidades: number;
-  ventasNetas: string;
-  costoVendido: string;
+  /** Σ cantidad × precio unitario, con IVA. */
+  importe: string;
 }
+
+/**
+ * Ventas por producto en una sola pasada sobre `movimiento`. Los productos se cruzan después en
+ * memoria: unidos en SQL, el plan dependía de las estadísticas y con tablas recién cargadas
+ * recorría los movimientos una vez por producto.
+ */
+async function ventasPorProducto(
+  tx: TransaccionRaw,
+  comercioId: string,
+  desde: Date,
+  hasta: Date,
+  productoIds?: string[],
+): Promise<VentasProducto[]> {
+  return tx.$queryRaw<VentasProducto[]>(Prisma.sql`
+    SELECT m.producto_id AS "productoId", COALESCE(SUM(m.cantidad), 0)::int AS unidades,
+           COALESCE(SUM(m.cantidad * m.precio_unitario), 0)::text AS importe
+    FROM movimiento m
+    WHERE m.comercio_id = ${comercioId}::uuid AND m.tipo = 'VENTA'
+      AND m.anulado_por_id IS NULL AND m.fecha >= ${desde} AND m.fecha < ${hasta}
+      ${productoIds ? Prisma.sql`AND m.producto_id = ANY(${productoIds}::uuid[])` : Prisma.empty}
+    GROUP BY m.producto_id`);
+}
+
+const COLUMNAS_PRODUCTO = Prisma.sql`p.id, p.codigo, p.nombre,
+  p.precio_venta::text AS "precioVenta",
+  p.alicuota_iva::text AS "alicuotaIva",
+  p.costo_reposicion::text AS "costoReposicion"`;
 
 /** Márgenes bruto y neto por producto y consolidados (HU-03). Nada se almacena. */
 @Injectable()
@@ -67,25 +96,28 @@ export class ProfitabilityService {
 
     const [resumenGastos, filas] = await Promise.all([
       this.expenses.resumen(periodo),
-      this.prisma.transaccionTenant((tx) =>
-        tx.$queryRaw<FilaRentabilidad[]>(
-          Prisma.sql`SELECT p.id, p.codigo, p.nombre,
-              p.precio_venta::text AS "precioVenta",
-              p.alicuota_iva::text AS "alicuotaIva",
-              p.costo_reposicion::text AS "costoReposicion",
-              v.unidades
+      this.prisma.transaccionTenant(async (tx) => {
+        const productos = await tx.$queryRaw<Omit<FilaRentabilidad, 'unidades'>[]>(
+          Prisma.sql`SELECT ${COLUMNAS_PRODUCTO}
             FROM producto p
-            LEFT JOIN LATERAL (
-              SELECT COALESCE(SUM(m.cantidad), 0)::int AS unidades
-              FROM movimiento m
-              WHERE m.producto_id = p.id AND m.tipo = 'VENTA' AND m.anulado_por_id IS NULL
-                AND m.fecha >= ${desde} AND m.fecha < ${hasta}
-            ) v ON true
             WHERE ${Prisma.join(condiciones, ' AND ')}
             ORDER BY p.nombre ASC, p.id ASC
             LIMIT ${q.limit + 1}`,
-        ),
-      ),
+        );
+        if (productos.length === 0) return [];
+        const ventas = await ventasPorProducto(
+          tx,
+          comercioId,
+          desde,
+          hasta,
+          productos.map((x) => x.id),
+        );
+        const unidadesDe = new Map(ventas.map((v) => [v.productoId, v.unidades]));
+        return productos.map((x): FilaRentabilidad => ({
+          ...x,
+          unidades: unidadesDe.get(x.id) ?? 0,
+        }));
+      }),
     ]);
 
     const hayMas = filas.length > q.limit;
@@ -120,24 +152,39 @@ export class ProfitabilityService {
     modo: 'mes' | 'porUnidad',
   ): Promise<Omit<ResumenRentabilidad, 'periodo'>> {
     const { comercioId } = TenantContext.requerido();
-    const [gastos, [fila]] = await Promise.all([
+    const [gastos, totales] = await Promise.all([
       this.expenses.resumen(mesGastos),
-      this.prisma.transaccionTenant(
-        (tx) =>
-          tx.$queryRaw<FilaResumen[]>`
-          SELECT COALESCE(SUM(m.cantidad), 0)::int AS unidades,
-                 COALESCE(SUM(m.cantidad * m.precio_unitario / (1 + p.alicuota_iva / 100)), 0)::text AS "ventasNetas",
-                 COALESCE(SUM(m.cantidad * p.costo_reposicion), 0)::text AS "costoVendido"
-          FROM movimiento m
-          JOIN producto p ON p.id = m.producto_id
-          WHERE m.comercio_id = ${comercioId}::uuid AND m.tipo = 'VENTA'
-            AND m.anulado_por_id IS NULL AND m.fecha >= ${desde} AND m.fecha < ${hasta}`,
-      ),
+      this.prisma.transaccionTenant(async (tx) => {
+        const ventas = await ventasPorProducto(tx, comercioId, desde, hasta);
+        if (ventas.length === 0) return { unidades: 0, ventasNetas: 0, costoVendido: 0 };
+        // Incluye los productos dados de baja: sus ventas del período cuentan igual.
+        const productos = await tx.$queryRaw<
+          { id: string; alicuotaIva: string; costoReposicion: string }[]
+        >`
+          SELECT p.id, p.alicuota_iva::text AS "alicuotaIva",
+                 p.costo_reposicion::text AS "costoReposicion"
+          FROM producto p
+          WHERE p.comercio_id = ${comercioId}::uuid
+            AND p.id = ANY(${ventas.map((v) => v.productoId)}::uuid[])`;
+        const porId = new Map(productos.map((x) => [x.id, x]));
+        let unidades = 0;
+        let ventasNetas = 0;
+        let costoVendido = 0;
+        for (const v of ventas) {
+          const producto = porId.get(v.productoId);
+          if (!producto) continue;
+          unidades += v.unidades;
+          // RN-03: el importe con IVA se lleva a neto con la alícuota del producto.
+          ventasNetas += Number(v.importe) / (1 + Number(producto.alicuotaIva) / 100);
+          costoVendido += v.unidades * Number(producto.costoReposicion);
+        }
+        return { unidades, ventasNetas, costoVendido };
+      }),
     ]);
 
-    const unidades = fila?.unidades ?? 0;
-    const ventasNetas = redondear2(Number(fila?.ventasNetas ?? 0));
-    const costoVendido = redondear2(Number(fila?.costoVendido ?? 0));
+    const unidades = totales.unidades;
+    const ventasNetas = redondear2(totales.ventasNetas);
+    const costoVendido = redondear2(totales.costoVendido);
     const bruto = margenBruto(ventasNetas, costoVendido);
     const gastosAplicados =
       modo === 'mes'
@@ -173,26 +220,27 @@ export class ProfitabilityService {
   /** Productos con ventas en el rango, ordenados por margen bruto generado (HU-09 por semana). */
   async topEntre(desde: Date, hasta: Date, n: number): Promise<TopRentable[]> {
     const { comercioId } = TenantContext.requerido();
-    const filas = await this.prisma.transaccionTenant(
-      (tx) =>
-        tx.$queryRaw<FilaRentabilidad[]>`
-        SELECT p.id, p.codigo, p.nombre,
-               p.precio_venta::text AS "precioVenta",
-               p.alicuota_iva::text AS "alicuotaIva",
-               p.costo_reposicion::text AS "costoReposicion",
-               v.unidades
-        FROM producto p
-        JOIN LATERAL (
-          SELECT COALESCE(SUM(m.cantidad), 0)::int AS unidades
-          FROM movimiento m
-          WHERE m.producto_id = p.id AND m.tipo = 'VENTA' AND m.anulado_por_id IS NULL
-            AND m.fecha >= ${desde} AND m.fecha < ${hasta}
-        ) v ON true
-        WHERE p.comercio_id = ${comercioId}::uuid AND p.activo AND v.unidades > 0
-        ORDER BY (p.precio_venta / (1 + p.alicuota_iva / 100) - p.costo_reposicion) * v.unidades DESC,
-                 p.nombre ASC
-        LIMIT ${n}`,
-    );
+    const conVentas = await this.prisma.transaccionTenant(async (tx) => {
+      const ventas = (await ventasPorProducto(tx, comercioId, desde, hasta)).filter(
+        (v) => v.unidades > 0,
+      );
+      if (ventas.length === 0) return [];
+      const productos = await tx.$queryRaw<Omit<FilaRentabilidad, 'unidades'>[]>(
+        Prisma.sql`SELECT ${COLUMNAS_PRODUCTO}
+          FROM producto p
+          WHERE p.comercio_id = ${comercioId}::uuid AND p.activo
+            AND p.id = ANY(${ventas.map((v) => v.productoId)}::uuid[])`,
+      );
+      const unidadesDe = new Map(ventas.map((v) => [v.productoId, v.unidades]));
+      return productos.map((x): FilaRentabilidad => ({ ...x, unidades: unidadesDe.get(x.id)! }));
+    });
+    // Margen bruto generado en el rango: (precio neto − costo) × unidades, de mayor a menor.
+    const generado = (f: FilaRentabilidad) =>
+      (Number(f.precioVenta) / (1 + Number(f.alicuotaIva) / 100) - Number(f.costoReposicion)) *
+      f.unidades;
+    const filas = conVentas
+      .sort((a, b) => generado(b) - generado(a) || a.nombre.localeCompare(b.nombre, 'es'))
+      .slice(0, n);
     return filas.map((f) => {
       const r = this.aRentabilidad(f, null);
       return {
