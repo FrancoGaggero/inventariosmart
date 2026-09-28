@@ -15,6 +15,8 @@ const TABLA: Record<string, string> = {
   OrdenCompraItem: 'orden_compra_item',
   ReporteSemanal: 'reporte_semanal',
   PrecioVentaHistorial: 'precio_venta_historial',
+  Remarcacion: 'remarcacion',
+  RemarcacionItem: 'remarcacion_item',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -270,6 +272,29 @@ describe('aislamiento entre comercios (e2e)', () => {
     expect(modificadas).toBe(0);
     await expect(
       t.prisma.raw.$executeRaw`DELETE FROM indicador_economico WHERE fuente = 'PRUEBA-RLS'`,
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-17.5c sin contexto la base no devuelve remarcaciones y el rol de la aplicación no las borra', async () => {
+    for (const tabla of ['remarcacion', 'remarcacion_item']) {
+      const [n] = await t.prisma.raw.$queryRawUnsafe<{ n: bigint }[]>(
+        `SELECT count(*)::bigint AS n FROM ${tabla}`,
+      );
+      expect(Number(n!.n)).toBe(0);
+      const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+        SELECT privilege_type FROM information_schema.role_table_grants
+        WHERE table_name = ${tabla} AND grantee = current_user`;
+      expect(privilegios.map((p) => p.privilege_type).sort()).toEqual([
+        'INSERT',
+        'SELECT',
+        'UPDATE',
+      ]);
+    }
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM remarcacion WHERE comercio_id = ${comercioA}::uuid`;
+      }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });
 

@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { OrigenPrecioVenta } from '@inventariosmart/shared';
 import type { TransaccionRaw } from '../prisma/prisma.service';
 
@@ -53,21 +52,30 @@ export async function registrarPrecioVenta(
   return true;
 }
 
-/** Varias filas de una vez (importación): el llamador ya filtró las que cambian. */
+export interface LotePreciosVenta {
+  comercioId: string;
+  origen: OrigenPrecioVenta;
+  usuarioId: string | null;
+}
+
+/**
+ * Varias filas de una vez (importación, remarcación): el llamador ya filtró las que cambian.
+ * Una sola sentencia con arreglos: con miles de filas viaja mucho menos que fila por fila.
+ */
 export async function registrarPreciosVenta(
   tx: TransaccionRaw,
-  filas: RegistroPrecioVenta[],
+  lote: LotePreciosVenta,
+  filas: { productoId: string; precioVenta: string | number; alicuotaIva: string | number }[],
 ): Promise<void> {
   if (filas.length === 0) return;
-  await tx.precioVentaHistorial.createMany({
-    data: filas.map((r) => ({
-      id: randomUUID(),
-      comercioId: r.comercioId,
-      productoId: r.productoId,
-      precioVenta: r.precioVenta,
-      alicuotaIva: r.alicuotaIva,
-      origen: r.origen,
-      usuarioId: r.usuarioId,
-    })),
-  });
+  await tx.$executeRaw`
+    INSERT INTO precio_venta_historial
+      (id, comercio_id, producto_id, precio_venta, alicuota_iva, origen, usuario_id)
+    SELECT gen_random_uuid(), ${lote.comercioId}::uuid, v.producto, v.precio::numeric,
+           v.iva::numeric, ${lote.origen}::origen_precio_venta, ${lote.usuarioId}::uuid
+    FROM unnest(
+      ${filas.map((f) => f.productoId)}::uuid[],
+      ${filas.map((f) => String(f.precioVenta))}::text[],
+      ${filas.map((f) => String(f.alicuotaIva))}::text[]
+    ) AS v(producto, precio, iva)`;
 }

@@ -599,6 +599,114 @@ describe('inflation-insights: precios frente a la inflación (e2e)', () => {
     }, 120_000);
   });
 
+  // Los casos de HU-17 que dependen del IPC viven en esta suite: las tablas de indicadores son
+  // globales y otra suite en paralelo las pisaría.
+  describe('HU-17 remarcación con los precios sugeridos', () => {
+    interface Item {
+      producto: { id: string; codigo: string };
+      precioActual: string;
+      precioNuevo: string | null;
+      variacion: string | null;
+      resultado: string;
+      estado: string | null;
+    }
+    const PERIODO = { desde: '2026-01', hasta: '2026-06' };
+    const vistaPrevia = (body: object, quien = duenioA) =>
+      t.http().post('/api/v1/repricing/preview').set(auth(quien)).send(body);
+    const item = (items: Item[], codigo: string) =>
+      items.find((i) => i.producto.codigo === codigo) as Item;
+
+    it('CP-17.1 alcanzar la inflación, sin modificar nada', async () => {
+      const r = await vistaPrevia({ criterio: 'INFLACION', ...PERIODO }).expect(200);
+      expect(r.body.motivo).toBeNull();
+      expect(r.body.parametros).toMatchObject(PERIODO);
+      expect(r.body.resumen).toEqual({ suben: 1, bajan: 0, sinCambio: 2, sinDatos: 0 });
+      expect(item(r.body.items, 'A')).toMatchObject({
+        precioActual: '1100.00',
+        precioNuevo: '1200.00',
+        variacion: '9.09',
+        margenBrutoPctActual: '20.80',
+        margenBrutoPctNuevo: '27.40',
+        resultado: 'SUBE',
+        estado: 'ATRASADO',
+      });
+      expect(item(r.body.items, 'B')).toMatchObject({
+        precioActual: '2600.00',
+        precioNuevo: '2600.00',
+        resultado: 'SIN_CAMBIO',
+        estado: 'ADELANTADO',
+      });
+      expect(item(r.body.items, 'C')).toMatchObject({
+        precioNuevo: '1210.00',
+        resultado: 'SIN_CAMBIO',
+        estado: 'ALINEADO',
+      });
+      const a = await t.http().get(`/api/v1/products/${prod['A']}`).set(auth(duenioA)).expect(200);
+      expect(a.body.precioVenta).toBe('1100.00');
+    }, 120_000);
+
+    it('CP-17.2 baja precios sólo si se pide', async () => {
+      const r = await vistaPrevia({
+        criterio: 'INFLACION',
+        ...PERIODO,
+        permitirBajas: true,
+      }).expect(200);
+      expect(item(r.body.items, 'B')).toMatchObject({
+        precioNuevo: '2400.00',
+        variacion: '-7.69',
+        resultado: 'BAJA',
+      });
+      expect(r.body.resumen).toEqual({ suben: 1, bajan: 2, sinCambio: 0, sinDatos: 0 });
+    }, 120_000);
+
+    it('CP-17.1d elegir los productos por su estado frente a la inflación', async () => {
+      const atrasados = await vistaPrevia({
+        criterio: 'INFLACION',
+        ...PERIODO,
+        estado: 'ATRASADO',
+      }).expect(200);
+      expect(atrasados.body.items.map((i: Item) => i.producto.codigo)).toEqual(['A']);
+      // El estado también sirve con los criterios que no usan la inflación.
+      const conPorcentaje = await vistaPrevia({
+        criterio: 'PORCENTAJE',
+        porcentaje: 10,
+        ...PERIODO,
+        estado: 'ADELANTADO',
+      }).expect(200);
+      expect(conPorcentaje.body.items).toHaveLength(1);
+      expect(item(conPorcentaje.body.items, 'B')).toMatchObject({
+        precioNuevo: '2860.00',
+        estado: 'ADELANTADO',
+      });
+    }, 120_000);
+
+    it('sostener el margen del inicio del período', async () => {
+      const r = await vistaPrevia({ criterio: 'MARGEN', ...PERIODO }).expect(200);
+      expect(item(r.body.items, 'A')).toMatchObject({ precioNuevo: '1200.00', resultado: 'SUBE' });
+      expect(item(r.body.items, 'B')).toMatchObject({
+        precioNuevo: '2600.00',
+        resultado: 'SIN_CAMBIO',
+      });
+    }, 120_000);
+
+    it('el contador ve la vista previa y la empleada no', async () => {
+      await vistaPrevia({ criterio: 'INFLACION', ...PERIODO }, contador).expect(200);
+      const r = await vistaPrevia({ criterio: 'INFLACION', ...PERIODO }, empleada).expect(403);
+      expect(r.body.code).toBe('SIN_PERMISO');
+    }, 120_000);
+
+    it('sin índice del INDEC el criterio de inflación no inventa precios', async () => {
+      const r = await vistaPrevia({
+        criterio: 'INFLACION',
+        desde: '2020-01',
+        hasta: '2020-06',
+      }).expect(200);
+      expect(r.body.motivo).toBe('SIN_IPC');
+      expect(r.body.resumen).toEqual({ suben: 0, bajan: 0, sinCambio: 0, sinDatos: 3 });
+      expect(item(r.body.items, 'A')).toMatchObject({ precioNuevo: null, resultado: 'SIN_DATOS' });
+    }, 120_000);
+  });
+
   it('carga sintética: 5.000 productos con historial y 50.000 movimientos en menos de 3 s', async () => {
     await conCargaExclusiva(async () => {
       const productos = Array.from({ length: 5000 }, (_, i) => ({

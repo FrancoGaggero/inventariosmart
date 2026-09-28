@@ -1,4 +1,5 @@
 import { type INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, type OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
@@ -9,6 +10,7 @@ import { TenantContext } from './auth/tenant-context';
 import type { Env } from './config/env';
 
 export const API_PREFIX = 'api/v1';
+export const LIMITE_JSON = '2mb';
 
 /** Crea la aplicación con toda la configuración transversal, sin escuchar en un puerto. */
 export async function crearApp(): Promise<INestApplication> {
@@ -22,6 +24,8 @@ export async function crearApp(): Promise<INestApplication> {
 export function configurarApp(app: INestApplication): void {
   const config = app.get(ConfigService<Env, true>);
   app.setGlobalPrefix(API_PREFIX);
+  // Una remarcación o una importación de 5.000 productos supera los 100 kB por defecto.
+  (app as NestExpressApplication).useBodyParser('json', { limit: LIMITE_JSON });
   app.use(TenantContext.middleware);
   app.use(helmet());
   app.enableCors({

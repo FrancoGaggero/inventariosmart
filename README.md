@@ -52,6 +52,12 @@ pnpm dev
   `GET/PATCH /reports/settings` (`activo`, `destinatariosExtra`). Reporte semanal de rentabilidad (semana ISO lunes a
   domingo en Buenos Aires) con productos estrella y oportunidades de ahorro; se genera los lunes a las 08:00 y se
   envía a los dueños activos más los correos extra; el contenido queda guardado tal como se envió.
+  Rutas de HU-17 (plan PRO): `POST /repricing/preview` (vista previa de remarcación por criterio: `INFLACION`,
+  `MARGEN`, `PORCENTAJE` o `MARGEN_OBJETIVO`, con redondeo hacia arriba; no modifica nada),
+  `POST /repricing/apply` (aplica todo o nada: si un precio cambió desde la vista previa responde 409),
+  `GET /repricing/batches`, `GET /repricing/batches/:id` y `POST /repricing/batches/:id/revert` (deshace una vez,
+  sin tocar los productos que cambiaron después). El dueño aplica y deshace; el contador sólo consulta. Cada cambio
+  queda en el historial de precios con origen `REMARCACION` (RN-12, ADR 0016). La API acepta cuerpos JSON de hasta 2 MB.
   Rutas de HU-16 (plan PRO): `POST /purchase-orders/:id/confirm` acepta `{ canal? }` (`EMAIL` o `WHATSAPP`; sin
   indicarlo, el que corresponde al proveedor) y `POST /purchase-orders/:id/mark-sent` marca como enviada una orden
   confirmada. Por WhatsApp la orden queda `CONFIRMADA` con `whatsappUrl`, un enlace `wa.me` con el mensaje redactado

@@ -7,7 +7,7 @@ import {
   type EstadoPrecio,
   type ProductoInflacion,
 } from '@inventariosmart/shared';
-import { Flame, LineChart, type LucideIcon, Scale, Tag, Truck } from 'lucide-react';
+import { Flame, LineChart, type LucideIcon, Scale, Tag, Tags, Truck } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
@@ -331,6 +331,17 @@ export function InflacionPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
+                {c && c.productos.length > 0 && (
+                  <Link
+                    to={`/remarcar?criterio=INFLACION&desde=${c.desde}&hasta=${c.hasta}${
+                      conteo('ATRASADO') > 0 ? '&estado=ATRASADO' : ''
+                    }`}
+                    className="btn btn-primary !py-2 !px-3"
+                  >
+                    <Tags className="w-4 h-4" aria-hidden />
+                    Remarcar
+                  </Link>
+                )}
                 <button
                   type="button"
                   className={`chip ${filtro === null ? 'chip-activo' : ''}`}

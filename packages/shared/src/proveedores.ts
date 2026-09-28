@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CuitSchema } from './index';
+import { CuitSchema } from './cuit';
 import { MontoSchema, listaPaginadaSchema } from './productos';
 import { CanalProveedorSchema } from './whatsapp';
 

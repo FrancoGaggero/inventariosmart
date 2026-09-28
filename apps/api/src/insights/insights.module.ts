@@ -9,5 +9,6 @@ import { InsightsService } from './insights.service';
   imports: [PrismaModule, IndicatorsModule],
   controllers: [InsightsController],
   providers: [InsightsService],
+  exports: [InsightsService],
 })
 export class InsightsModule {}

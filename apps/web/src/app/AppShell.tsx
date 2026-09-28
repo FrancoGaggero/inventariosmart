@@ -14,6 +14,7 @@ import {
   Settings,
   ShoppingCart,
   Sun,
+  Tags,
   TrendingUp,
   Truck,
   Users,
@@ -104,6 +105,7 @@ export function AppShell() {
           { to: '/ordenes', etiqueta: 'Órdenes', Icono: ShoppingCart },
           { to: '/reportes', etiqueta: 'Reportes', Icono: FileBarChart },
           { to: '/inflacion', etiqueta: 'Inflación', Icono: LineChart },
+          { to: '/remarcaciones', etiqueta: 'Remarcaciones', Icono: Tags },
         ]
       : []),
     ...(esDuenio

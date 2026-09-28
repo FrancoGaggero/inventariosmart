@@ -301,7 +301,13 @@ export function ordenarPorAtraso(productos: ProductoInflacion[]): ProductoInflac
 
 // --- Historial de precios de venta --------------------------------------------------------
 
-export const ORIGENES_PRECIO_VENTA = ['ALTA', 'EDICION', 'IMPORT', 'INICIAL'] as const;
+export const ORIGENES_PRECIO_VENTA = [
+  'ALTA',
+  'EDICION',
+  'IMPORT',
+  'INICIAL',
+  'REMARCACION',
+] as const;
 export const OrigenPrecioVentaSchema = z.enum(ORIGENES_PRECIO_VENTA);
 export type OrigenPrecioVenta = z.infer<typeof OrigenPrecioVentaSchema>;
 
@@ -310,6 +316,7 @@ export const ETIQUETA_ORIGEN_PRECIO_VENTA: Record<OrigenPrecioVenta, string> = {
   EDICION: 'Edición',
   IMPORT: 'Importación',
   INICIAL: 'Reconstruido de las ventas',
+  REMARCACION: 'Remarcación en lote',
 };
 
 export const PrecioHistorialSchema = z.object({

@@ -51,16 +51,19 @@ context: |
   RN-11 variación real = ((1 + variación nominal) / (1 + variación de referencia) - 1) × 100;
         un precio está atrasado si su variación real contra el IPC es menor a -2 %,
         adelantado si supera +2 % y alineado en el medio.
+  RN-12 una remarcación en lote no baja precios salvo pedido explícito, se
+        aplica completa o no se aplica, y puede deshacerse mientras los precios
+        remarcados no hayan vuelto a cambiar.
 
   Convenciones de API: paginación por cursor; errores { code, message, details }
   con message en español; montos decimal(14,2) como string en JSON; fechas ISO
   8601, zona America/Argentina/Buenos_Aires; Idempotency-Key en POST /movements;
   campos sensibles (costo, margen) filtrados por interceptor para EMPLEADO.
 
-  Trazabilidad: cada change referencia las HU (HU-01…HU-16) y RF (RF-01…RF-17)
-  que implementa. HU-15 (RF-16) "Mis precios frente a la inflación" y HU-16
-  (RF-17) "Enviar la orden por WhatsApp" se sumaron el 28/09/2026 como
-  diferencial del producto (RNF-08). Alcance comprometido para la entrega del 18/12/2026: Fase 1
+  Trazabilidad: cada change referencia las HU (HU-01…HU-17) y RF (RF-01…RF-18)
+  que implementa. HU-15 (RF-16) "Mis precios frente a la inflación", HU-16
+  (RF-17) "Enviar la orden por WhatsApp" y HU-17 (RF-18) "Remarcación asistida"
+  se sumaron el 28/09/2026 como diferencial del producto (RNF-08). Alcance comprometido para la entrega del 18/12/2026: Fase 1
   (HU-01, 02, 03, 04, 05, 10, 11, 13). Fases 2 y 3 se modelan pero no se
   construyen salvo que sobre tiempo (HU-06 primero).
 

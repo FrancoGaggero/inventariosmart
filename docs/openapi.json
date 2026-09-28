@@ -4632,6 +4632,417 @@
           "inflación"
         ]
       }
+    },
+    "/api/v1/repricing/preview": {
+      "post": {
+        "description": "Calcula el precio nuevo de cada producto según el criterio: INFLACION y MARGEN usan los precios sugeridos de HU-15 para el período; PORCENTAJE suma un porcentaje al precio actual; MARGEN_OBJETIVO parte del costo de reposición. El redondeo es siempre hacia arriba y un precio nuevo menor al actual queda SIN_CAMBIO salvo `permitirBajas` (RN-12).",
+        "operationId": "RepricingController_vistaPrevia",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemarcacionPreviewBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VistaPreviaRemarcacionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vista previa de una remarcación (HU-17). No modifica nada",
+        "tags": [
+          "remarcación"
+        ]
+      }
+    },
+    "/api/v1/repricing/apply": {
+      "post": {
+        "description": "Recibe por producto el precio actual visto y el precio nuevo. Si el precio de algún producto cambió desde la vista previa responde 409 con `details.productos` y no aplica nada. Deja una fila en el historial de precios con origen REMARCACION y crea el lote.",
+        "operationId": "RepricingController_aplicar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemarcacionApplyBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoteRemarcacionDetalleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDACION con details por campo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Producto de otro comercio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Algún precio cambió (CONFLICTO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Aplicar una remarcación en lote: todo o nada (RN-12)",
+        "tags": [
+          "remarcación"
+        ]
+      }
+    },
+    "/api/v1/repricing/batches": {
+      "get": {
+        "operationId": "RepricingController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaLotesDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remarcaciones del comercio, de la más reciente a la más antigua",
+        "tags": [
+          "remarcación"
+        ]
+      }
+    },
+    "/api/v1/repricing/batches/{id}": {
+      "get": {
+        "operationId": "RepricingController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoteRemarcacionDetalleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalle de una remarcación con el precio anterior y nuevo",
+        "tags": [
+          "remarcación"
+        ]
+      }
+    },
+    "/api/v1/repricing/batches/{id}/revert": {
+      "post": {
+        "description": "Vuelven al precio anterior los productos que siguen con el precio remarcado. Los que cambiaron después o están dados de baja no se tocan y se informan en `productosOmitidos`.",
+        "operationId": "RepricingController_deshacer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoReversionDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La remarcación ya se deshizo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deshacer una remarcación, una sola vez (RN-12)",
+        "tags": [
+          "remarcación"
+        ]
+      }
     }
   },
   "info": {
@@ -5234,7 +5645,8 @@
               "ALTA",
               "EDICION",
               "IMPORT",
-              "INICIAL"
+              "INICIAL",
+              "REMARCACION"
             ],
             "description": "INICIAL: reconstruido a partir de las ventas ya registradas"
           },
@@ -9112,6 +9524,636 @@
           "brechas",
           "motivo",
           "productos"
+        ]
+      },
+      "RemarcacionPreviewBodyDto": {
+        "type": "object",
+        "properties": {
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "porcentaje": {
+            "type": "number",
+            "example": 15,
+            "minimum": 0,
+            "maximum": 500,
+            "description": "Obligatorio con el criterio PORCENTAJE"
+          },
+          "margen": {
+            "type": "number",
+            "example": 40,
+            "minimum": 0,
+            "maximum": 95,
+            "description": "Margen bruto % sobre el precio neto; obligatorio con MARGEN_OBJETIVO"
+          },
+          "productoIds": {
+            "description": "Productos a remarcar; sin indicarlos, todos los activos",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "ATRASADO",
+              "ALINEADO",
+              "ADELANTADO"
+            ],
+            "description": "Sólo los productos con ese estado frente a la inflación del período"
+          },
+          "desde": {
+            "type": "string",
+            "example": "2026-03",
+            "description": "AAAA-MM"
+          },
+          "hasta": {
+            "type": "string",
+            "example": "2026-08",
+            "description": "AAAA-MM"
+          },
+          "redondeo": {
+            "type": "string",
+            "enum": [
+              "NINGUNO",
+              "PESO",
+              "DECENA",
+              "CENTENA"
+            ],
+            "default": "NINGUNO",
+            "description": "Siempre hacia arriba"
+          },
+          "permitirBajas": {
+            "type": "boolean",
+            "default": false,
+            "description": "Sin esto, un precio nuevo menor al actual queda SIN_CAMBIO (RN-12)"
+          }
+        },
+        "required": [
+          "criterio"
+        ]
+      },
+      "ParametrosRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "porcentaje": {
+            "type": "number",
+            "example": 15,
+            "description": "Criterio PORCENTAJE"
+          },
+          "margen": {
+            "type": "number",
+            "example": 40,
+            "description": "Criterio MARGEN_OBJETIVO"
+          },
+          "redondeo": {
+            "type": "string",
+            "enum": [
+              "NINGUNO",
+              "PESO",
+              "DECENA",
+              "CENTENA"
+            ]
+          },
+          "permitirBajas": {
+            "type": "boolean"
+          },
+          "desde": {
+            "type": "string",
+            "example": "2026-03"
+          },
+          "hasta": {
+            "type": "string",
+            "example": "2026-08"
+          }
+        }
+      },
+      "ProductoRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "ItemRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoRemarcacionDto"
+          },
+          "precioActual": {
+            "type": "string",
+            "description": "Con IVA",
+            "example": "1100.00"
+          },
+          "precioNuevo": {
+            "type": "string",
+            "nullable": true,
+            "example": "1200.00"
+          },
+          "variacion": {
+            "type": "string",
+            "nullable": true,
+            "example": "9.09"
+          },
+          "costo": {
+            "type": "string",
+            "description": "Costo de reposición neto",
+            "example": "720.00"
+          },
+          "alicuotaIva": {
+            "type": "string",
+            "example": "21"
+          },
+          "margenBrutoPctActual": {
+            "type": "string",
+            "nullable": true,
+            "example": "20.80"
+          },
+          "margenBrutoPctNuevo": {
+            "type": "string",
+            "nullable": true,
+            "example": "27.40"
+          },
+          "resultado": {
+            "type": "string",
+            "enum": [
+              "SUBE",
+              "BAJA",
+              "SIN_CAMBIO",
+              "SIN_DATOS"
+            ]
+          },
+          "estado": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "ATRASADO",
+              "ALINEADO",
+              "ADELANTADO"
+            ]
+          }
+        },
+        "required": [
+          "producto",
+          "precioActual",
+          "precioNuevo",
+          "variacion",
+          "costo",
+          "alicuotaIva",
+          "margenBrutoPctActual",
+          "margenBrutoPctNuevo",
+          "resultado",
+          "estado"
+        ]
+      },
+      "ResumenRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "suben": {
+            "type": "number",
+            "example": 12
+          },
+          "bajan": {
+            "type": "number",
+            "example": 0
+          },
+          "sinCambio": {
+            "type": "number",
+            "example": 3
+          },
+          "sinDatos": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "suben",
+          "bajan",
+          "sinCambio",
+          "sinDatos"
+        ]
+      },
+      "VistaPreviaRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "parametros": {
+            "$ref": "#/components/schemas/ParametrosRemarcacionDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemRemarcacionDto"
+            }
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenRemarcacionDto"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_IPC"
+            ],
+            "description": "Todavía no está el índice del INDEC para el criterio de inflación"
+          }
+        },
+        "required": [
+          "criterio",
+          "parametros",
+          "items",
+          "resumen",
+          "motivo"
+        ]
+      },
+      "ItemAplicarBodyDto": {
+        "type": "object",
+        "properties": {
+          "productoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "precioActual": {
+            "type": "string",
+            "example": "1100.00",
+            "description": "Precio visto en la vista previa: si cambió, no se aplica nada"
+          },
+          "precioNuevo": {
+            "type": "string",
+            "example": "1270.00"
+          }
+        },
+        "required": [
+          "productoId",
+          "precioActual",
+          "precioNuevo"
+        ]
+      },
+      "RemarcacionApplyBodyDto": {
+        "type": "object",
+        "properties": {
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "parametros": {
+            "$ref": "#/components/schemas/ParametrosRemarcacionDto"
+          },
+          "items": {
+            "minItems": 1,
+            "maxItems": 5000,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemAplicarBodyDto"
+            }
+          }
+        },
+        "required": [
+          "criterio",
+          "items"
+        ]
+      },
+      "UsuarioLoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "ItemLoteDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoRemarcacionDto"
+          },
+          "precioAnterior": {
+            "type": "string",
+            "example": "1100.00"
+          },
+          "precioNuevo": {
+            "type": "string",
+            "example": "1270.00"
+          },
+          "revertido": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "producto",
+          "precioAnterior",
+          "precioNuevo",
+          "revertido"
+        ]
+      },
+      "LoteRemarcacionDetalleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "parametros": {
+            "$ref": "#/components/schemas/ParametrosRemarcacionDto"
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 12
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioLoteDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revertidoEn": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "revertidoPor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioLoteDto"
+              }
+            ]
+          },
+          "revertidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "Volvieron al precio anterior"
+          },
+          "omitidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "No se tocaron al deshacer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemLoteDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "criterio",
+          "parametros",
+          "cantidad",
+          "usuario",
+          "creadoEn",
+          "revertidoEn",
+          "revertidoPor",
+          "revertidos",
+          "omitidos",
+          "items"
+        ]
+      },
+      "LoteRemarcacionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "parametros": {
+            "$ref": "#/components/schemas/ParametrosRemarcacionDto"
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 12
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioLoteDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revertidoEn": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "revertidoPor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioLoteDto"
+              }
+            ]
+          },
+          "revertidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "Volvieron al precio anterior"
+          },
+          "omitidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "No se tocaron al deshacer"
+          }
+        },
+        "required": [
+          "id",
+          "criterio",
+          "parametros",
+          "cantidad",
+          "usuario",
+          "creadoEn",
+          "revertidoEn",
+          "revertidoPor",
+          "revertidos",
+          "omitidos"
+        ]
+      },
+      "ListaLotesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LoteRemarcacionDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ProductoOmitidoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoRemarcacionDto"
+          },
+          "precioActual": {
+            "type": "string",
+            "example": "1450.00"
+          },
+          "motivo": {
+            "type": "string",
+            "example": "El precio cambió después de la remarcación."
+          }
+        },
+        "required": [
+          "producto",
+          "precioActual",
+          "motivo"
+        ]
+      },
+      "ResultadoReversionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "criterio": {
+            "type": "string",
+            "enum": [
+              "INFLACION",
+              "MARGEN",
+              "PORCENTAJE",
+              "MARGEN_OBJETIVO"
+            ]
+          },
+          "parametros": {
+            "$ref": "#/components/schemas/ParametrosRemarcacionDto"
+          },
+          "cantidad": {
+            "type": "number",
+            "example": 12
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioLoteDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revertidoEn": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "revertidoPor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioLoteDto"
+              }
+            ]
+          },
+          "revertidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "Volvieron al precio anterior"
+          },
+          "omitidos": {
+            "type": "number",
+            "nullable": true,
+            "description": "No se tocaron al deshacer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemLoteDto"
+            }
+          },
+          "productosOmitidos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoOmitidoDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "criterio",
+          "parametros",
+          "cantidad",
+          "usuario",
+          "creadoEn",
+          "revertidoEn",
+          "revertidoPor",
+          "revertidos",
+          "omitidos",
+          "items",
+          "productosOmitidos"
         ]
       }
     }

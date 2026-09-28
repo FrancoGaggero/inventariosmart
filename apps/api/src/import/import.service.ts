@@ -22,11 +22,7 @@ import {
   verificarTope,
 } from '../common/planillas';
 import { Prisma } from '../generated/prisma/client';
-import {
-  cambiaPrecio,
-  registrarPreciosVenta,
-  type RegistroPrecioVenta,
-} from '../products/price-history';
+import { cambiaPrecio, registrarPreciosVenta } from '../products/price-history';
 import { normalizarCodigo, ProductsService } from '../products/products.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -169,14 +165,11 @@ export class ImportService {
       const crear: { fila: (typeof dto.filas)[number]; datos: DatosFilaProducto }[] = [];
       const actualizar: { id: string; datos: DatosFilaProducto }[] = [];
       // Historial de precios de venta (HU-15): altas y actualizaciones que cambian el precio.
-      const precios: RegistroPrecioVenta[] = [];
-      const precioDe = (productoId: string, datos: DatosFilaProducto): RegistroPrecioVenta => ({
-        comercioId,
+      const precios: { productoId: string; precioVenta: string; alicuotaIva: number }[] = [];
+      const precioDe = (productoId: string, datos: DatosFilaProducto) => ({
         productoId,
         precioVenta: datos.precioVenta,
         alicuotaIva: datos.alicuotaIva ?? Number(ivaDefault),
-        origen: 'IMPORT',
-        usuarioId,
       });
       const detalles: ResultadoImportacionProductos['detalles'] = [];
       for (const fila of dto.filas) {
@@ -277,7 +270,7 @@ export class ImportService {
         );
       }
 
-      await registrarPreciosVenta(tx, precios);
+      await registrarPreciosVenta(tx, { comercioId, origen: 'IMPORT', usuarioId }, precios);
 
       return {
         creados: crear.length,

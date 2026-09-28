@@ -839,6 +839,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/repricing/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Vista previa de una remarcación (HU-17). No modifica nada
+         * @description Calcula el precio nuevo de cada producto según el criterio: INFLACION y MARGEN usan los precios sugeridos de HU-15 para el período; PORCENTAJE suma un porcentaje al precio actual; MARGEN_OBJETIVO parte del costo de reposición. El redondeo es siempre hacia arriba y un precio nuevo menor al actual queda SIN_CAMBIO salvo `permitirBajas` (RN-12).
+         */
+        post: operations["RepricingController_vistaPrevia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/repricing/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aplicar una remarcación en lote: todo o nada (RN-12)
+         * @description Recibe por producto el precio actual visto y el precio nuevo. Si el precio de algún producto cambió desde la vista previa responde 409 con `details.productos` y no aplica nada. Deja una fila en el historial de precios con origen REMARCACION y crea el lote.
+         */
+        post: operations["RepricingController_aplicar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/repricing/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Remarcaciones del comercio, de la más reciente a la más antigua */
+        get: operations["RepricingController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/repricing/batches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detalle de una remarcación con el precio anterior y nuevo */
+        get: operations["RepricingController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/repricing/batches/{id}/revert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deshacer una remarcación, una sola vez (RN-12)
+         * @description Vuelven al precio anterior los productos que siguen con el precio remarcado. Los que cambiaron después o están dados de baja no se tocan y se informan en `productosOmitidos`.
+         */
+        post: operations["RepricingController_deshacer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1058,7 +1152,7 @@ export interface components {
              * @description INICIAL: reconstruido a partir de las ventas ya registradas
              * @enum {string}
              */
-            origen: "ALTA" | "EDICION" | "IMPORT" | "INICIAL";
+            origen: "ALTA" | "EDICION" | "IMPORT" | "INICIAL" | "REMARCACION";
             usuario: components["schemas"]["UsuarioPrecioDto"] | null;
         };
         ListaPrecioHistorialDto: {
@@ -2458,6 +2552,225 @@ export interface components {
             motivo: "SIN_VENTAS" | "SIN_IPC" | null;
             /** @description Productos activos, del más atrasado al más adelantado */
             productos: components["schemas"]["ProductoInflacionDto"][];
+        };
+        RemarcacionPreviewBodyDto: {
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            /**
+             * @description Obligatorio con el criterio PORCENTAJE
+             * @example 15
+             */
+            porcentaje?: number;
+            /**
+             * @description Margen bruto % sobre el precio neto; obligatorio con MARGEN_OBJETIVO
+             * @example 40
+             */
+            margen?: number;
+            /** @description Productos a remarcar; sin indicarlos, todos los activos */
+            productoIds?: string[];
+            /**
+             * @description Sólo los productos con ese estado frente a la inflación del período
+             * @enum {string}
+             */
+            estado?: "ATRASADO" | "ALINEADO" | "ADELANTADO";
+            /**
+             * @description AAAA-MM
+             * @example 2026-03
+             */
+            desde?: string;
+            /**
+             * @description AAAA-MM
+             * @example 2026-08
+             */
+            hasta?: string;
+            /**
+             * @description Siempre hacia arriba
+             * @default NINGUNO
+             * @enum {string}
+             */
+            redondeo: "NINGUNO" | "PESO" | "DECENA" | "CENTENA";
+            /**
+             * @description Sin esto, un precio nuevo menor al actual queda SIN_CAMBIO (RN-12)
+             * @default false
+             */
+            permitirBajas: boolean;
+        };
+        ParametrosRemarcacionDto: {
+            /**
+             * @description Criterio PORCENTAJE
+             * @example 15
+             */
+            porcentaje?: number;
+            /**
+             * @description Criterio MARGEN_OBJETIVO
+             * @example 40
+             */
+            margen?: number;
+            /** @enum {string} */
+            redondeo?: "NINGUNO" | "PESO" | "DECENA" | "CENTENA";
+            permitirBajas?: boolean;
+            /** @example 2026-03 */
+            desde?: string;
+            /** @example 2026-08 */
+            hasta?: string;
+        };
+        ProductoRemarcacionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        ItemRemarcacionDto: {
+            producto: components["schemas"]["ProductoRemarcacionDto"];
+            /**
+             * @description Con IVA
+             * @example 1100.00
+             */
+            precioActual: string;
+            /** @example 1200.00 */
+            precioNuevo: string | null;
+            /** @example 9.09 */
+            variacion: string | null;
+            /**
+             * @description Costo de reposición neto
+             * @example 720.00
+             */
+            costo: string;
+            /** @example 21 */
+            alicuotaIva: string;
+            /** @example 20.80 */
+            margenBrutoPctActual: string | null;
+            /** @example 27.40 */
+            margenBrutoPctNuevo: string | null;
+            /** @enum {string} */
+            resultado: "SUBE" | "BAJA" | "SIN_CAMBIO" | "SIN_DATOS";
+            /** @enum {string|null} */
+            estado: "ATRASADO" | "ALINEADO" | "ADELANTADO" | null;
+        };
+        ResumenRemarcacionDto: {
+            /** @example 12 */
+            suben: number;
+            /** @example 0 */
+            bajan: number;
+            /** @example 3 */
+            sinCambio: number;
+            /** @example 1 */
+            sinDatos: number;
+        };
+        VistaPreviaRemarcacionDto: {
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            parametros: components["schemas"]["ParametrosRemarcacionDto"];
+            items: components["schemas"]["ItemRemarcacionDto"][];
+            resumen: components["schemas"]["ResumenRemarcacionDto"];
+            /**
+             * @description Todavía no está el índice del INDEC para el criterio de inflación
+             * @enum {string|null}
+             */
+            motivo: "SIN_IPC" | null;
+        };
+        ItemAplicarBodyDto: {
+            /** Format: uuid */
+            productoId: string;
+            /**
+             * @description Precio visto en la vista previa: si cambió, no se aplica nada
+             * @example 1100.00
+             */
+            precioActual: string;
+            /** @example 1270.00 */
+            precioNuevo: string;
+        };
+        RemarcacionApplyBodyDto: {
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            parametros?: components["schemas"]["ParametrosRemarcacionDto"];
+            items: components["schemas"]["ItemAplicarBodyDto"][];
+        };
+        UsuarioLoteDto: {
+            /** Format: uuid */
+            id: string;
+            nombre: string | null;
+        };
+        ItemLoteDto: {
+            producto: components["schemas"]["ProductoRemarcacionDto"];
+            /** @example 1100.00 */
+            precioAnterior: string;
+            /** @example 1270.00 */
+            precioNuevo: string;
+            revertido: boolean;
+        };
+        LoteRemarcacionDetalleDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            parametros: components["schemas"]["ParametrosRemarcacionDto"];
+            /** @example 12 */
+            cantidad: number;
+            usuario: components["schemas"]["UsuarioLoteDto"];
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            revertidoEn: string | null;
+            revertidoPor: components["schemas"]["UsuarioLoteDto"] | null;
+            /** @description Volvieron al precio anterior */
+            revertidos: number | null;
+            /** @description No se tocaron al deshacer */
+            omitidos: number | null;
+            items: components["schemas"]["ItemLoteDto"][];
+        };
+        LoteRemarcacionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            parametros: components["schemas"]["ParametrosRemarcacionDto"];
+            /** @example 12 */
+            cantidad: number;
+            usuario: components["schemas"]["UsuarioLoteDto"];
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            revertidoEn: string | null;
+            revertidoPor: components["schemas"]["UsuarioLoteDto"] | null;
+            /** @description Volvieron al precio anterior */
+            revertidos: number | null;
+            /** @description No se tocaron al deshacer */
+            omitidos: number | null;
+        };
+        ListaLotesDto: {
+            items: components["schemas"]["LoteRemarcacionDto"][];
+            siguienteCursor: string | null;
+        };
+        ProductoOmitidoDto: {
+            producto: components["schemas"]["ProductoRemarcacionDto"];
+            /** @example 1450.00 */
+            precioActual: string;
+            /** @example El precio cambió después de la remarcación. */
+            motivo: string;
+        };
+        ResultadoReversionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            criterio: "INFLACION" | "MARGEN" | "PORCENTAJE" | "MARGEN_OBJETIVO";
+            parametros: components["schemas"]["ParametrosRemarcacionDto"];
+            /** @example 12 */
+            cantidad: number;
+            usuario: components["schemas"]["UsuarioLoteDto"];
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: date-time */
+            revertidoEn: string | null;
+            revertidoPor: components["schemas"]["UsuarioLoteDto"] | null;
+            /** @description Volvieron al precio anterior */
+            revertidos: number | null;
+            /** @description No se tocaron al deshacer */
+            omitidos: number | null;
+            items: components["schemas"]["ItemLoteDto"][];
+            productosOmitidos: components["schemas"]["ProductoOmitidoDto"][];
         };
     };
     responses: never;
@@ -5659,6 +5972,307 @@ export interface operations {
             };
             /** @description EMPLEADO sin acceso: no ve costos */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RepricingController_vistaPrevia: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemarcacionPreviewBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VistaPreviaRemarcacionDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RepricingController_aplicar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemarcacionApplyBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoteRemarcacionDetalleDto"];
+                };
+            };
+            /** @description VALIDACION con details por campo */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Producto de otro comercio */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Algún precio cambió (CONFLICTO) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RepricingController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaLotesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RepricingController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoteRemarcacionDetalleDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    RepricingController_deshacer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoReversionDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la remarcación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo vista previa y lotes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La remarcación ya se deshizo */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

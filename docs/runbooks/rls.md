@@ -86,6 +86,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON "orden_compra_item" TO app_api;
 
 `reporte_semanal` (HU-09, ADR 0013) usa la variante de `alerta`: se regenera con UPDATE y no se borra.
 
+`remarcacion` y `remarcacion_item` (HU-17, ADR 0016) usan la variante de `alerta`: el lote se
+actualiza al deshacerlo y no se borra (CP-17.5c).
+
 `precio_venta_historial` (HU-15, ADR 0014) es de sólo inserción, igual que `precio_proveedor`
 (CP-15.2d).
 

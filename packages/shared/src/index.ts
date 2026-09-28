@@ -62,10 +62,9 @@ export type Health = z.infer<typeof HealthSchema>;
 // Comercio (tenant) y usuarios — HU-11
 // ---------------------------------------------------------------------------
 
-/** CUIT argentino: 11 dígitos sin guiones. */
-export const CuitSchema = z
-  .string()
-  .regex(/^\d{11}$/, 'El CUIT debe tener 11 dígitos, sin guiones.');
+// En su propio módulo: `proveedores` lo necesita y no puede importar este índice sin crear un ciclo.
+import { CuitSchema } from './cuit';
+export { CuitSchema };
 
 export const ComercioSchema = z.object({
   id: z.uuid(),
@@ -161,3 +160,4 @@ export * from './ordenes';
 export * from './reportes';
 export * from './inflacion';
 export * from './whatsapp';
+export * from './remarcacion';

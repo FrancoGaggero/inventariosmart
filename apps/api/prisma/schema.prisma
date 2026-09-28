@@ -59,6 +59,8 @@ model Comercio {
   gastos            Gasto[]
   alertas           Alerta[]
   preciosVenta      PrecioVentaHistorial[]
+  remarcaciones     Remarcacion[]
+  remarcacionItems  RemarcacionItem[]
 
   @@map("comercio")
 }
@@ -97,6 +99,7 @@ model Producto {
   alertas          Alerta[]
   itemsOrdenCompra OrdenCompraItem[]
   preciosVenta     PrecioVentaHistorial[]
+  remarcacionItems RemarcacionItem[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
@@ -116,13 +119,15 @@ model Usuario {
   activo      Boolean  @default(true)
   creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  comercio           Comercio               @relation(fields: [comercioId], references: [id])
-  movimientos        Movimiento[]
-  precios            PrecioProveedor[]
-  gastos             Gasto[]
-  ordenesCreadas     OrdenCompra[]          @relation("OrdenCreadaPor")
-  ordenesConfirmadas OrdenCompra[]          @relation("OrdenConfirmadaPor")
-  preciosVenta       PrecioVentaHistorial[]
+  comercio                Comercio               @relation(fields: [comercioId], references: [id])
+  movimientos             Movimiento[]
+  precios                 PrecioProveedor[]
+  gastos                  Gasto[]
+  ordenesCreadas          OrdenCompra[]          @relation("OrdenCreadaPor")
+  ordenesConfirmadas      OrdenCompra[]          @relation("OrdenConfirmadaPor")
+  preciosVenta            PrecioVentaHistorial[]
+  remarcaciones           Remarcacion[]          @relation("RemarcacionHechaPor")
+  remarcacionesRevertidas Remarcacion[]          @relation("RemarcacionRevertidaPor")
 
   @@index([comercioId])
   @@map("usuario")
@@ -515,6 +520,8 @@ enum OrigenPrecioVenta {
   IMPORT
   /// Reconstruido por la migración a partir de las ventas ya registradas.
   INICIAL
+  /// Remarcación en lote, aplicada o deshecha (HU-17).
+  REMARCACION
 
   @@map("origen_precio_venta")
 }
@@ -539,4 +546,60 @@ model PrecioVentaHistorial {
 
   @@index([comercioId, productoId, vigenteDesde(sort: Desc), id(sort: Desc)])
   @@map("precio_venta_historial")
+}
+
+/// Criterio con el que se calculó una remarcación (HU-17).
+enum CriterioRemarcacion {
+  INFLACION
+  MARGEN
+  PORCENTAJE
+  MARGEN_OBJETIVO
+
+  @@map("criterio_remarcacion")
+}
+
+/// Remarcación en lote (HU-17, RN-12): se aplica completa y puede deshacerse una vez.
+/// No se borra: deshacerla la marca con revertidoEn.
+model Remarcacion {
+  id             String              @id @default(uuid()) @db.Uuid
+  comercioId     String              @map("comercio_id") @db.Uuid
+  usuarioId      String              @map("usuario_id") @db.Uuid
+  criterio       CriterioRemarcacion
+  /// Porcentaje, margen, redondeo y período con los que se calculó.
+  parametros     Json                @default("{}")
+  cantidad       Int
+  creadoEn       DateTime            @default(now()) @map("creado_en") @db.Timestamptz(3)
+  revertidoEn    DateTime?           @map("revertido_en") @db.Timestamptz(3)
+  revertidoPorId String?             @map("revertido_por_id") @db.Uuid
+  /// Productos que volvieron al precio anterior y productos que no se tocaron, tras deshacer.
+  revertidos     Int?
+  omitidos       Int?
+
+  comercio     Comercio          @relation(fields: [comercioId], references: [id])
+  usuario      Usuario           @relation("RemarcacionHechaPor", fields: [usuarioId], references: [id])
+  revertidoPor Usuario?          @relation("RemarcacionRevertidaPor", fields: [revertidoPorId], references: [id], onDelete: SetNull)
+  items        RemarcacionItem[]
+
+  @@index([comercioId, creadoEn(sort: Desc), id(sort: Desc)])
+  @@map("remarcacion")
+}
+
+/// Precio anterior y nuevo de un producto dentro de una remarcación.
+model RemarcacionItem {
+  id             String  @id @default(uuid()) @db.Uuid
+  comercioId     String  @map("comercio_id") @db.Uuid
+  remarcacionId  String  @map("remarcacion_id") @db.Uuid
+  productoId     String  @map("producto_id") @db.Uuid
+  precioAnterior Decimal @map("precio_anterior") @db.Decimal(14, 2)
+  precioNuevo    Decimal @map("precio_nuevo") @db.Decimal(14, 2)
+  /// true si al deshacer el lote este producto volvió al precio anterior.
+  revertido      Boolean @default(false)
+
+  comercio    Comercio    @relation(fields: [comercioId], references: [id])
+  remarcacion Remarcacion @relation(fields: [remarcacionId], references: [id], onDelete: Cascade)
+  producto    Producto    @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@unique([remarcacionId, productoId])
+  @@index([comercioId, productoId])
+  @@map("remarcacion_item")
 }

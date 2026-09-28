@@ -23,6 +23,8 @@ import { ImportarListaPage } from '@/features/proveedores/ImportarListaPage';
 import { ProveedorDetallePage } from '@/features/proveedores/ProveedorDetallePage';
 import { ProveedorFormPage } from '@/features/proveedores/ProveedorFormPage';
 import { ProveedoresPage } from '@/features/proveedores/ProveedoresPage';
+import { RemarcacionesPage } from '@/features/remarcacion/RemarcacionesPage';
+import { RemarcarPage } from '@/features/remarcacion/RemarcarPage';
 import { RentabilidadPage } from '@/features/rentabilidad/RentabilidadPage';
 import { ReportePage } from '@/features/reportes/ReportePage';
 import { ReportesPage } from '@/features/reportes/ReportesPage';
@@ -52,6 +54,8 @@ export const router = createBrowserRouter([
               { path: '/reportes', element: <ReportesPage /> },
               { path: '/reportes/:id', element: <ReportePage /> },
               { path: '/inflacion', element: <InflacionPage /> },
+              { path: '/remarcar', element: <RemarcarPage /> },
+              { path: '/remarcaciones', element: <RemarcacionesPage /> },
             ],
           },
           {
