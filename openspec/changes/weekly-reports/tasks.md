@@ -13,16 +13,16 @@
 
 ## 3. Web · reportes
 
-- [ ] 3.1 `lib/reportes.ts` con hooks, invalidaciones y `formatearSemana` (D7). Listo cuando: generar desde la web actualiza el listado sin recargar
-- [ ] 3.2 `ReportesPage` en `/reportes`: frase de cabecera, "Generar el de esta semana", tarjetas por semana con anillo de margen y estado de envío, estado vacío, aviso de plan en FREE. Listo cuando: CP-09.4 se ve en la web
-- [ ] 3.3 `ReportePage` en `/reportes/:id`: Números, Semana anterior, Estrellas, Oportunidades, Alertas críticas, pie de envío y "Reenviar" (DUENIO). Listo cuando: CP-09.1, CP-09.2 y CP-09.3c se ven en la web
-- [ ] 3.4 Enlace "Reportes" en `AppShell` (PRO) y bloque "Reporte semanal" en `ComercioPage` con `activo` y destinatarios extra. Listo cuando: CP-09.5 se ve en la web y el enlace no aparece en FREE
+- [x] 3.1 `lib/reportes.ts` con hooks, invalidaciones y `formatearSemana` (D7). Listo cuando: generar desde la web actualiza el listado sin recargar
+- [x] 3.2 `ReportesPage` en `/reportes`: frase de cabecera, "Generar el de esta semana", tarjetas por semana con anillo de margen y estado de envío, estado vacío, aviso de plan en FREE. Listo cuando: CP-09.4 se ve en la web
+- [x] 3.3 `ReportePage` en `/reportes/:id`: Números, Semana anterior, Estrellas, Oportunidades, Alertas críticas, pie de envío y "Reenviar" (DUENIO). Listo cuando: CP-09.1, CP-09.2 y CP-09.3c se ven en la web
+- [x] 3.4 Enlace "Reportes" en `AppShell` (PRO) y bloque "Reporte semanal" en `ComercioPage` con `activo` y destinatarios extra. Listo cuando: CP-09.5 se ve en la web y el enlace no aparece en FREE
 
-- [ ] 3.5 `ui/Confirmar` (diálogo accesible) y confirmación al cerrar sesión desde la barra y el menú lateral (pedido de Franco durante la implementación). Listo cuando: tocar "Cerrar sesión" abre el diálogo, Escape o "Seguir acá" lo cancelan sin cerrar la sesión, y "Cerrar sesión" la cierra
+- [x] 3.5 `ui/Confirmar` (diálogo accesible) y confirmación al cerrar sesión desde la barra y el menú lateral (pedido de Franco durante la implementación). Listo cuando: tocar "Cerrar sesión" abre el diálogo, Escape o "Seguir acá" lo cancelan sin cerrar la sesión, y "Cerrar sesión" la cierra
 
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0013 (reporte como snapshot semanal, cron + bajo demanda, oportunidades por reglas), README (rutas de HU-09), `docs/arquitectura.html` (§6 `reports`), `docs/runbooks/rls.md`, `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D9
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.3 Producción: migración aplicada por Render; Franco genera el reporte de la semana desde `/reportes`, recibe el correo en su casilla, revisa el detalle y prueba los ajustes. Listo cuando: CP-09.3, CP-09.4 y CP-09.5 se cumplen en `https://inventariosmart0.vercel.app/reportes`
 - [ ] 4.4 (manual, Franco) Mover HU-09 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: Trello, backlog y Gantt coinciden
