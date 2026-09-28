@@ -6,7 +6,7 @@ import {
   formatearUsd,
   formatearVariacion,
   fraseInflacion,
-} from './inflacion';
+} from './inflacion-formato';
 
 const comparacion = (
   misPrecios: string | null,
