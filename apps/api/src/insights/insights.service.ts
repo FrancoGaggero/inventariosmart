@@ -147,32 +147,37 @@ export class InsightsService {
     const desde = inicioDeMes(meses[0]!);
     const hasta = cierreDeMes(meses[meses.length - 1]!);
     const cierres = meses.map((m) => cierreDeMes(m).toISOString());
-    return this.prisma.transaccionTenant((tx) =>
-      tx.$queryRaw<FilaComparacion[]>(Prisma.sql`
+    return this.prisma.transaccionTenant(async (tx) => {
+      // Las unidades vendidas van en su propia consulta: unidas a los productos, el plan dependía
+      // de las estadísticas y, con tablas recién cargadas, recalculaba la suma por cada producto.
+      const ventas = await tx.$queryRaw<{ productoId: string; unidades: number }[]>`
+        SELECT m.producto_id AS "productoId", SUM(m.cantidad)::int AS unidades
+        FROM movimiento m
+        WHERE m.comercio_id = ${comercioId}::uuid AND m.tipo = 'VENTA'
+          AND m.anulado_por_id IS NULL
+          AND m.fecha >= ${desde} AND m.fecha < ${hasta}
+        GROUP BY m.producto_id`;
+      const unidadesDe = new Map(ventas.map((v) => [v.productoId, v.unidades]));
+      // El precio y el costo de cada cierre se buscan por índice; sin esto, con estadísticas
+      // viejas el planificador puede recorrer la tabla entera en cada búsqueda.
+      await tx.$executeRaw`SET LOCAL enable_seqscan = off`;
+      const filas = await tx.$queryRaw<Omit<FilaComparacion, 'unidades'>[]>(Prisma.sql`
         WITH prod AS MATERIALIZED (
           SELECT p.id, p.codigo, p.nombre, p.precio_venta, p.costo_reposicion,
-                 p.proveedor_principal_id, COALESCE(v.unidades, 0) AS unidades,
+                 p.proveedor_principal_id,
                  COALESCE(
                    (SELECT min(h.vigente_desde) FROM precio_venta_historial h
                      WHERE h.comercio_id = ${comercioId}::uuid AND h.producto_id = p.id),
                    p.creado_en
                  ) AS datos_desde
           FROM producto p
-          LEFT JOIN (
-            SELECT m.producto_id, SUM(m.cantidad)::int AS unidades
-            FROM movimiento m
-            WHERE m.comercio_id = ${comercioId}::uuid AND m.tipo = 'VENTA'
-              AND m.anulado_por_id IS NULL
-              AND m.fecha >= ${desde} AND m.fecha < ${hasta}
-            GROUP BY m.producto_id
-          ) v ON v.producto_id = p.id
           WHERE p.comercio_id = ${comercioId}::uuid AND p.activo
         ),
         cierres AS (
           SELECT u.t::timestamptz AS cierre, u.n
           FROM unnest(${cierres}::text[]) WITH ORDINALITY AS u(t, n)
         )
-        SELECT prod.id, prod.codigo, prod.nombre, prod.unidades,
+        SELECT prod.id, prod.codigo, prod.nombre,
                prod.datos_desde AS "datosDesde",
                array_agg(COALESCE(
                  (SELECT h.precio_venta FROM precio_venta_historial h
@@ -184,7 +189,8 @@ export class InsightsService {
                    ORDER BY h.vigente_desde ASC, h.id ASC LIMIT 1),
                  prod.precio_venta
                )::text ORDER BY c.n) AS precios,
-               array_agg(COALESCE(
+               array_agg(CASE WHEN prod.proveedor_principal_id IS NULL THEN prod.costo_reposicion
+               ELSE COALESCE(
                  (SELECT pp.costo_neto FROM precio_proveedor pp
                    WHERE pp.comercio_id = ${comercioId}::uuid
                      AND pp.proveedor_id = prod.proveedor_principal_id
@@ -196,10 +202,11 @@ export class InsightsService {
                      AND pp.producto_id = prod.id
                    ORDER BY pp.vigente_desde ASC, pp.creado_en ASC LIMIT 1),
                  prod.costo_reposicion
-               )::text ORDER BY c.n) AS costos
+               ) END::text ORDER BY c.n) AS costos
         FROM prod CROSS JOIN cierres c
-        GROUP BY prod.id, prod.codigo, prod.nombre, prod.unidades, prod.datos_desde
-      `),
-    );
+        GROUP BY prod.id, prod.codigo, prod.nombre, prod.datos_desde
+      `);
+      return filas.map((f) => ({ ...f, unidades: unidadesDe.get(f.id) ?? 0 }));
+    });
   }
 }
