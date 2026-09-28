@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { MENSAJE_WHATSAPP_MAX, NOTA_MENSAJE_RECORTADO } from '@inventariosmart/shared';
 import { LogMailer, Mailer } from '../src/alerts/mailer';
 import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
 
@@ -28,8 +30,11 @@ describe('purchase-orders: órdenes de compra en modo copiloto (e2e)', () => {
     t.http().post('/api/v1/purchase-orders').set(auth(quien)).send(body);
   const editar = (id: string, body: object, quien = duenioA) =>
     t.http().patch(`/api/v1/purchase-orders/${id}`).set(auth(quien)).send(body);
-  const confirmar = (id: string, quien = duenioA) =>
-    t.http().post(`/api/v1/purchase-orders/${id}/confirm`).set(auth(quien));
+  const confirmar = (id: string, quien = duenioA, body?: object) =>
+    t.http().post(`/api/v1/purchase-orders/${id}/confirm`).set(auth(quien)).send(body);
+  const marcarEnviada = (id: string, quien = duenioA) =>
+    t.http().post(`/api/v1/purchase-orders/${id}/mark-sent`).set(auth(quien));
+  const mensajeDe = (url: string) => decodeURIComponent(url.split('?text=')[1]!);
   const cancelar = (id: string, quien = duenioA) =>
     t.http().post(`/api/v1/purchase-orders/${id}/cancel`).set(auth(quien));
   const alertaDe = async (productoId: string, quien = duenioA) =>
@@ -428,6 +433,8 @@ describe('purchase-orders: órdenes de compra en modo copiloto (e2e)', () => {
     const r = await confirmar(ordenId).expect(200);
     expect(r.body).toMatchObject({
       estado: 'ENVIADA',
+      canal: 'EMAIL',
+      whatsappUrl: null,
       motivoNoEnvio: null,
       confirmadaPor: { nombre: duenioA.nombre },
       enviadaA: 'compras@sur.test',
@@ -472,6 +479,8 @@ describe('purchase-orders: órdenes de compra en modo copiloto (e2e)', () => {
     const r = await confirmar(oc2.id).expect(200);
     expect(r.body).toMatchObject({
       estado: 'CONFIRMADA',
+      canal: null,
+      whatsappUrl: null,
       motivoNoEnvio: 'SIN_EMAIL',
       enviadaEn: null,
       enviadaA: null,
@@ -587,4 +596,227 @@ describe('purchase-orders: órdenes de compra en modo copiloto (e2e)', () => {
     await cancelar(borrador.id, duenioB).expect(404);
     expect((await obtener(borrador.id).expect(200)).body.estado).toBe('BORRADOR');
   }, 120_000);
+
+  describe('HU-16 envío por WhatsApp', () => {
+    const TELEFONO = '011 15-2345-6789';
+    let whatsId: string;
+    let ordenWa: string;
+    let urlWa: string;
+    let nombreComercio: string;
+
+    const borrador = async (proveedorId: string, codigo = 'BT-12', cantidad = 5) =>
+      (
+        await crear({
+          proveedorId,
+          items: [{ productoId: prod[codigo], cantidad }],
+        }).expect(201)
+      ).body;
+
+    beforeAll(async () => {
+      nombreComercio = (await t.http().get('/api/v1/me').set(auth(duenioA)).expect(200)).body
+        .comercio.nombre;
+      whatsId = await crearProveedor({
+        nombre: 'Whats SA',
+        contacto: 'Marta',
+        telefono: TELEFONO,
+        leadTimeDias: 4,
+      });
+      prod['WA-1'] = await crearProducto('WA-1', { stockFinal: 2, vendidas: 30 });
+      await t.http().post('/api/v1/alerts/recalculate').set(auth(duenioA)).expect(200);
+    }, 300_000);
+
+    it('CP-16.2 confirmar por WhatsApp deja el enlace con el mensaje y no envía correo', async () => {
+      expect(await alertaDe(prod['WA-1']!)).toMatchObject({ estado: 'ACTIVA' });
+      const b = await borrador(whatsId, 'WA-1', 40);
+      ordenWa = b.id;
+      expect(b).toMatchObject({
+        estado: 'BORRADOR',
+        canal: null,
+        whatsappUrl: null,
+        proveedor: { telefono: TELEFONO, whatsapp: '5491123456789', canal: 'WHATSAPP' },
+      });
+      expect((await obtener(ordenWa).expect(200)).body.whatsappUrl).toBeNull();
+
+      const antes = mailer.enviados.length;
+      const r = await confirmar(ordenWa).expect(200);
+      expect(r.body).toMatchObject({
+        estado: 'CONFIRMADA',
+        canal: 'WHATSAPP',
+        motivoNoEnvio: null,
+        enviadaEn: null,
+        enviadaA: null,
+        confirmadaPor: { nombre: duenioA.nombre },
+      });
+      urlWa = r.body.whatsappUrl;
+      expect(urlWa.startsWith('https://wa.me/5491123456789?text=')).toBe(true);
+      const mensaje = mensajeDe(urlWa);
+      expect(mensaje).toBe(`${r.body.asunto}\n\n${r.body.texto}`);
+      expect(mensaje).toContain(r.body.numero);
+      expect(mensaje).toContain(nombreComercio);
+      expect(mensaje).toContain('Marta');
+      expect(mensaje).toContain('WA-1');
+      expect(mensaje).toContain('40 unidades');
+      expect(mailer.enviados).toHaveLength(antes);
+      expect(await alertaDe(prod['WA-1']!)).toMatchObject({
+        estado: 'ATENDIDA',
+        ordenCompraId: ordenWa,
+      });
+      // No se confirma dos veces.
+      await confirmar(ordenWa).expect(409);
+    }, 120_000);
+
+    it('CP-16.3d el contador, la empleada y otro comercio no pueden marcarla', async () => {
+      expect((await marcarEnviada(ordenWa, contador).expect(403)).body.code).toBe('SIN_PERMISO');
+      expect((await marcarEnviada(ordenWa, empleada).expect(403)).body.code).toBe('SIN_PERMISO');
+      expect((await marcarEnviada(ordenWa, duenioB).expect(404)).body.code).toBe('NO_ENCONTRADO');
+      expect((await marcarEnviada(ordenWa, duenioF).expect(402)).body.code).toBe('PLAN_REQUERIDO');
+      // El contador consulta y ve el enlace, porque la orden ya está confirmada.
+      const visto = (await obtener(ordenWa, contador).expect(200)).body;
+      expect(visto).toMatchObject({ estado: 'CONFIRMADA', whatsappUrl: urlWa });
+    }, 120_000);
+
+    it('CP-16.3 marcar como enviada por WhatsApp', async () => {
+      expect((await obtener(ordenWa).expect(200)).body.whatsappUrl).toBe(urlWa);
+      const r = await marcarEnviada(ordenWa).expect(200);
+      expect(r.body).toMatchObject({
+        estado: 'ENVIADA',
+        canal: 'WHATSAPP',
+        enviadaA: TELEFONO,
+        motivoNoEnvio: null,
+        whatsappUrl: null,
+      });
+      expect(r.body.enviadaEn).toBeTruthy();
+      const fila = (await listar('?estado=ENVIADA').expect(200)).body.items.find(
+        (o: { id: string }) => o.id === ordenWa,
+      );
+      expect(fila).toMatchObject({ estado: 'ENVIADA', canal: 'WHATSAPP' });
+    }, 120_000);
+
+    it('CP-16.2b el dueño elige WhatsApp aunque el proveedor tenga correo', async () => {
+      const dobleId = await crearProveedor({
+        nombre: 'Doble canal',
+        email: 'compras@doble.test',
+        telefono: '+54 9 351 234-5678',
+      });
+      const b = await borrador(dobleId);
+      expect(b.proveedor).toMatchObject({ canal: 'EMAIL', whatsapp: '5493512345678' });
+      const antes = mailer.enviados.length;
+      const r = await confirmar(b.id, duenioA, { canal: 'WHATSAPP' }).expect(200);
+      expect(r.body).toMatchObject({ estado: 'CONFIRMADA', canal: 'WHATSAPP' });
+      expect(r.body.whatsappUrl.startsWith('https://wa.me/5493512345678?text=')).toBe(true);
+      expect(mailer.enviados).toHaveLength(antes);
+      // Y al revés: el canal preferido es WhatsApp y el dueño elige el correo.
+      await t
+        .http()
+        .patch(`/api/v1/suppliers/${dobleId}`)
+        .set(auth(duenioA))
+        .send({ canalPreferido: 'WHATSAPP' })
+        .expect(200);
+      const c = await borrador(dobleId);
+      expect(c.proveedor.canal).toBe('WHATSAPP');
+      const porCorreo = await confirmar(c.id, duenioA, { canal: 'EMAIL' }).expect(200);
+      expect(porCorreo.body).toMatchObject({
+        estado: 'ENVIADA',
+        canal: 'EMAIL',
+        enviadaA: 'compras@doble.test',
+        whatsappUrl: null,
+      });
+      expect(mailer.enviados).toHaveLength(antes + 1);
+    }, 120_000);
+
+    it('CP-16.2c un canal sin datos se rechaza y la orden sigue en borrador', async () => {
+      prod['WA-2'] = await crearProducto('WA-2', { stockFinal: 2, vendidas: 30 });
+      await t.http().post('/api/v1/alerts/recalculate').set(auth(duenioA)).expect(200);
+      const b = await borrador(prov['sur']!, 'WA-2', 10);
+      const r = await confirmar(b.id, duenioA, { canal: 'WHATSAPP' }).expect(400);
+      expect(r.body.code).toBe('VALIDACION');
+      expect(r.body.details.canal).toMatch(/código de área/);
+      const sinEmail = await borrador(whatsId, 'WA-2', 10);
+      const e = await confirmar(sinEmail.id, duenioA, { canal: 'EMAIL' }).expect(400);
+      expect(e.body.details.canal).toMatch(/email/);
+      const invalido = await confirmar(b.id, duenioA, { canal: 'OTRO' }).expect(400);
+      expect(invalido.body.details).toHaveProperty('canal');
+      for (const id of [b.id, sinEmail.id]) {
+        expect((await obtener(id).expect(200)).body).toMatchObject({
+          estado: 'BORRADOR',
+          canal: null,
+          confirmadaEn: null,
+        });
+      }
+      expect(await alertaDe(prod['WA-2']!)).toMatchObject({ estado: 'ACTIVA' });
+      await cancelar(b.id).expect(200);
+      await cancelar(sinEmail.id).expect(200);
+    }, 300_000);
+
+    it('CP-16.3b marcar como enviada una orden sin canal', async () => {
+      const b = await borrador(prov['este']!);
+      const c = await confirmar(b.id).expect(200);
+      expect(c.body).toMatchObject({ estado: 'CONFIRMADA', motivoNoEnvio: 'SIN_EMAIL' });
+      const r = await marcarEnviada(b.id).expect(200);
+      expect(r.body).toMatchObject({
+        estado: 'ENVIADA',
+        canal: 'OTRO',
+        motivoNoEnvio: null,
+        enviadaA: null,
+        whatsappUrl: null,
+      });
+      expect(r.body.enviadaEn).toBeTruthy();
+    }, 120_000);
+
+    it('CP-16.3c sólo se marcan las confirmadas', async () => {
+      const b = await borrador(whatsId);
+      const enBorrador = await marcarEnviada(b.id).expect(409);
+      expect(enBorrador.body.code).toBe('CONFLICTO');
+      await marcarEnviada(ordenWa).expect(409);
+      await cancelar(b.id).expect(200);
+      await marcarEnviada(b.id).expect(409);
+      expect((await obtener(b.id).expect(200)).body.estado).toBe('CANCELADA');
+      expect((await obtener(ordenWa).expect(200)).body).toMatchObject({
+        estado: 'ENVIADA',
+        enviadaA: TELEFONO,
+      });
+    }, 120_000);
+
+    it('CP-16.4 el mensaje lleva el texto que editó el dueño', async () => {
+      const b = await borrador(whatsId);
+      const texto = 'Hola Marta, necesito 70 filtros FA-220 para el lunes.';
+      await editar(b.id, { texto }).expect(200);
+      const r = await confirmar(b.id).expect(200);
+      expect(mensajeDe(r.body.whatsappUrl)).toBe(`${r.body.asunto}\n\n${texto}`);
+      expect(mensajeDe(r.body.whatsappUrl)).not.toContain('unidades');
+    }, 120_000);
+
+    it('CP-16.4b un mensaje largo se recorta sin cortar líneas', async () => {
+      const productos = Array.from({ length: 150 }, (_, i) => ({
+        id: randomUUID(),
+        comercioId: comercioA,
+        codigo: `LARGO-${String(i).padStart(3, '0')}`,
+        codigoNormalizado: `LARGO-${String(i).padStart(3, '0')}`,
+        nombre: `Producto de la orden larga ${i}`,
+        precioVenta: 1210,
+        alicuotaIva: 21,
+        costoReposicion: 700,
+        stockActual: 1,
+        stockSeguridad: 0,
+      }));
+      await t.prisma.comoSistema((tx) => tx.producto.createMany({ data: productos }));
+      const b = (
+        await crear({
+          proveedorId: whatsId,
+          items: productos.map((p) => ({ productoId: p.id, cantidad: 12 })),
+        }).expect(201)
+      ).body;
+      expect(b.items).toHaveLength(150);
+      expect(b.texto.length).toBeGreaterThan(MENSAJE_WHATSAPP_MAX);
+      const r = await confirmar(b.id).expect(200);
+      const mensaje = mensajeDe(r.body.whatsappUrl);
+      expect(mensaje.length).toBeLessThanOrEqual(MENSAJE_WHATSAPP_MAX);
+      expect(mensaje.endsWith(NOTA_MENSAJE_RECORTADO)).toBe(true);
+      const cuerpo = mensaje.slice(0, -NOTA_MENSAJE_RECORTADO.length).split('\n');
+      expect(cuerpo[0]).toBe(r.body.asunto);
+      expect(r.body.texto.split('\n')).toContain(cuerpo[cuerpo.length - 1]);
+      // El texto completo sigue en la orden.
+      expect(r.body.texto).toContain('LARGO-149');
+    }, 120_000);
+  });
 });

@@ -1,4 +1,5 @@
 import type {
+  CanalProveedor,
   EstadoOrden,
   ListaOrdenes,
   OrdenCompra,
@@ -90,9 +91,24 @@ export function useEditarOrden() {
 export function useConfirmarOrden() {
   const invalidar = useInvalidarOrdenes();
   return useMutation({
+    mutationFn: async (o: { id: string; canal?: CanalProveedor }): Promise<OrdenCompra> =>
+      desenvolver(
+        await api.POST('/api/v1/purchase-orders/{id}/confirm', {
+          params: { path: { id: o.id } },
+          body: o.canal ? { canal: o.canal } : {},
+        }),
+      ),
+    onSuccess: () => void invalidar(),
+  });
+}
+
+/** "Ya la envié": el dueño avisa que mandó la orden por WhatsApp o por otro medio (HU-16). */
+export function useMarcarEnviada() {
+  const invalidar = useInvalidarOrdenes();
+  return useMutation({
     mutationFn: async (id: string): Promise<OrdenCompra> =>
       desenvolver(
-        await api.POST('/api/v1/purchase-orders/{id}/confirm', { params: { path: { id } } }),
+        await api.POST('/api/v1/purchase-orders/{id}/mark-sent', { params: { path: { id } } }),
       ),
     onSuccess: () => void invalidar(),
   });

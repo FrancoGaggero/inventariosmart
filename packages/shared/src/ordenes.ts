@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { SeveridadAlertaSchema } from './alertas';
 import { listaPaginadaSchema } from './productos';
+import { CanalEnvioSchema, CanalProveedorSchema } from './whatsapp';
 
 // ---------------------------------------------------------------------------
 // Órdenes de compra en modo copiloto — HU-07 (RF-07, RN-06)
@@ -23,7 +24,7 @@ export const MotivoNoEnvioSchema = z.enum(MOTIVOS_NO_ENVIO);
 export type MotivoNoEnvio = z.infer<typeof MotivoNoEnvioSchema>;
 
 export const ETIQUETA_MOTIVO_NO_ENVIO: Record<MotivoNoEnvio, string> = {
-  SIN_EMAIL: 'El proveedor no tiene email cargado: envíala por otro medio.',
+  SIN_EMAIL: 'El proveedor no tiene email ni WhatsApp cargados: enviala por otro medio.',
   ENVIO_FALLIDO: 'El correo no pudo enviarse: copiá el texto y envialo por otro medio.',
 };
 
@@ -132,6 +133,11 @@ export const ProveedorOrdenSchema = z.object({
   nombre: z.string(),
   contacto: z.string().nullable(),
   email: z.string().nullable(),
+  telefono: z.string().nullable(),
+  /** Teléfono normalizado para WhatsApp, o null si no sirve (HU-16). */
+  whatsapp: z.string().nullable(),
+  /** Canal que corresponde al proveedor, o null si no tiene datos de contacto. */
+  canal: CanalProveedorSchema.nullable(),
   leadTimeDias: z.number().int(),
   confiabilidad: z.number().int(),
 });
@@ -199,6 +205,10 @@ export const OrdenCompraSchema = z.object({
   textoEditado: z.boolean(),
   notas: z.string().nullable(),
   motivoNoEnvio: MotivoNoEnvioSchema.nullable(),
+  /** Canal por el que se confirmó o se envió; null en borrador o sin canal (HU-16). */
+  canal: CanalEnvioSchema.nullable(),
+  /** Enlace de WhatsApp con el mensaje redactado: sólo en CONFIRMADA por WhatsApp (RN-06). */
+  whatsappUrl: z.string().nullable(),
   creadaPor: UsuarioOrdenSchema,
   confirmadaPor: UsuarioOrdenSchema.nullable(),
   confirmadaEn: z.string().nullable(),
@@ -219,6 +229,7 @@ export const OrdenResumenSchema = z.object({
   cantidadItems: z.number().int(),
   totalNeto: z.string(),
   motivoNoEnvio: MotivoNoEnvioSchema.nullable(),
+  canal: CanalEnvioSchema.nullable(),
   confirmadaEn: z.string().nullable(),
   enviadaEn: z.string().nullable(),
   creadoEn: z.string(),
@@ -295,3 +306,12 @@ export const OrdenPatchSchema = z
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), 'No hay nada para cambiar.');
 export type OrdenPatch = z.infer<typeof OrdenPatchSchema>;
+
+/** Cuerpo opcional de POST /api/v1/purchase-orders/:id/confirm (HU-16). */
+export const ConfirmarOrdenSchema = z
+  .object({
+    /** Canal elegido por el dueño; sin indicarlo, el que corresponde al proveedor. */
+    canal: CanalProveedorSchema.optional(),
+  })
+  .default({});
+export type ConfirmarOrden = z.infer<typeof ConfirmarOrdenSchema>;

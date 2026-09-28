@@ -1,4 +1,6 @@
 import {
+  type CanalProveedor,
+  ETIQUETA_CANAL,
   ETIQUETA_MOTIVO_NO_ENVIO,
   type ItemOrdenCreate,
   type OrdenCompra,
@@ -7,11 +9,22 @@ import {
   subtotalItem,
   totalOrden,
 } from '@inventariosmart/shared';
-import { ArrowLeft, Check, Copy, Send, Trash2, Undo2, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  CheckCheck,
+  Copy,
+  MessageCircle,
+  Send,
+  Trash2,
+  Undo2,
+  X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { formatearCalculo } from '@/lib/alertas';
 import { ErrorApi, mensajeDe } from '@/lib/api';
+import { avisoDeEnvio, canalesDe, fraseEnviada, textoConfirmar } from '@/lib/canales';
 import { useMe } from '@/lib/me';
 import {
   CLASE_ESTADO_ORDEN,
@@ -20,11 +33,13 @@ import {
   useCancelarOrden,
   useConfirmarOrden,
   useEditarOrden,
+  useMarcarEnviada,
   useOrden,
 } from '@/lib/ordenes';
 import { type Producto, formatearPesos, useProductos } from '@/lib/productos';
 import { useProveedores } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
+import { ChipCanal } from '@/ui/ChipCanal';
 
 interface ItemEditable {
   productoId: string;
@@ -56,6 +71,7 @@ export function OrdenPage() {
   const editar = useEditarOrden();
   const confirmar = useConfirmarOrden();
   const cancelar = useCancelarOrden();
+  const marcar = useMarcarEnviada();
   const navigate = useNavigate();
 
   const [proveedorId, setProveedorId] = useState('');
@@ -66,6 +82,8 @@ export function OrdenPage() {
   const [busqueda, setBusqueda] = useState('');
   const [q, setQ] = useState('');
   const [errores, setErrores] = useState<Record<string, string>>({});
+  // Canal elegido a mano para esta orden; null usa el que corresponde al proveedor (HU-16).
+  const [canalElegido, setCanalElegido] = useState<CanalProveedor | null>(null);
   const [aviso, setAviso] = useState<{ tono: 'ok' | 'warn' | 'error'; texto: string } | null>(null);
 
   const proveedores = useProveedores({ activo: true }, 100, esDuenio && tienePlan);
@@ -158,21 +176,38 @@ export function OrdenPage() {
   const confirmarYEnviar = () => {
     const enviar = () => {
       setAviso(null);
-      confirmar.mutate(id!, {
-        onSuccess: (r) =>
-          setAviso(
-            r.estado === 'ENVIADA'
-              ? { tono: 'ok', texto: `Orden ${r.numero} enviada a ${r.enviadaA}.` }
-              : {
-                  tono: 'warn',
-                  texto: `Orden ${r.numero} confirmada. ${r.motivoNoEnvio ? ETIQUETA_MOTIVO_NO_ENVIO[r.motivoNoEnvio] : ''}`,
-                },
-          ),
-        onError,
-      });
+      confirmar.mutate(
+        { id: id!, ...(canal && canalElegido === canal ? { canal } : {}) },
+        {
+          onSuccess: (r) => {
+            if (r.estado === 'ENVIADA') {
+              setAviso({ tono: 'ok', texto: `Orden ${r.numero} enviada a ${r.enviadaA}.` });
+            } else if (r.canal === 'WHATSAPP') {
+              setAviso({
+                tono: 'ok',
+                texto: `Orden ${r.numero} confirmada. Abrí WhatsApp para enviarle el mensaje a ${r.proveedor.nombre}.`,
+              });
+            } else {
+              setAviso({
+                tono: 'warn',
+                texto: `Orden ${r.numero} confirmada. ${r.motivoNoEnvio ? ETIQUETA_MOTIVO_NO_ENVIO[r.motivoNoEnvio] : ''}`,
+              });
+            }
+          },
+          onError,
+        },
+      );
     };
     if (hayCambios) guardar({}, enviar);
     else enviar();
+  };
+
+  const yaLaEnvie = () => {
+    setAviso(null);
+    marcar.mutate(id!, {
+      onSuccess: (r) => setAviso({ tono: 'ok', texto: `Orden ${r.numero} marcada como enviada.` }),
+      onError,
+    });
   };
 
   const cancelarBorrador = () => {
@@ -216,7 +251,12 @@ export function OrdenPage() {
     })),
   );
   const proveedorElegido = listaProveedores.find((p) => p.id === proveedorId) ?? o?.proveedor;
-  const ocupado = editar.isPending || confirmar.isPending || cancelar.isPending;
+  const canales = proveedorElegido ? canalesDe(proveedorElegido) : [];
+  const canal: CanalProveedor | null =
+    canalElegido && canales.includes(canalElegido)
+      ? canalElegido
+      : (proveedorElegido?.canal ?? null);
+  const ocupado = editar.isPending || confirmar.isPending || cancelar.isPending || marcar.isPending;
 
   if (me.data && !tienePlan) {
     return (
@@ -249,7 +289,11 @@ export function OrdenPage() {
               </h1>
               <p className="text-t2 text-sm mt-1">
                 {o.estado === 'ENVIADA' &&
-                  `Enviada a ${o.enviadaA} el ${formatearCalculo(o.enviadaEn)} por ${o.confirmadaPor?.nombre ?? 'el dueño'}.`}
+                  fraseEnviada({
+                    canal: o.canal,
+                    enviadaA: o.enviadaA,
+                    fecha: formatearCalculo(o.enviadaEn),
+                  })}
                 {o.estado === 'CONFIRMADA' &&
                   `Confirmada el ${formatearCalculo(o.confirmadaEn)} por ${o.confirmadaPor?.nombre ?? 'el dueño'}.`}
                 {o.estado === 'CANCELADA' && `Cancelada el ${formatearCalculo(o.canceladaEn)}.`}
@@ -263,6 +307,30 @@ export function OrdenPage() {
                   <Copy className="w-4 h-4" aria-hidden />
                   Copiar texto
                 </button>
+              )}
+              {o.estado === 'CONFIRMADA' && esDuenio && (
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={yaLaEnvie}
+                  disabled={ocupado}
+                >
+                  <CheckCheck className="w-4 h-4" aria-hidden />
+                  Ya la envié
+                </button>
+              )}
+              {/* Enlace real y no window.open: los navegadores bloquean las ventanas que se
+                  abren después de una llamada asíncrona. Sólo existe tras confirmar (RN-06). */}
+              {o.whatsappUrl && (
+                <a
+                  className="btn btn-primary"
+                  href={o.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="w-4 h-4" aria-hidden />
+                  Abrir WhatsApp
+                </a>
               )}
               {editable && (
                 <>
@@ -290,8 +358,12 @@ export function OrdenPage() {
                     onClick={confirmarYEnviar}
                     disabled={ocupado}
                   >
-                    <Send className="w-4 h-4" aria-hidden />
-                    Confirmar y enviar
+                    {canal === 'WHATSAPP' ? (
+                      <MessageCircle className="w-4 h-4" aria-hidden />
+                    ) : (
+                      <Send className="w-4 h-4" aria-hidden />
+                    )}
+                    {textoConfirmar(canal)}
                   </button>
                 </>
               )}
@@ -302,12 +374,37 @@ export function OrdenPage() {
           {o.motivoNoEnvio && (
             <Aviso tono="warn">{ETIQUETA_MOTIVO_NO_ENVIO[o.motivoNoEnvio]}</Aviso>
           )}
-          {editable && (
-            <Aviso tono="info">
-              {proveedorElegido?.email
-                ? `Al confirmar se envía por correo a ${proveedorElegido.email}, con tu correo como respuesta.`
-                : 'Este proveedor no tiene email: al confirmar la orden queda confirmada para que la envíes por otro medio con el texto copiado.'}
+          {o.estado === 'CONFIRMADA' && o.canal === 'WHATSAPP' && (
+            <Aviso tono={o.whatsappUrl ? 'info' : 'warn'}>
+              {o.whatsappUrl
+                ? `Falta enviarla: abrí WhatsApp, mandale el mensaje a ${o.proveedor.nombre} y después tocá "Ya la envié".`
+                : `El teléfono de ${o.proveedor.nombre} ya no sirve para WhatsApp. Corregilo en el proveedor o copiá el texto y enviala por otro medio.`}
             </Aviso>
+          )}
+          {editable && proveedorElegido && (
+            <div className="space-y-2">
+              <Aviso tono="info">{avisoDeEnvio(canal, proveedorElegido)}</Aviso>
+              {canales.length > 1 && (
+                <div
+                  className="flex flex-wrap items-center gap-2"
+                  role="group"
+                  aria-label="Canal de envío"
+                >
+                  <span className="text-xs text-t2">Enviar por</span>
+                  {canales.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`chip ${canal === c ? 'chip-activo' : ''}`}
+                      aria-pressed={canal === c}
+                      onClick={() => setCanalElegido(c)}
+                    >
+                      {ETIQUETA_CANAL[c]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           <section className="card p-5 space-y-4">
@@ -325,14 +422,18 @@ export function OrdenPage() {
                     )}
                     {listaProveedores.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.nombre} · lead time {p.leadTimeDias} d{p.email ? '' : ' · sin email'}
+                        {p.nombre} · lead time {p.leadTimeDias} d
+                        {p.canal ? ` · ${ETIQUETA_CANAL[p.canal]}` : ' · sin contacto'}
                       </option>
                     ))}
                   </select>
                 ) : (
-                  <p className="text-sm py-3">
-                    {o.proveedor.nombre}
-                    <span className="text-t3"> · lead time {o.proveedor.leadTimeDias} d</span>
+                  <p className="text-sm py-3 flex flex-wrap items-center gap-2">
+                    <span>
+                      {o.proveedor.nombre}
+                      <span className="text-t3"> · lead time {o.proveedor.leadTimeDias} d</span>
+                    </span>
+                    {o.canal && <ChipCanal canal={o.canal} />}
                   </p>
                 )}
                 {errores['proveedorId'] && (
@@ -345,7 +446,7 @@ export function OrdenPage() {
                   <input
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
-                    placeholder="No van en el correo"
+                    placeholder="No van en el mensaje"
                     className="campo"
                   />
                 ) : (

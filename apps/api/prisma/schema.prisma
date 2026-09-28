@@ -178,22 +178,24 @@ enum OrigenPrecio {
 
 /// Proveedor del comercio (HU-02, RF-03). lead_time_dias alimenta RN-04; confiabilidad, HU-12.
 model Proveedor {
-  id                String   @id @default(uuid()) @db.Uuid
-  comercioId        String   @map("comercio_id") @db.Uuid
-  nombre            String   @db.VarChar(120)
+  id                String      @id @default(uuid()) @db.Uuid
+  comercioId        String      @map("comercio_id") @db.Uuid
+  nombre            String      @db.VarChar(120)
   /// upper(trim(nombre)): único por comercio sin distinguir mayúsculas.
-  nombreNormalizado String   @map("nombre_normalizado") @db.VarChar(120)
-  contacto          String?  @db.VarChar(120)
-  email             String?  @db.VarChar(254)
-  telefono          String?  @db.VarChar(40)
-  cuit              String?  @db.VarChar(13)
-  leadTimeDias      Int      @default(7) @map("lead_time_dias")
+  nombreNormalizado String      @map("nombre_normalizado") @db.VarChar(120)
+  contacto          String?     @db.VarChar(120)
+  email             String?     @db.VarChar(254)
+  telefono          String?     @db.VarChar(40)
+  /// Canal elegido por el dueño para enviarle órdenes (HU-16); null es automático. Nunca OTRO (CHECK).
+  canalPreferido    CanalEnvio? @map("canal_preferido")
+  cuit              String?     @db.VarChar(13)
+  leadTimeDias      Int         @default(7) @map("lead_time_dias")
   /// 1 a 5 (CHECK en la migración).
-  confiabilidad     Int      @default(3) @db.SmallInt
-  notas             String?  @db.VarChar(500)
-  activo            Boolean  @default(true)
-  creadoEn          DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
-  actualizadoEn     DateTime @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
+  confiabilidad     Int         @default(3) @db.SmallInt
+  notas             String?     @db.VarChar(500)
+  activo            Boolean     @default(true)
+  creadoEn          DateTime    @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn     DateTime    @default(now()) @updatedAt @map("actualizado_en") @db.Timestamptz(3)
 
   comercio             Comercio          @relation(fields: [comercioId], references: [id])
   precios              PrecioProveedor[]
@@ -367,6 +369,8 @@ model OrdenCompra {
   notas           String?           @db.VarChar(500)
   totalNeto       Decimal           @default(0) @map("total_neto") @db.Decimal(14, 2)
   motivoNoEnvio   MotivoNoEnvio?    @map("motivo_no_envio")
+  /// Canal con el que se confirmó o envió (HU-16); null en borrador o sin canal.
+  canal           CanalEnvio?
   creadaPorId     String            @map("creada_por_id") @db.Uuid
   confirmadaPorId String?           @map("confirmada_por_id") @db.Uuid
   confirmadaEn    DateTime?         @map("confirmada_en") @db.Timestamptz(3)
@@ -417,6 +421,15 @@ enum EstadoOrdenCompra {
   CANCELADA
 
   @@map("estado_orden_compra")
+}
+
+/// Canal por el que sale una orden (HU-16). OTRO: el dueño la envió por su cuenta.
+enum CanalEnvio {
+  EMAIL
+  WHATSAPP
+  OTRO
+
+  @@map("canal_envio")
 }
 
 enum MotivoNoEnvio {

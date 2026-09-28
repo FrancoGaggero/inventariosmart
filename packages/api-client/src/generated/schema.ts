@@ -660,10 +660,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Confirmar con un clic (RN-06): atiende las alertas y envía el correo al proveedor
-         * @description Con email del proveedor queda ENVIADA; sin email o con envío rechazado queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.
+         * Confirmar con un clic (RN-06): atiende las alertas y envía la orden al proveedor
+         * @description El canal es el indicado o el que corresponde al proveedor. Por correo queda ENVIADA (o CONFIRMADA con motivoNoEnvio si el envío falla). Por WhatsApp queda CONFIRMADA con whatsappUrl: el dueño abre el enlace y envía el mensaje. Sin canal queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.
          */
         post: operations["PurchaseOrdersController_confirmar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchase-orders/{id}/mark-sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar como enviada una orden confirmada (HU-16)
+         * @description El dueño avisa que ya la envió: por WhatsApp si se confirmó por ese canal, o por otro medio. Queda ENVIADA con fecha, canal y destinatario.
+         */
+        post: operations["PurchaseOrdersController_marcarEnviada"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1199,6 +1219,21 @@ export interface components {
             contacto: string | null;
             email: string | null;
             telefono: string | null;
+            /**
+             * @description Teléfono normalizado para WhatsApp (sólo dígitos, con código de país)
+             * @example 5491123456789
+             */
+            whatsapp: string | null;
+            /**
+             * @description Canal elegido por el dueño; null es automático
+             * @enum {string|null}
+             */
+            canalPreferido: "EMAIL" | "WHATSAPP" | null;
+            /**
+             * @description Canal que corresponde con los datos cargados; null si no tiene ninguno
+             * @enum {string|null}
+             */
+            canal: "EMAIL" | "WHATSAPP" | null;
             /** @example 30712345678 */
             cuit: string | null;
             /**
@@ -1229,6 +1264,11 @@ export interface components {
             /** Format: email */
             email?: string | null;
             telefono?: string | null;
+            /**
+             * @description Canal para enviarle órdenes; necesita el email o un teléfono con código de área
+             * @enum {string|null}
+             */
+            canalPreferido?: "EMAIL" | "WHATSAPP" | null;
             /** @description 11 dígitos sin guiones */
             cuit?: string | null;
             /** @description Por defecto, 7 días */
@@ -1244,6 +1284,11 @@ export interface components {
             /** Format: email */
             email?: string | null;
             telefono?: string | null;
+            /**
+             * @description Canal para enviarle órdenes; necesita el email o un teléfono con código de área
+             * @enum {string|null}
+             */
+            canalPreferido?: "EMAIL" | "WHATSAPP" | null;
             /** @description 11 dígitos sin guiones */
             cuit?: string | null;
             /** @description Por defecto, 7 días */
@@ -1850,6 +1895,17 @@ export interface components {
             nombre: string;
             contacto: string | null;
             email: string | null;
+            telefono: string | null;
+            /**
+             * @description Teléfono normalizado para WhatsApp
+             * @example 5491123456789
+             */
+            whatsapp: string | null;
+            /**
+             * @description Canal que corresponde al proveedor; null si no tiene datos de contacto
+             * @enum {string|null}
+             */
+            canal: "EMAIL" | "WHATSAPP" | null;
             /** @example 7 */
             leadTimeDias: number;
             /** @example 3 */
@@ -1926,6 +1982,8 @@ export interface components {
             totalNeto: string;
             /** @enum {string|null} */
             motivoNoEnvio: "SIN_EMAIL" | "ENVIO_FALLIDO" | null;
+            /** @enum {string|null} */
+            canal: "EMAIL" | "WHATSAPP" | "OTRO" | null;
             confirmadaEn: string | null;
             enviadaEn: string | null;
             creadoEn: string;
@@ -1989,6 +2047,16 @@ export interface components {
             notas: string | null;
             /** @enum {string|null} */
             motivoNoEnvio: "SIN_EMAIL" | "ENVIO_FALLIDO" | null;
+            /**
+             * @description Canal con el que se confirmó o envió; null en borrador o sin canal
+             * @enum {string|null}
+             */
+            canal: "EMAIL" | "WHATSAPP" | "OTRO" | null;
+            /**
+             * @description Enlace de WhatsApp con el mensaje redactado. Sólo en CONFIRMADA por WhatsApp (RN-06)
+             * @example https://wa.me/5491123456789?text=Orden%20de%20compra%20OC-0002
+             */
+            whatsappUrl: string | null;
             creadaPor: components["schemas"]["UsuarioOrdenDto"];
             confirmadaPor: components["schemas"]["UsuarioOrdenDto"] | null;
             confirmadaEn: string | null;
@@ -2009,6 +2077,13 @@ export interface components {
             texto?: string;
             /** @description Descarta el texto editado y vuelve al generado */
             regenerarTexto?: boolean;
+        };
+        ConfirmarOrdenBodyDto: {
+            /**
+             * @description Canal elegido por el dueño; sin indicarlo, el que corresponde al proveedor
+             * @enum {string}
+             */
+            canal?: "EMAIL" | "WHATSAPP";
         };
         AjustesReportesDto: {
             /** @example true */
@@ -4992,6 +5067,83 @@ export interface operations {
             };
             cookie?: never;
         };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ConfirmarOrdenBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrdenCompraDto"];
+                };
+            };
+            /** @description Al proveedor le faltan datos para ese canal (VALIDACION, details.canal) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso; CONTADOR sólo lectura */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La orden ya fue confirmada o cancelada */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PurchaseOrdersController_marcarEnviada: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
         requestBody?: never;
         responses: {
             200: {
@@ -5036,7 +5188,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiErrorDto"];
                 };
             };
-            /** @description La orden ya fue confirmada o cancelada */
+            /** @description La orden no está CONFIRMADA */
             409: {
                 headers: {
                     [name: string]: unknown;

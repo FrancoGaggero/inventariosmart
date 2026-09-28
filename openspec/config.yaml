@@ -57,9 +57,10 @@ context: |
   8601, zona America/Argentina/Buenos_Aires; Idempotency-Key en POST /movements;
   campos sensibles (costo, margen) filtrados por interceptor para EMPLEADO.
 
-  Trazabilidad: cada change referencia las HU (HU-01…HU-15) y RF (RF-01…RF-16)
-  que implementa. HU-15 (RF-16) "Mis precios frente a la inflación" se sumó el
-  28/09/2026 como diferencial del producto (RNF-08). Alcance comprometido para la entrega del 18/12/2026: Fase 1
+  Trazabilidad: cada change referencia las HU (HU-01…HU-16) y RF (RF-01…RF-17)
+  que implementa. HU-15 (RF-16) "Mis precios frente a la inflación" y HU-16
+  (RF-17) "Enviar la orden por WhatsApp" se sumaron el 28/09/2026 como
+  diferencial del producto (RNF-08). Alcance comprometido para la entrega del 18/12/2026: Fase 1
   (HU-01, 02, 03, 04, 05, 10, 11, 13). Fases 2 y 3 se modelan pero no se
   construyen salvo que sobre tiempo (HU-06 primero).
 

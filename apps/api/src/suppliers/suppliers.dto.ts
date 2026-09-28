@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ESTADOS_FILA_IMPORTACION, ORIGENES_PRECIO } from '@inventariosmart/shared';
+import {
+  CANALES_PROVEEDOR,
+  ESTADOS_FILA_IMPORTACION,
+  ORIGENES_PRECIO,
+} from '@inventariosmart/shared';
+
+type CanalProveedor = (typeof CANALES_PROVEEDOR)[number];
 
 export class ProveedorDto {
   @ApiProperty({ format: 'uuid' })
@@ -16,6 +22,28 @@ export class ProveedorDto {
 
   @ApiProperty({ nullable: true, type: String })
   telefono!: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Teléfono normalizado para WhatsApp (sólo dígitos, con código de país)',
+    example: '5491123456789',
+  })
+  whatsapp!: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    enum: CANALES_PROVEEDOR,
+    description: 'Canal elegido por el dueño; null es automático',
+  })
+  canalPreferido!: CanalProveedor | null;
+
+  @ApiProperty({
+    nullable: true,
+    enum: CANALES_PROVEEDOR,
+    description: 'Canal que corresponde con los datos cargados; null si no tiene ninguno',
+  })
+  canal!: CanalProveedor | null;
 
   @ApiProperty({ nullable: true, type: String, example: '30712345678' })
   cuit!: string | null;
@@ -59,6 +87,13 @@ export class ProveedorCreateBodyDto {
 
   @ApiPropertyOptional({ nullable: true, type: String, maxLength: 40 })
   telefono?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    enum: CANALES_PROVEEDOR,
+    description: 'Canal para enviarle órdenes; necesita el email o un teléfono con código de área',
+  })
+  canalPreferido?: CanalProveedor | null;
 
   @ApiPropertyOptional({ nullable: true, type: String, description: '11 dígitos sin guiones' })
   cuit?: string | null;

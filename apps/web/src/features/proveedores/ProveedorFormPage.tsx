@@ -1,13 +1,18 @@
 import {
+  CANALES_PROVEEDOR,
+  type CanalProveedor,
+  ETIQUETA_CANAL,
   type ProveedorCreate,
   ProveedorCreateSchema,
   type ProveedorPatch,
   ProveedorPatchSchema,
+  validarCanalPreferido,
 } from '@inventariosmart/shared';
 import { ArrowLeft } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ErrorApi, mensajeDe } from '@/lib/api';
+import { ayudaTelefono } from '@/lib/canales';
 import { useActualizarProveedor, useCrearProveedor, useProveedor } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
 import { Campo } from '@/ui/Campo';
@@ -17,6 +22,8 @@ interface Valores {
   contacto: string;
   email: string;
   telefono: string;
+  /** '' es automático: correo si tiene y, si no, WhatsApp. */
+  canalPreferido: CanalProveedor | '';
   cuit: string;
   leadTimeDias: string;
   confiabilidad: string;
@@ -28,6 +35,7 @@ const VACIO: Valores = {
   contacto: '',
   email: '',
   telefono: '',
+  canalPreferido: '',
   cuit: '',
   leadTimeDias: '7',
   confiabilidad: '3',
@@ -54,6 +62,7 @@ export function ProveedorFormPage() {
         contacto: p.contacto ?? '',
         email: p.email ?? '',
         telefono: p.telefono ?? '',
+        canalPreferido: p.canalPreferido ?? '',
         cuit: p.cuit ?? '',
         leadTimeDias: String(p.leadTimeDias),
         confiabilidad: String(p.confiabilidad),
@@ -63,6 +72,7 @@ export function ProveedorFormPage() {
   }, [existente.data]);
 
   const set = (campo: keyof Valores) => (valor: string) => setV((s) => ({ ...s, [campo]: valor }));
+  const telefono = ayudaTelefono(v.telefono);
   const numero = (s: string) => (s.trim() === '' ? undefined : Number(s));
 
   const onSubmit = (e: FormEvent) => {
@@ -74,6 +84,7 @@ export function ProveedorFormPage() {
       contacto: v.contacto,
       email: v.email,
       telefono: v.telefono,
+      canalPreferido: v.canalPreferido === '' ? null : v.canalPreferido,
       cuit: v.cuit,
       leadTimeDias: numero(v.leadTimeDias),
       confiabilidad: numero(v.confiabilidad),
@@ -87,6 +98,15 @@ export function ProveedorFormPage() {
       for (const i of parsed.error.issues) e2[String(i.path[0] ?? '_')] ??= i.message;
       setErrores(e2);
       if (e2['_']) setAviso(e2['_']);
+      return;
+    }
+    const canalInvalido = validarCanalPreferido({
+      email: v.email.trim() || null,
+      telefono: v.telefono.trim() || null,
+      canalPreferido: datos.canalPreferido,
+    });
+    if (canalInvalido) {
+      setErrores({ canalPreferido: canalInvalido });
       return;
     }
     const onError = (err: unknown) => {
@@ -174,10 +194,36 @@ export function ProveedorFormPage() {
             label="Teléfono"
             value={v.telefono}
             onChange={set('telefono')}
-            placeholder="11-5555-0000"
-            ayuda="Opcional"
+            placeholder="011 15-5555-0000"
+            inputMode="tel"
+            ayuda={telefono.texto}
             error={errores['telefono']}
           />
+          <label className="block md:col-span-2">
+            <span className="block text-xs font-semibold text-t2 mb-1.5">
+              Canal para enviarle órdenes
+            </span>
+            <select
+              value={v.canalPreferido}
+              onChange={(e) => set('canalPreferido')(e.target.value)}
+              aria-invalid={errores['canalPreferido'] ? true : undefined}
+              className="campo"
+            >
+              <option value="">Automático: correo si tiene y, si no, WhatsApp</option>
+              {CANALES_PROVEEDOR.map((c) => (
+                <option key={c} value={c}>
+                  {ETIQUETA_CANAL[c]}
+                </option>
+              ))}
+            </select>
+            {errores['canalPreferido'] ? (
+              <span className="block text-xs text-crit mt-1.5">{errores['canalPreferido']}</span>
+            ) : (
+              <span className="block text-xs text-t3 mt-1.5">
+                Por WhatsApp, el mensaje lo enviás vos desde tu teléfono con el texto ya escrito.
+              </span>
+            )}
+          </label>
           <Campo
             label="Plazo de entrega (días)"
             value={v.leadTimeDias}

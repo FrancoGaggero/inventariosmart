@@ -26,6 +26,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import {
+  type ConfirmarOrden,
+  ConfirmarOrdenSchema,
   ESTADOS_ORDEN,
   type ListaOrdenes,
   type OrdenCompra,
@@ -44,6 +46,7 @@ import { RequierePlan, Roles } from '../common/decorators/roles.decorator';
 import { ApiErrorDto } from '../common/dto/api-error.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
+  ConfirmarOrdenBodyDto,
   ListaOrdenesDto,
   OrdenCompraDto,
   OrdenCreateBodyDto,
@@ -135,15 +138,38 @@ export class PurchaseOrdersController {
   @Roles('DUENIO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Confirmar con un clic (RN-06): atiende las alertas y envía el correo al proveedor',
+    summary: 'Confirmar con un clic (RN-06): atiende las alertas y envía la orden al proveedor',
     description:
-      'Con email del proveedor queda ENVIADA; sin email o con envío rechazado queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.',
+      'El canal es el indicado o el que corresponde al proveedor. Por correo queda ENVIADA (o CONFIRMADA con motivoNoEnvio si el envío falla). Por WhatsApp queda CONFIRMADA con whatsappUrl: el dueño abre el enlace y envía el mensaje. Sin canal queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.',
+  })
+  @ApiBody({ type: ConfirmarOrdenBodyDto, required: false })
+  @ApiOkResponse({ type: OrdenCompraDto })
+  @ApiBadRequestResponse({
+    type: ApiErrorDto,
+    description: 'Al proveedor le faltan datos para ese canal (VALIDACION, details.canal)',
+  })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  @ApiConflictResponse({ type: ApiErrorDto, description: 'La orden ya fue confirmada o cancelada' })
+  confirmar(
+    @Param('id', UUID_V4) id: string,
+    @Body(new ZodValidationPipe(ConfirmarOrdenSchema)) body: ConfirmarOrden,
+  ): Promise<OrdenCompra> {
+    return this.ordenes.confirmar(id, body);
+  }
+
+  @Post(':id/mark-sent')
+  @Roles('DUENIO')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Marcar como enviada una orden confirmada (HU-16)',
+    description:
+      'El dueño avisa que ya la envió: por WhatsApp si se confirmó por ese canal, o por otro medio. Queda ENVIADA con fecha, canal y destinatario.',
   })
   @ApiOkResponse({ type: OrdenCompraDto })
   @ApiNotFoundResponse({ type: ApiErrorDto })
-  @ApiConflictResponse({ type: ApiErrorDto, description: 'La orden ya fue confirmada o cancelada' })
-  confirmar(@Param('id', UUID_V4) id: string): Promise<OrdenCompra> {
-    return this.ordenes.confirmar(id);
+  @ApiConflictResponse({ type: ApiErrorDto, description: 'La orden no está CONFIRMADA' })
+  marcarEnviada(@Param('id', UUID_V4) id: string): Promise<OrdenCompra> {
+    return this.ordenes.marcarEnviada(id);
   }
 
   @Post(':id/cancel')

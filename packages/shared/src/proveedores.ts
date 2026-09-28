@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CuitSchema } from './index';
 import { MontoSchema, listaPaginadaSchema } from './productos';
+import { CanalProveedorSchema } from './whatsapp';
 
 // ---------------------------------------------------------------------------
 // Proveedores y listas de precios — HU-02 (RF-03, RN-08, RN-04)
@@ -58,6 +59,12 @@ export const ProveedorSchema = z.object({
   contacto: z.string().nullable(),
   email: z.string().nullable(),
   telefono: z.string().nullable(),
+  /** Teléfono normalizado para WhatsApp (sólo dígitos, con código de país), o null si no sirve. */
+  whatsapp: z.string().nullable(),
+  /** Canal elegido por el dueño; null es automático (HU-16). */
+  canalPreferido: CanalProveedorSchema.nullable(),
+  /** Canal que corresponde con los datos cargados, o null si no tiene ninguno. */
+  canal: CanalProveedorSchema.nullable(),
   cuit: z.string().nullable(),
   /** Plazo de entrega en días; alimenta el punto de reposición (RN-04). */
   leadTimeDias: z.number().int(),
@@ -79,6 +86,7 @@ export const ProveedorCreateSchema = z.object({
   contacto: textoOpcional(120, 'El contacto').optional(),
   email: EmailProveedorSchema.optional(),
   telefono: textoOpcional(40, 'El teléfono').optional(),
+  canalPreferido: CanalProveedorSchema.nullable().optional(),
   cuit: CuitOpcionalSchema.optional(),
   leadTimeDias: LeadTimeSchema.default(LEAD_TIME_DEFAULT),
   confiabilidad: ConfiabilidadSchema.default(CONFIABILIDAD_DEFAULT),
@@ -93,6 +101,7 @@ export const ProveedorPatchSchema = z
     contacto: textoOpcional(120, 'El contacto').optional(),
     email: EmailProveedorSchema.optional(),
     telefono: textoOpcional(40, 'El teléfono').optional(),
+    canalPreferido: CanalProveedorSchema.nullable().optional(),
     cuit: CuitOpcionalSchema.optional(),
     leadTimeDias: LeadTimeSchema.optional(),
     confiabilidad: ConfiabilidadSchema.optional(),

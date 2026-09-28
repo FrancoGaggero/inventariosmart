@@ -497,4 +497,89 @@ describe('suppliers-price-lists: proveedores y listas de precios (e2e)', () => {
     const previa = await vistaPrevia(norteId, 'codigo;costo\nFA-220;1\n').expect(200);
     expect(previa.body.filas[0].productoId).toBe(filtroId);
   });
+
+  describe('HU-16 canal de contacto del proveedor', () => {
+    const obtener = async (id: string) =>
+      (await t.http().get(`/api/v1/suppliers/${id}`).set(auth(duenioA)).expect(200)).body;
+    const editar = (id: string, body: object) =>
+      t.http().patch(`/api/v1/suppliers/${id}`).set(auth(duenioA)).send(body);
+
+    it('CP-16.1 el teléfono se normaliza para WhatsApp y se conserva como se cargó', async () => {
+      const casos: [string, string | null][] = [
+        ['011 15-2345-6789', '5491123456789'],
+        ['+54 9 351 234-5678', '5493512345678'],
+        ['0351 15 234 5678', '5493512345678'],
+        ['+54 11 2345-6789', '5491123456789'],
+        ['4567-8901', null],
+      ];
+      for (const [i, [telefono, whatsapp]] of casos.entries()) {
+        const res = await crearProveedor(duenioA, { nombre: `Canal ${i}`, telefono }).expect(201);
+        expect(res.body).toMatchObject({ telefono, whatsapp });
+        expect(await obtener(res.body.id)).toMatchObject({ telefono, whatsapp });
+      }
+      const lista = await t.http().get('/api/v1/suppliers?q=Canal').set(auth(duenioA)).expect(200);
+      expect(lista.body.items.map((p: { whatsapp: string | null }) => p.whatsapp)).toEqual(
+        casos.map(([, whatsapp]) => whatsapp),
+      );
+    }, 120_000);
+
+    it('CP-16.1b canal que corresponde a cada proveedor', async () => {
+      const datos = { email: 'ventas@canal.test', telefono: '011 15-2345-6789' };
+      const crear = async (body: object) => (await crearProveedor(duenioA, body).expect(201)).body;
+      expect(await crear({ nombre: 'Auto Norte', ...datos })).toMatchObject({
+        canalPreferido: null,
+        canal: 'EMAIL',
+      });
+      expect(
+        await crear({ nombre: 'Auto Sur', ...datos, canalPreferido: 'WHATSAPP' }),
+      ).toMatchObject({ canalPreferido: 'WHATSAPP', canal: 'WHATSAPP' });
+      expect(await crear({ nombre: 'Auto Este', telefono: datos.telefono })).toMatchObject({
+        canalPreferido: null,
+        canal: 'WHATSAPP',
+      });
+      expect(await crear({ nombre: 'Auto Oeste' })).toMatchObject({
+        canalPreferido: null,
+        canal: null,
+        whatsapp: null,
+      });
+    }, 120_000);
+
+    it('CP-16.1c el canal preferido necesita sus datos', async () => {
+      const sinArea = await crearProveedor(duenioA, {
+        nombre: 'Sin área',
+        telefono: '4567-8901',
+        canalPreferido: 'WHATSAPP',
+      }).expect(400);
+      expect(sinArea.body.code).toBe('VALIDACION');
+      expect(sinArea.body.details.canalPreferido).toMatch(/código de área/);
+      const sinEmail = await crearProveedor(duenioA, {
+        nombre: 'Sin email',
+        canalPreferido: 'EMAIL',
+      }).expect(400);
+      expect(sinEmail.body.details.canalPreferido).toMatch(/email/);
+      const otro = await crearProveedor(duenioA, { nombre: 'Otro', canalPreferido: 'OTRO' });
+      expect(otro.status).toBe(400);
+      expect(otro.body.details).toHaveProperty('canalPreferido');
+
+      const p = (
+        await crearProveedor(duenioA, {
+          nombre: 'Preferencia',
+          email: 'ventas@preferencia.test',
+          telefono: '0351 15 234 5678',
+        }).expect(201)
+      ).body;
+      await editar(p.id, { canalPreferido: 'WHATSAPP' }).expect(200);
+      // Quitar el teléfono deja al canal preferido sin datos: se rechaza y nada cambia.
+      const r = await editar(p.id, { telefono: null }).expect(400);
+      expect(r.body.details).toHaveProperty('canalPreferido');
+      expect(await obtener(p.id)).toMatchObject({
+        telefono: '0351 15 234 5678',
+        canalPreferido: 'WHATSAPP',
+        canal: 'WHATSAPP',
+      });
+      // Cambiar las dos cosas a la vez sí se puede, y el canal vuelve a automático.
+      const ok = await editar(p.id, { telefono: null, canalPreferido: null }).expect(200);
+      expect(ok.body).toMatchObject({ telefono: null, canalPreferido: null, canal: 'EMAIL' });
+    }, 120_000);
+  });
 });

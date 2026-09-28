@@ -1,20 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import type {
-  ListaProveedores,
-  Proveedor,
-  ProveedorCreate,
-  ProveedorPatch,
-  ProveedoresQuery,
+import {
+  canalDeProveedor,
+  normalizarWhatsApp,
+  validarCanalPreferido,
+  type CanalProveedor,
+  type ContactoProveedor,
+  type ListaProveedores,
+  type Proveedor,
+  type ProveedorCreate,
+  type ProveedorPatch,
+  type ProveedoresQuery,
 } from '@inventariosmart/shared';
 import { TenantContext } from '../auth/tenant-context';
 import { codificarCursor, decodificarCursor } from '../common/cursor';
-import { conflicto, noEncontrado } from '../common/errors';
+import { conflicto, noEncontrado, validacion } from '../common/errors';
 import { Prisma, type Proveedor as ProveedorRow } from '../generated/prisma/client';
 import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
 
 /** Nombre normalizado para la unicidad por comercio sin distinguir mayúsculas. */
 export function normalizarNombre(nombre: string): string {
   return nombre.trim().toUpperCase();
+}
+
+/** Datos de contacto con el canal preferido acotado a los que se pueden elegir. */
+export function contactoDe(p: Pick<ProveedorRow, 'email' | 'telefono' | 'canalPreferido'>): {
+  whatsapp: string | null;
+  canalPreferido: CanalProveedor | null;
+  canal: CanalProveedor | null;
+} {
+  const canalPreferido = p.canalPreferido === 'OTRO' ? null : p.canalPreferido;
+  return {
+    whatsapp: normalizarWhatsApp(p.telefono),
+    canalPreferido,
+    canal: canalDeProveedor({ email: p.email, telefono: p.telefono, canalPreferido }),
+  };
+}
+
+/** El canal preferido tiene que poder usarse con los datos que quedan guardados (CP-16.1c). */
+function exigirCanalUsable(p: ContactoProveedor): void {
+  const error = validarCanalPreferido(p);
+  if (error) throw validacion(error, { canalPreferido: error });
 }
 
 export function aProveedor(p: ProveedorRow): Proveedor {
@@ -24,6 +49,7 @@ export function aProveedor(p: ProveedorRow): Proveedor {
     contacto: p.contacto,
     email: p.email,
     telefono: p.telefono,
+    ...contactoDe(p),
     cuit: p.cuit,
     leadTimeDias: p.leadTimeDias,
     confiabilidad: p.confiabilidad,
@@ -59,7 +85,8 @@ export class SuppliersService {
     const filas = await this.prisma.transaccionTenant((tx) =>
       tx.$queryRaw<ProveedorRow[]>(
         Prisma.sql`SELECT id, comercio_id AS "comercioId", nombre,
-            nombre_normalizado AS "nombreNormalizado", contacto, email, telefono, cuit,
+            nombre_normalizado AS "nombreNormalizado", contacto, email, telefono,
+            canal_preferido AS "canalPreferido", cuit,
             lead_time_dias AS "leadTimeDias", confiabilidad, notas, activo,
             creado_en AS "creadoEn", actualizado_en AS "actualizadoEn"
           FROM proveedor
@@ -90,6 +117,11 @@ export class SuppliersService {
     return this.prisma.transaccionTenant(async (tx) => {
       const nombreNormalizado = normalizarNombre(dto.nombre);
       await this.verificarNombreLibre(tx, comercioId, nombreNormalizado);
+      exigirCanalUsable({
+        email: dto.email ?? null,
+        telefono: dto.telefono ?? null,
+        canalPreferido: dto.canalPreferido ?? null,
+      });
       const creado = await tx.proveedor.create({
         data: {
           comercioId,
@@ -98,6 +130,7 @@ export class SuppliersService {
           contacto: dto.contacto ?? null,
           email: dto.email ?? null,
           telefono: dto.telefono ?? null,
+          canalPreferido: dto.canalPreferido ?? null,
           cuit: dto.cuit ?? null,
           leadTimeDias: dto.leadTimeDias,
           confiabilidad: dto.confiabilidad,
@@ -127,6 +160,22 @@ export class SuppliersService {
       if (patch.contacto !== undefined) data.contacto = patch.contacto;
       if (patch.email !== undefined) data.email = patch.email;
       if (patch.telefono !== undefined) data.telefono = patch.telefono;
+      if (patch.canalPreferido !== undefined) data.canalPreferido = patch.canalPreferido;
+      // Se valida contra lo que queda guardado: borrar el teléfono con WhatsApp preferido también falla.
+      if (
+        patch.canalPreferido !== undefined ||
+        patch.email !== undefined ||
+        patch.telefono !== undefined
+      ) {
+        exigirCanalUsable({
+          email: patch.email !== undefined ? patch.email : actual.email,
+          telefono: patch.telefono !== undefined ? patch.telefono : actual.telefono,
+          canalPreferido:
+            patch.canalPreferido !== undefined
+              ? patch.canalPreferido
+              : contactoDe(actual).canalPreferido,
+        });
+      }
       if (patch.cuit !== undefined) data.cuit = patch.cuit;
       if (patch.leadTimeDias !== undefined) data.leadTimeDias = patch.leadTimeDias;
       if (patch.confiabilidad !== undefined) data.confiabilidad = patch.confiabilidad;

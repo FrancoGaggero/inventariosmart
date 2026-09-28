@@ -12,6 +12,7 @@ import {
   useProveedor,
 } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
+import { ChipCanal } from '@/ui/ChipCanal';
 import { Campo } from '@/ui/Campo';
 
 /** Ficha del proveedor: datos, lista vigente, carga manual e importación (HU-02). */
@@ -66,6 +67,12 @@ export function ProveedorDetallePage() {
                   <dd className="inline text-t1">{p.telefono}</dd>
                 </div>
               )}
+              <div>
+                <dt className="inline text-t3">Órdenes por: </dt>
+                <dd className="inline text-t1">
+                  {p.canal ? <ChipCanal canal={p.canal} /> : 'sin email ni WhatsApp'}
+                </dd>
+              </div>
               {p.cuit && (
                 <div>
                   <dt className="inline text-t3">CUIT: </dt>

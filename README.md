@@ -52,6 +52,11 @@ pnpm dev
   `GET/PATCH /reports/settings` (`activo`, `destinatariosExtra`). Reporte semanal de rentabilidad (semana ISO lunes a
   domingo en Buenos Aires) con productos estrella y oportunidades de ahorro; se genera los lunes a las 08:00 y se
   envía a los dueños activos más los correos extra; el contenido queda guardado tal como se envió.
+  Rutas de HU-16 (plan PRO): `POST /purchase-orders/:id/confirm` acepta `{ canal? }` (`EMAIL` o `WHATSAPP`; sin
+  indicarlo, el que corresponde al proveedor) y `POST /purchase-orders/:id/mark-sent` marca como enviada una orden
+  confirmada. Por WhatsApp la orden queda `CONFIRMADA` con `whatsappUrl`, un enlace `wa.me` con el mensaje redactado
+  que el dueño abre y envía desde su teléfono; el enlace no existe antes de confirmar (RN-06). Los proveedores suman
+  `canalPreferido`, `whatsapp` (teléfono normalizado a `549` + área + número) y `canal` (ADR 0015).
   Rutas de HU-15: `GET /indicators` (todos los roles y planes: inflación mensual e interanual, dólar minorista e
   IPC, con fecha, fuente y `desactualizado`), `GET /insights/inflation?desde&hasta` (plan PRO, dueño y contador:
   mis precios y mis costos frente a la inflación en índice base 100, brechas en términos reales, estado por producto

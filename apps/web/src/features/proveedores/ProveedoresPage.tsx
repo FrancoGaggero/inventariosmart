@@ -10,6 +10,7 @@ import {
   useProveedores,
 } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
+import { ChipCanal } from '@/ui/ChipCanal';
 import { EstadoVacio } from '@/ui/EstadoVacio';
 
 type Chip = 'ACTIVOS' | 'BAJAS';
@@ -167,6 +168,7 @@ export function ProveedoresPage() {
                   {p.email && <div className="text-xs">{p.email}</div>}
                   {p.telefono && <div className="text-xs">{p.telefono}</div>}
                   {!p.contacto && !p.email && !p.telefono && '—'}
+                  {p.canal && <ChipCanal canal={p.canal} className="mt-1" />}
                 </td>
                 <td className="px-3 py-3 text-right tabular-nums whitespace-nowrap">
                   {p.leadTimeDias} {p.leadTimeDias === 1 ? 'día' : 'días'}

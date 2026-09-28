@@ -3795,8 +3795,115 @@
     },
     "/api/v1/purchase-orders/{id}/confirm": {
       "post": {
-        "description": "Con email del proveedor queda ENVIADA; sin email o con envío rechazado queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.",
+        "description": "El canal es el indicado o el que corresponde al proveedor. Por correo queda ENVIADA (o CONFIRMADA con motivoNoEnvio si el envío falla). Por WhatsApp queda CONFIRMADA con whatsappUrl: el dueño abre el enlace y envía el mensaje. Sin canal queda CONFIRMADA con motivoNoEnvio y el texto listo para copiar.",
         "operationId": "PurchaseOrdersController_confirmar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmarOrdenBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenCompraDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Al proveedor le faltan datos para ese canal (VALIDACION, details.canal)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: las órdenes requieren PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso; CONTADOR sólo lectura",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La orden ya fue confirmada o cancelada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirmar con un clic (RN-06): atiende las alertas y envía la orden al proveedor",
+        "tags": [
+          "ordenes-de-compra"
+        ]
+      }
+    },
+    "/api/v1/purchase-orders/{id}/mark-sent": {
+      "post": {
+        "description": "El dueño avisa que ya la envió: por WhatsApp si se confirmó por ese canal, o por otro medio. Queda ENVIADA con fecha, canal y destinatario.",
+        "operationId": "PurchaseOrdersController_marcarEnviada",
         "parameters": [
           {
             "name": "id",
@@ -3859,7 +3966,7 @@
             }
           },
           "409": {
-            "description": "La orden ya fue confirmada o cancelada",
+            "description": "La orden no está CONFIRMADA",
             "content": {
               "application/json": {
                 "schema": {
@@ -3874,7 +3981,7 @@
             "bearer": []
           }
         ],
-        "summary": "Confirmar con un clic (RN-06): atiende las alertas y envía el correo al proveedor",
+        "summary": "Marcar como enviada una orden confirmada (HU-16)",
         "tags": [
           "ordenes-de-compra"
         ]
@@ -5543,6 +5650,30 @@
             "type": "string",
             "nullable": true
           },
+          "whatsapp": {
+            "type": "string",
+            "nullable": true,
+            "description": "Teléfono normalizado para WhatsApp (sólo dígitos, con código de país)",
+            "example": "5491123456789"
+          },
+          "canalPreferido": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal elegido por el dueño; null es automático"
+          },
+          "canal": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal que corresponde con los datos cargados; null si no tiene ninguno"
+          },
           "cuit": {
             "type": "string",
             "nullable": true,
@@ -5580,6 +5711,9 @@
           "contacto",
           "email",
           "telefono",
+          "whatsapp",
+          "canalPreferido",
+          "canal",
           "cuit",
           "leadTimeDias",
           "confiabilidad",
@@ -5632,6 +5766,15 @@
             "nullable": true,
             "maxLength": 40
           },
+          "canalPreferido": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal para enviarle órdenes; necesita el email o un teléfono con código de área"
+          },
           "cuit": {
             "type": "string",
             "nullable": true,
@@ -5682,6 +5825,15 @@
             "type": "string",
             "nullable": true,
             "maxLength": 40
+          },
+          "canalPreferido": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal para enviarle órdenes; necesita el email o un teléfono con código de área"
           },
           "cuit": {
             "type": "string",
@@ -7349,6 +7501,25 @@
             "type": "string",
             "nullable": true
           },
+          "telefono": {
+            "type": "string",
+            "nullable": true
+          },
+          "whatsapp": {
+            "type": "string",
+            "nullable": true,
+            "description": "Teléfono normalizado para WhatsApp",
+            "example": "5491123456789"
+          },
+          "canal": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal que corresponde al proveedor; null si no tiene datos de contacto"
+          },
           "leadTimeDias": {
             "type": "number",
             "example": 7
@@ -7363,6 +7534,9 @@
           "nombre",
           "contacto",
           "email",
+          "telefono",
+          "whatsapp",
+          "canal",
           "leadTimeDias",
           "confiabilidad"
         ]
@@ -7593,6 +7767,15 @@
             ],
             "nullable": true
           },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "EMAIL",
+              "WHATSAPP",
+              "OTRO"
+            ],
+            "nullable": true
+          },
           "confirmadaEn": {
             "type": "string",
             "nullable": true
@@ -7613,6 +7796,7 @@
           "cantidadItems",
           "totalNeto",
           "motivoNoEnvio",
+          "canal",
           "confirmadaEn",
           "enviadaEn",
           "creadoEn"
@@ -7799,6 +7983,22 @@
             ],
             "nullable": true
           },
+          "canal": {
+            "type": "string",
+            "enum": [
+              "EMAIL",
+              "WHATSAPP",
+              "OTRO"
+            ],
+            "nullable": true,
+            "description": "Canal con el que se confirmó o envió; null en borrador o sin canal"
+          },
+          "whatsappUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Enlace de WhatsApp con el mensaje redactado. Sólo en CONFIRMADA por WhatsApp (RN-06)",
+            "example": "https://wa.me/5491123456789?text=Orden%20de%20compra%20OC-0002"
+          },
           "creadaPor": {
             "$ref": "#/components/schemas/UsuarioOrdenDto"
           },
@@ -7846,6 +8046,8 @@
           "textoEditado",
           "notas",
           "motivoNoEnvio",
+          "canal",
+          "whatsappUrl",
           "creadaPor",
           "confirmadaPor",
           "confirmadaEn",
@@ -7887,6 +8089,19 @@
           "regenerarTexto": {
             "type": "boolean",
             "description": "Descarta el texto editado y vuelve al generado"
+          }
+        }
+      },
+      "ConfirmarOrdenBodyDto": {
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": "string",
+            "enum": [
+              "EMAIL",
+              "WHATSAPP"
+            ],
+            "description": "Canal elegido por el dueño; sin indicarlo, el que corresponde al proveedor"
           }
         }
       },

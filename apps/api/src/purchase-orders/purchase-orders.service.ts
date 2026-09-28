@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   type CandidatoProveedor,
+  type CanalProveedor,
+  type ConfirmarOrden,
   type EstadoOrden,
   type GrupoSugerido,
   type ItemOrden,
@@ -15,8 +17,11 @@ import {
   type SeveridadAlerta,
   type SugerenciaOrdenes,
   type SugerenciaQuery,
+  canalDisponible,
   elegirProveedor,
+  enlaceWhatsApp,
   formatearNumeroOrden,
+  mensajeWhatsApp,
   subtotalItem,
   totalOrden,
 } from '@inventariosmart/shared';
@@ -27,6 +32,7 @@ import { TenantContext } from '../auth/tenant-context';
 import { conflicto, noEncontrado, validacion } from '../common/errors';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
+import { contactoDe } from '../suppliers/suppliers.service';
 
 /** Fila de la consulta de sugerencia (design D3): una alerta con su producto y sus candidatos. */
 interface FilaSugerencia {
@@ -82,9 +88,22 @@ function aProveedorOrden(p: OrdenRow['proveedor']) {
     nombre: p.nombre,
     contacto: p.contacto,
     email: p.email,
+    telefono: p.telefono,
+    whatsapp: contactoDe(p).whatsapp,
+    canal: contactoDe(p).canal,
     leadTimeDias: p.leadTimeDias,
     confiabilidad: p.confiabilidad,
   };
+}
+
+/**
+ * Enlace de WhatsApp de la orden (design D4): sólo después de confirmar por WhatsApp y mientras
+ * no se marcó como enviada. Un borrador nunca lo expone (RN-06).
+ */
+function whatsappUrlDe(o: OrdenRow): string | null {
+  if (o.estado !== 'CONFIRMADA' || o.canal !== 'WHATSAPP') return null;
+  const numero = contactoDe(o.proveedor).whatsapp;
+  return numero ? enlaceWhatsApp(numero, mensajeWhatsApp(o.asunto, o.texto)) : null;
 }
 
 function aItem(i: OrdenRow['items'][number]): ItemOrden {
@@ -112,6 +131,8 @@ export function aOrden(o: OrdenRow): OrdenCompra {
     textoEditado: o.textoEditado,
     notas: o.notas,
     motivoNoEnvio: o.motivoNoEnvio,
+    canal: o.canal,
+    whatsappUrl: whatsappUrlDe(o),
     creadaPor: o.creadaPor,
     confirmadaPor: o.confirmadaPor,
     confirmadaEn: o.confirmadaEn?.toISOString() ?? null,
@@ -132,6 +153,7 @@ function aResumen(o: ResumenRow): OrdenResumen {
     cantidadItems: o._count.items,
     totalNeto: Number(o.totalNeto).toFixed(2),
     motivoNoEnvio: o.motivoNoEnvio,
+    canal: o.canal,
     confirmadaEn: o.confirmadaEn?.toISOString() ?? null,
     enviadaEn: o.enviadaEn?.toISOString() ?? null,
     creadoEn: o.creadoEn.toISOString(),
@@ -406,10 +428,12 @@ export class PurchaseOrdersService {
   }
 
   /**
-   * Confirmación explícita (RN-06, CP-07.4): registra quién y cuándo, atiende las alertas abiertas
-   * de los productos y envía el correo después del commit; el estado final se escribe aparte.
+   * Confirmación explícita (RN-06, CP-07.4, CP-16.2): registra quién y cuándo, atiende las alertas
+   * abiertas de los productos y resuelve el canal. Por correo, envía después del commit y el
+   * estado final se escribe aparte; por WhatsApp queda CONFIRMADA con el enlace para que el dueño
+   * envíe el mensaje desde su teléfono.
    */
-  async confirmar(id: string): Promise<OrdenCompra> {
+  async confirmar(id: string, dto: ConfirmarOrden = {}): Promise<OrdenCompra> {
     const { comercioId, usuarioId } = TenantContext.requerido();
     const ahora = new Date();
     const paraEnviar = await this.prisma.transaccionTenant(async (tx) => {
@@ -419,7 +443,16 @@ export class PurchaseOrdersService {
       });
       if (!orden) throw noEncontrado(MENSAJE_NO_ENCONTRADO);
       this.exigirBorrador(orden.estado);
-      const email = orden.proveedor.email;
+      const contacto = contactoDe(orden.proveedor);
+      if (dto.canal && !canalDisponible({ ...orden.proveedor, ...contacto }, dto.canal)) {
+        const error =
+          dto.canal === 'EMAIL'
+            ? `${orden.proveedor.nombre} no tiene email cargado.`
+            : `${orden.proveedor.nombre} no tiene un teléfono con código de área para WhatsApp.`;
+        throw validacion(error, { canal: error });
+      }
+      const canal: CanalProveedor | null = dto.canal ?? contacto.canal;
+      const email = canal === 'EMAIL' ? orden.proveedor.email : null;
       // updateMany con condición de estado: dos confirmaciones simultáneas no pasan las dos.
       const r = await tx.ordenCompra.updateMany({
         where: { id, comercioId, estado: 'BORRADOR' },
@@ -427,7 +460,8 @@ export class PurchaseOrdersService {
           estado: 'CONFIRMADA',
           confirmadaPorId: usuarioId,
           confirmadaEn: ahora,
-          motivoNoEnvio: email ? null : 'SIN_EMAIL',
+          canal,
+          motivoNoEnvio: canal === null ? 'SIN_EMAIL' : null,
           actualizadoEn: ahora,
         },
       });
@@ -466,6 +500,40 @@ export class PurchaseOrdersService {
         this.logger.warn({ orden: id, para: paraEnviar.email }, 'Orden confirmada sin enviar');
       }
     }
+    return this.obtener(id);
+  }
+
+  /**
+   * El dueño avisa que ya envió la orden (CP-16.3): el sistema no puede saber si un mensaje de
+   * WhatsApp salió. También cubre las que envió por otro medio.
+   */
+  async marcarEnviada(id: string): Promise<OrdenCompra> {
+    const { comercioId } = TenantContext.requerido();
+    await this.prisma.transaccionTenant(async (tx) => {
+      const orden = await tx.ordenCompra.findFirst({
+        where: { id, comercioId },
+        include: { proveedor: { select: { telefono: true } } },
+      });
+      if (!orden) throw noEncontrado(MENSAJE_NO_ENCONTRADO);
+      const ahora = new Date();
+      const porWhatsApp = orden.canal === 'WHATSAPP';
+      const r = await tx.ordenCompra.updateMany({
+        where: { id, comercioId, estado: 'CONFIRMADA' },
+        data: {
+          estado: 'ENVIADA',
+          enviadaEn: ahora,
+          enviadaA: porWhatsApp ? orden.proveedor.telefono : null,
+          canal: porWhatsApp ? 'WHATSAPP' : 'OTRO',
+          motivoNoEnvio: null,
+          actualizadoEn: ahora,
+        },
+      });
+      if (r.count === 0) {
+        throw conflicto('Sólo se puede marcar como enviada una orden confirmada.', {
+          estado: orden.estado,
+        });
+      }
+    });
     return this.obtener(id);
   }
 

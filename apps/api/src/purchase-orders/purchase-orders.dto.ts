@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  CANALES_ENVIO,
+  CANALES_PROVEEDOR,
   ESTADOS_ORDEN,
   MOTIVOS_ELECCION,
   MOTIVOS_NO_ENVIO,
@@ -11,6 +13,8 @@ type EstadoOrden = (typeof ESTADOS_ORDEN)[number];
 type MotivoNoEnvio = (typeof MOTIVOS_NO_ENVIO)[number];
 type MotivoEleccion = (typeof MOTIVOS_ELECCION)[number];
 type Severidad = (typeof SEVERIDADES_ALERTA)[number];
+type CanalEnvio = (typeof CANALES_ENVIO)[number];
+type CanalProveedor = (typeof CANALES_PROVEEDOR)[number];
 
 export class ProductoOrdenDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
@@ -24,6 +28,20 @@ export class ProveedorOrdenDto {
   @ApiProperty({ example: 'Sur' }) nombre!: string;
   @ApiProperty({ nullable: true, type: String }) contacto!: string | null;
   @ApiProperty({ nullable: true, type: String }) email!: string | null;
+  @ApiProperty({ nullable: true, type: String }) telefono!: string | null;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Teléfono normalizado para WhatsApp',
+    example: '5491123456789',
+  })
+  whatsapp!: string | null;
+  @ApiProperty({
+    nullable: true,
+    enum: CANALES_PROVEEDOR,
+    description: 'Canal que corresponde al proveedor; null si no tiene datos de contacto',
+  })
+  canal!: CanalProveedor | null;
   @ApiProperty({ example: 7 }) leadTimeDias!: number;
   @ApiProperty({ example: 3 }) confiabilidad!: number;
 }
@@ -90,6 +108,20 @@ export class OrdenCompraDto {
   textoEditado!: boolean;
   @ApiProperty({ nullable: true, type: String }) notas!: string | null;
   @ApiProperty({ enum: MOTIVOS_NO_ENVIO, nullable: true }) motivoNoEnvio!: MotivoNoEnvio | null;
+  @ApiProperty({
+    enum: CANALES_ENVIO,
+    nullable: true,
+    description: 'Canal con el que se confirmó o envió; null en borrador o sin canal',
+  })
+  canal!: CanalEnvio | null;
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description:
+      'Enlace de WhatsApp con el mensaje redactado. Sólo en CONFIRMADA por WhatsApp (RN-06)',
+    example: 'https://wa.me/5491123456789?text=Orden%20de%20compra%20OC-0002',
+  })
+  whatsappUrl!: string | null;
   @ApiProperty({ type: UsuarioOrdenDto }) creadaPor!: UsuarioOrdenDto;
   @ApiProperty({ type: UsuarioOrdenDto, nullable: true }) confirmadaPor!: UsuarioOrdenDto | null;
   @ApiProperty({ nullable: true, type: String }) confirmadaEn!: string | null;
@@ -113,6 +145,7 @@ export class OrdenResumenDto {
   @ApiProperty({ example: 2 }) cantidadItems!: number;
   @ApiProperty({ example: '128000.00' }) totalNeto!: string;
   @ApiProperty({ enum: MOTIVOS_NO_ENVIO, nullable: true }) motivoNoEnvio!: MotivoNoEnvio | null;
+  @ApiProperty({ enum: CANALES_ENVIO, nullable: true }) canal!: CanalEnvio | null;
   @ApiProperty({ nullable: true, type: String }) confirmadaEn!: string | null;
   @ApiProperty({ nullable: true, type: String }) enviadaEn!: string | null;
   @ApiProperty() creadoEn!: string;
@@ -151,4 +184,12 @@ export class OrdenPatchBodyDto {
   texto?: string;
   @ApiPropertyOptional({ description: 'Descarta el texto editado y vuelve al generado' })
   regenerarTexto?: boolean;
+}
+
+export class ConfirmarOrdenBodyDto {
+  @ApiPropertyOptional({
+    enum: CANALES_PROVEEDOR,
+    description: 'Canal elegido por el dueño; sin indicarlo, el que corresponde al proveedor',
+  })
+  canal?: CanalProveedor;
 }

@@ -13,13 +13,17 @@ import {
 } from '@/lib/ordenes';
 import { formatearPesos } from '@/lib/productos';
 import { Aviso } from '@/ui/Aviso';
+import { ChipCanal } from '@/ui/ChipCanal';
 import { Entrada } from '@/ui/Entrada';
 import { EstadoVacio } from '@/ui/EstadoVacio';
 import { SkeletonFilas } from '@/ui/Skeleton';
 
 const CHIPS: { valor: FiltroEstadoOrden; etiqueta: string }[] = [
   { valor: 'TODAS', etiqueta: 'Todas' },
-  ...ESTADOS_ORDEN.map((e) => ({ valor: e, etiqueta: etiquetaEstadoOrden(e) + 's' })),
+  ...ESTADOS_ORDEN.map((e) => ({
+    valor: e,
+    etiqueta: e === 'BORRADOR' ? 'Borradores' : `${etiquetaEstadoOrden(e)}s`,
+  })),
 ];
 
 /** Órdenes de compra del comercio (HU-07). DUENIO opera, CONTADOR consulta. */
@@ -38,6 +42,7 @@ export function OrdenesPage() {
       >
         {etiquetaEstadoOrden(o.estado)}
       </span>
+      {o.canal && <ChipCanal canal={o.canal} className="ml-1.5" />}
       {o.motivoNoEnvio && (
         <div className="text-[11px] text-t3 max-w-xs">
           {ETIQUETA_MOTIVO_NO_ENVIO[o.motivoNoEnvio]}
