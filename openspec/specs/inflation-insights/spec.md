@@ -29,7 +29,7 @@ El sistema SHALL obtener de fuentes públicas oficiales el índice de precios al
 - **THEN** ninguna de las dos consultas llama a las fuentes externas
 
 ### Requirement: Historial de precios de venta
-El sistema SHALL registrar una fila de sólo inserción con el precio de venta, la alícuota de IVA, la fecha de vigencia, el origen (`ALTA`, `EDICION`, `IMPORT`, `INICIAL`) y el usuario cada vez que se crea un producto o cambia su precio de venta, por alta, edición o importación; un guardado que no cambia el precio SHALL no agregar filas. El historial SHALL consultarse en `GET /api/v1/products/:id/price-history` del más reciente al más antiguo, y las filas SHALL no poder modificarse ni borrarse.
+El sistema SHALL registrar una fila de sólo inserción con el precio de venta, la alícuota de IVA, la fecha de vigencia, el origen (`ALTA`, `EDICION`, `IMPORT`, `INICIAL`, `REMARCACION`) y el usuario cada vez que se crea un producto o cambia su precio de venta, por alta, edición, importación o remarcación en lote (aplicada o deshecha); un guardado que no cambia el precio SHALL no agregar filas. El historial SHALL consultarse en `GET /api/v1/products/:id/price-history` del más reciente al más antiguo, y las filas SHALL no poder modificarse ni borrarse.
 
 #### Scenario: CP-15.2 Alta y edición dejan historial
 - **GIVEN** un DUENIO que crea `FA-220` con precio 1000 y luego lo edita a 1100
@@ -49,6 +49,11 @@ El sistema SHALL registrar una fila de sólo inserción con el precio de venta, 
 #### Scenario: CP-15.2d Historial inmutable
 - **WHEN** una conexión con el rol de la aplicación ejecuta `UPDATE` o `DELETE` sobre el historial de precios
 - **THEN** la base rechaza la operación por falta de privilegios
+
+#### Scenario: CP-15.2e La remarcación también registra
+- **GIVEN** `FA-220` con precio 1200
+- **WHEN** el DUENIO aplica una remarcación que lo lleva a 1380 y después la deshace
+- **THEN** el historial suma una fila `1380.00` y otra `1200.00`, las dos con origen `REMARCACION` y el usuario que las hizo
 
 ### Requirement: Comparación de precios y costos propios contra la inflación
 El sistema SHALL calcular, para un período de meses completos (`desde` y `hasta` en formato `AAAA-MM`, por defecto los últimos 6 meses hasta el último mes con IPC publicado), series mensuales en índice base 100 al primer mes de: mis precios y mis costos, como canasta fija de los productos activos con ventas en el período ponderada por las unidades vendidas en todo el período y valuada con el precio o costo vigente al cierre de cada mes; e IPC general e IPC de bienes. SHALL informar la variación porcentual de cada serie entre el primer y el último mes y las brechas en términos reales entre precios e IPC y entre precios y costos según RN-11: variación real = ((1 + variación nominal) ÷ (1 + variación de referencia) − 1) × 100. Si el período pedido excede el último mes con IPC publicado, SHALL recortarse a ese mes e informarlo (HU-15, RN-01, RN-08, RN-11).

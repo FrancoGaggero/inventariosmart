@@ -9,7 +9,7 @@
 - [x] 2.3 `RepricingService.aplicar` (D4): verificación, actualización en una sentencia, historial y lote. Listo cuando: CP-17.3, CP-17.3b, CP-17.3c y CP-15.2e pasan, y dos aplicaciones simultáneas sobre los mismos productos dejan un solo lote
 - [x] 2.4 Lotes y deshacer (D5): listado, detalle y `revert`. Listo cuando: CP-17.4, CP-17.4b y CP-17.4c pasan
 - [x] 2.5 `RepricingController` y DTOs Swagger (D6) con plan y roles; módulo en `AppModule`. Listo cuando: CP-17.5, CP-17.5b y CP-17.5c pasan
-- [ ] 2.6 Rendimiento: aplicar un lote de 5.000 productos con tablas recién cargadas. Listo cuando: responde en menos de 3 segundos en CI
+- [x] 2.6 Rendimiento: aplicar un lote de 5.000 productos con tablas recién cargadas. Listo cuando: responde en menos de 3 segundos en CI
 - [x] 2.7 Regenerar contrato y cliente: `pnpm openapi`. Listo cuando: `docs/openapi.json` tiene las rutas `/repricing*` y CI no reporta contrato desactualizado
 
 ## 3. Web
@@ -21,6 +21,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 ADR 0016, README, `docs/arquitectura.html`, `docs/runbooks/rls.md`, `openspec/config.yaml` (HU-17, RF-18, RN-12) y `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D9
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.3 Producción: migración aplicada por Render; Franco remarca un producto desde "Precios e inflación" y después deshace la remarcación. Listo cuando: en la base de producción hay un lote aplicado y revertido, y CP-17.3, CP-17.4b y CP-17.6 se cumplen en `https://inventariosmart0.vercel.app`
 - [ ] 4.4 (manual, Franco) Sumar HU-17, RF-18 y RN-12 al backlog, a la Propuesta y al Gantt, y mover la tarjeta en Trello. Listo cuando: Trello, backlog y Gantt coinciden
