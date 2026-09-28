@@ -11,6 +11,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { Dashboard } from '@/features/dashboard/Dashboard';
+import { Contexto } from '@/features/inflacion/Contexto';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
 import { NOMBRE_ROL, useMe } from '@/lib/me';
 import { useProductos } from '@/lib/productos';
@@ -66,6 +67,8 @@ export function HomePage() {
       </header>
 
       {vePanel && <Dashboard puedeOperar={esDuenio} />}
+
+      <Contexto conStock={vePanel} />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-t2 uppercase tracking-wider">Accesos</h2>

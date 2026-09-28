@@ -86,10 +86,34 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON "orden_compra_item" TO app_api;
 
 `reporte_semanal` (HU-09, ADR 0013) usa la variante de `alerta`: se regenera con UPDATE y no se borra.
 
+`precio_venta_historial` (HU-15, ADR 0014) es de sólo inserción, igual que `precio_proveedor`
+(CP-15.2d).
+
 `precio_proveedor` (HU-02, ADR 0007) sigue el mismo esquema, sin columna actualizable. El test
 `rls.e2e-spec.ts` (CP-10.7c, CP-02.4c) verifica esos privilegios. Los tests limpian datos con la
 conexión de la propietaria (`comoPropietaria` en `test/helpers.ts`), porque `app_api` no puede
 borrar el historial.
+
+## Tablas de referencia sin comercio
+
+`indicador_economico` e `indicador_actualizacion` (HU-15, ADR 0014) son la única excepción a la
+regla: guardan datos públicos del INDEC y del BCRA, iguales para todos los comercios, así que no
+llevan `comercio_id` ni están en `TENANT_MODELS`. Igual tienen RLS activa y forzada, con una
+política de lectura abierta y otra de escritura sólo para el contexto de sistema:
+
+```sql
+ALTER TABLE "indicador_economico" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "indicador_economico" FORCE ROW LEVEL SECURITY;
+CREATE POLICY indicador_economico_lectura ON "indicador_economico" FOR SELECT USING (true);
+CREATE POLICY indicador_economico_sistema ON "indicador_economico"
+  USING (app_es_sistema())
+  WITH CHECK (app_es_sistema());
+GRANT SELECT, INSERT, UPDATE ON "indicador_economico" TO app_api;
+REVOKE DELETE ON "indicador_economico" FROM app_api;
+```
+
+Una tabla nueva sólo puede seguir este esquema si no guarda ningún dato de un comercio. El test
+`rls.e2e-spec.ts` verifica que un request de un comercio puede leerla y no puede escribirla.
 
 ## Verificación manual
 

@@ -14,6 +14,7 @@ const TABLA: Record<string, string> = {
   OrdenCompra: 'orden_compra',
   OrdenCompraItem: 'orden_compra_item',
   ReporteSemanal: 'reporte_semanal',
+  PrecioVentaHistorial: 'precio_venta_historial',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -207,6 +208,68 @@ describe('aislamiento entre comercios (e2e)', () => {
         await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
         await tx.$executeRaw`DELETE FROM reporte_semanal WHERE comercio_id = ${comercioA}::uuid`;
       }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-15.2d el rol de la aplicación no puede modificar ni borrar el historial de precios de venta', async () => {
+    const [n] = await t.prisma.raw.$queryRaw<
+      { n: bigint }[]
+    >`SELECT count(*)::bigint AS n FROM precio_venta_historial`;
+    expect(Number(n!.n)).toBe(0);
+    const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+      SELECT privilege_type FROM information_schema.role_table_grants
+      WHERE table_name = 'precio_venta_historial' AND grantee = current_user`;
+    expect(privilegios.map((p) => p.privilege_type).sort()).toEqual(['INSERT', 'SELECT']);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`UPDATE precio_venta_historial SET precio_venta = 1 WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await tx.$executeRaw`DELETE FROM precio_venta_historial WHERE comercio_id = ${comercioA}::uuid`;
+      }),
+    ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('HU-15 los indicadores son de referencia: cualquiera los lee y sólo el sistema los escribe', async () => {
+    for (const tabla of ['indicador_economico', 'indicador_actualizacion']) {
+      const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+        SELECT privilege_type FROM information_schema.role_table_grants
+        WHERE table_name = ${tabla} AND grantee = current_user`;
+      expect(privilegios.map((p) => p.privilege_type).sort()).toEqual([
+        'INSERT',
+        'SELECT',
+        'UPDATE',
+      ]);
+      const [rls] = await t.prisma.raw.$queryRaw<
+        { relrowsecurity: boolean; relforcerowsecurity: boolean }[]
+      >`SELECT relrowsecurity, relforcerowsecurity FROM pg_class WHERE relname = ${tabla}`;
+      expect(rls).toEqual({ relrowsecurity: true, relforcerowsecurity: true });
+    }
+    // Lectura sin contexto de comercio: permitida.
+    await expect(
+      t.prisma.raw.$queryRaw`SELECT count(*)::int AS n FROM indicador_economico`,
+    ).resolves.toHaveLength(1);
+
+    const insertar = (tx: { $executeRaw: typeof t.prisma.raw.$executeRaw }) =>
+      tx.$executeRaw`INSERT INTO indicador_economico (id, serie, fecha, valor, fuente)
+        VALUES (gen_random_uuid(), 'IPC_GENERAL', '1990-01-01', 1, 'PRUEBA-RLS')`;
+    // Escritura sin contexto y con contexto de un comercio: rechazada por la política.
+    await expect(insertar(t.prisma.raw)).rejects.toThrow(/row-level security|seguridad/i);
+    await expect(
+      t.prisma.raw.$transaction(async (tx) => {
+        await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+        await insertar(tx);
+      }),
+    ).rejects.toThrow(/row-level security|seguridad/i);
+    const modificadas = await t.prisma.raw
+      .$executeRaw`UPDATE indicador_economico SET valor = 0 WHERE true`;
+    expect(modificadas).toBe(0);
+    await expect(
+      t.prisma.raw.$executeRaw`DELETE FROM indicador_economico WHERE fuente = 'PRUEBA-RLS'`,
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });
 

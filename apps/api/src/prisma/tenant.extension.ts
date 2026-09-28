@@ -16,6 +16,7 @@ export const TENANT_MODELS = new Set<string>([
   'OrdenCompra',
   'OrdenCompraItem',
   'ReporteSemanal',
+  'PrecioVentaHistorial',
 ]);
 
 /** Operaciones que aceptan `where`. */

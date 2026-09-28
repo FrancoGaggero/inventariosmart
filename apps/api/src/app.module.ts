@@ -13,6 +13,8 @@ import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { type Env, validateEnv } from './config/env';
 import { HealthModule } from './health/health.module';
 import { ImportModule } from './import/import.module';
+import { IndicatorsModule } from './indicators/indicators.module';
+import { InsightsModule } from './insights/insights.module';
 import { MeModule } from './me/me.module';
 import { MovementsModule } from './movements/movements.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -58,6 +60,8 @@ import { UsersModule } from './users/users.module';
     AlertsModule,
     PurchaseOrdersModule,
     ReportsModule,
+    IndicatorsModule,
+    InsightsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

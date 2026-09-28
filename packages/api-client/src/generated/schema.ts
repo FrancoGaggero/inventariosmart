@@ -177,6 +177,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/products/{id}/price-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historial de precios de venta del producto (HU-15)
+         * @description Cada precio de venta que tuvo el producto, del más reciente al más antiguo. Las filas de origen INICIAL se reconstruyeron a partir de las ventas ya registradas.
+         */
+        get: operations["ProductsController_historialPrecios"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/movements": {
         parameters: {
             query?: never;
@@ -759,6 +779,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/indicators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Indicadores económicos oficiales (HU-15)
+         * @description Inflación mensual e interanual y dólar minorista (BCRA) e índice de precios al consumidor (INDEC), con la fecha y la fuente de cada dato. Disponible para todos los roles y planes. Si una fuente no responde, devuelve el último dato guardado con `desactualizado: true`.
+         */
+        get: operations["IndicatorsController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insights/inflation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mis precios frente a la inflación (HU-15)
+         * @description Series mensuales en índice base 100 de mis precios y mis costos (canasta fija ponderada por las unidades vendidas en el período) junto al IPC del INDEC, variaciones, brechas en términos reales (RN-11) y, por producto, estado y precios sugeridos. Por defecto cubre los últimos 6 meses hasta el último mes con IPC publicado.
+         */
+        get: operations["InsightsController_inflacion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -954,6 +1014,36 @@ export interface components {
         };
         ListaPreciosDto: {
             items: components["schemas"]["PrecioProveedorDto"][];
+            siguienteCursor: string | null;
+        };
+        UsuarioPrecioDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Franco */
+            nombre: string | null;
+        };
+        PrecioHistorialDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Precio de venta con IVA incluido
+             * @example 1100.00
+             */
+            precioVenta: string;
+            /** @example 21 */
+            alicuotaIva: string;
+            /** Format: date-time */
+            vigenteDesde: string;
+            /**
+             * @description INICIAL: reconstruido a partir de las ventas ya registradas
+             * @enum {string}
+             */
+            origen: "ALTA" | "EDICION" | "IMPORT" | "INICIAL";
+            usuario: components["schemas"]["UsuarioPrecioDto"] | null;
+        };
+        ListaPrecioHistorialDto: {
+            items: components["schemas"]["PrecioHistorialDto"][];
+            /** @description Cursor de la página siguiente o null */
             siguienteCursor: string | null;
         };
         ProductoCreateBodyDto: {
@@ -2117,6 +2207,183 @@ export interface components {
             motivoNoEnvio: "SIN_PROVEEDOR" | "ENVIO_FALLIDO" | "SIN_DESTINATARIOS" | null;
             generadoEn: string;
         };
+        IndicadorValorDto: {
+            /** @example 1.70 */
+            valor: string;
+            /**
+             * @description Fecha del dato
+             * @example 2026-08-31
+             */
+            fecha: string;
+            /** @example BCRA */
+            fuente: string;
+        };
+        IndicadorIpcDto: {
+            /**
+             * @description Nivel del índice, base diciembre 2016
+             * @example 12276.77
+             */
+            valor: string;
+            /** @example 2026-08 */
+            periodo: string;
+            /** @example INDEC */
+            fuente: string;
+        };
+        IndicadoresDto: {
+            /** @description Inflación del mes, en % */
+            inflacionMensual: components["schemas"]["IndicadorValorDto"] | null;
+            /** @description Inflación interanual, en % */
+            inflacionInteranual: components["schemas"]["IndicadorValorDto"] | null;
+            /** @description Tipo de cambio minorista, pesos por dólar */
+            dolarMinorista: components["schemas"]["IndicadorValorDto"] | null;
+            ipc: components["schemas"]["IndicadorIpcDto"] | null;
+            /**
+             * Format: date-time
+             * @description Última actualización completa desde las fuentes
+             */
+            actualizadoEn: string | null;
+            /** @description La última consulta a alguna fuente falló o el dato tiene más de 48 horas */
+            desactualizado: boolean;
+        };
+        SeriesInflacionDto: {
+            /**
+             * @description Índice de mis precios (canasta fija); vacía sin ventas
+             * @example [
+             *       "100.00",
+             *       "104.20",
+             *       "118.00"
+             *     ]
+             */
+            misPrecios: (string | null)[];
+            /**
+             * @description Índice de mis costos (canasta fija); vacía sin ventas
+             * @example [
+             *       "100.00",
+             *       "104.20",
+             *       "118.00"
+             *     ]
+             */
+            misCostos: (string | null)[];
+            /**
+             * @description IPC nacional, nivel general (INDEC)
+             * @example [
+             *       "100.00",
+             *       "104.20",
+             *       "118.00"
+             *     ]
+             */
+            ipc: (string | null)[];
+            /**
+             * @description IPC nacional, bienes (INDEC)
+             * @example [
+             *       "100.00",
+             *       "104.20",
+             *       "118.00"
+             *     ]
+             */
+            ipcBienes: (string | null)[];
+        };
+        VariacionesInflacionDto: {
+            /** @example 18.00 */
+            misPrecios: string | null;
+            /** @example 22.00 */
+            misCostos: string | null;
+            /** @example 20.00 */
+            ipc: string | null;
+            /** @example 19.10 */
+            ipcBienes: string | null;
+        };
+        BrechasInflacionDto: {
+            /**
+             * @description Variación real de mis precios contra la inflación (RN-11)
+             * @example -1.67
+             */
+            preciosVsIpc: string | null;
+            /**
+             * @description Variación real de mis precios contra mis costos (RN-11)
+             * @example -3.28
+             */
+            preciosVsCostos: string | null;
+        };
+        ProductoRefInflacionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        ProductoInflacionDto: {
+            producto: components["schemas"]["ProductoRefInflacionDto"];
+            /** @example 30 */
+            unidadesVendidas: number;
+            /**
+             * @description Con IVA, al cierre del primer mes
+             * @example 1000.00
+             */
+            precioInicial: string;
+            /**
+             * @description Con IVA, al cierre del último mes
+             * @example 1100.00
+             */
+            precioFinal: string;
+            /** @example 600.00 */
+            costoInicial: string;
+            /** @example 720.00 */
+            costoFinal: string;
+            /** @example 10.00 */
+            variacionPrecio: string | null;
+            /** @example 20.00 */
+            variacionCosto: string | null;
+            /**
+             * @description Variación del precio descontada la inflación (RN-11)
+             * @example -8.33
+             */
+            variacionReal: string | null;
+            /**
+             * @description ATRASADO si la variación real es menor a −2 %, ADELANTADO si supera +2 %
+             * @enum {string|null}
+             */
+            estado: "ATRASADO" | "ALINEADO" | "ADELANTADO" | null;
+            /**
+             * @description Precio que habría acompañado a la inflación. Informativo: no cambia el precio
+             * @example 1200.00
+             */
+            precioSugeridoInflacion: string | null;
+            /**
+             * @description Precio que sostiene el margen bruto % del inicio con el costo final
+             * @example 1200.00
+             */
+            precioSugeridoMargen: string;
+            /**
+             * Format: date-time
+             * @description Desde cuándo se conoce el precio
+             */
+            datosDesde: string;
+        };
+        ComparacionInflacionDto: {
+            /** @example 2026-03 */
+            desde: string;
+            /** @example 2026-08 */
+            hasta: string;
+            /** @description El período se recortó al último mes con IPC publicado */
+            recortado: boolean;
+            /**
+             * @example [
+             *       "2026-03",
+             *       "2026-04"
+             *     ]
+             */
+            meses: string[];
+            /** @description Índices base 100 al primer mes */
+            series: components["schemas"]["SeriesInflacionDto"];
+            variaciones: components["schemas"]["VariacionesInflacionDto"];
+            brechas: components["schemas"]["BrechasInflacionDto"];
+            /** @enum {string|null} */
+            motivo: "SIN_VENTAS" | "SIN_IPC" | null;
+            /** @description Productos activos, del más atrasado al más adelantado */
+            productos: components["schemas"]["ProductoInflacionDto"][];
+        };
     };
     responses: never;
     parameters: never;
@@ -2787,6 +3054,64 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Rol sin permiso (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    ProductsController_historialPrecios: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: unknown;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaPrecioHistorialDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: el historial requiere PRO (PLAN_REQUERIDO) */
+            402: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5096,6 +5421,92 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    IndicatorsController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndicadoresDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    InsightsController_inflacion: {
+        parameters: {
+            query?: {
+                /** @description AAAA-MM */
+                hasta?: unknown;
+                /** @description AAAA-MM */
+                desde?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparacionInflacionDto"];
+                };
+            };
+            /** @description Período inválido (VALIDACION con details por campo) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: la comparación requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description EMPLEADO sin acceso: no ve costos */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

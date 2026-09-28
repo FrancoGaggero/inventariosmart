@@ -298,6 +298,20 @@ body::before {
   animation: pulso 1.6s ease-out infinite;
 }
 
+/* Las líneas de los gráficos se dibujan de izquierda a derecha (pathLength = 1). */
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.trazo {
+  stroke-dasharray: 1;
+  animation: trazar 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 @keyframes brillo {
   from {
     background-position: 200% 0;
@@ -359,6 +373,9 @@ body::before {
     animation: none;
   }
   .pulso {
+    animation: none;
+  }
+  .trazo {
     animation: none;
   }
 }

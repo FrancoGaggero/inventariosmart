@@ -25,6 +25,9 @@ export const envSchema = z.object({
   MAIL_FROM: z.string().trim().min(3).default('InventarioSmart <onboarding@resend.dev>'),
   /** URL de la web publicada, para los enlaces de los correos. */
   WEB_URL: z.string().url().default('https://inventariosmart0.vercel.app'),
+  /** Fuentes públicas de indicadores económicos (HU-15); sin credenciales. */
+  INDEC_API_URL: z.string().url().default('https://apis.datos.gob.ar/series/api'),
+  BCRA_API_URL: z.string().url().default('https://api.bcra.gob.ar/estadisticas/v4.0'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -22,6 +22,11 @@ import {
   verificarTope,
 } from '../common/planillas';
 import { Prisma } from '../generated/prisma/client';
+import {
+  cambiaPrecio,
+  registrarPreciosVenta,
+  type RegistroPrecioVenta,
+} from '../products/price-history';
 import { normalizarCodigo, ProductsService } from '../products/products.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -30,6 +35,8 @@ interface ExistenteRow {
   codigoNormalizado: string;
   activo: boolean;
   stockActual: number;
+  precioVenta: Prisma.Decimal;
+  alicuotaIva: Prisma.Decimal;
 }
 
 const DEFINICION = Object.fromEntries(
@@ -146,7 +153,14 @@ export class ImportService {
       const codigos = dto.filas.map((f) => normalizarCodigo(f.datos.codigo));
       const existentes = await tx.producto.findMany({
         where: { comercioId, codigoNormalizado: { in: codigos } },
-        select: { id: true, codigoNormalizado: true, activo: true, stockActual: true },
+        select: {
+          id: true,
+          codigoNormalizado: true,
+          activo: true,
+          stockActual: true,
+          precioVenta: true,
+          alicuotaIva: true,
+        },
       });
       const porCodigo = new Map<string, ExistenteRow>(
         existentes.map((p) => [p.codigoNormalizado, p]),
@@ -154,6 +168,16 @@ export class ImportService {
 
       const crear: { fila: (typeof dto.filas)[number]; datos: DatosFilaProducto }[] = [];
       const actualizar: { id: string; datos: DatosFilaProducto }[] = [];
+      // Historial de precios de venta (HU-15): altas y actualizaciones que cambian el precio.
+      const precios: RegistroPrecioVenta[] = [];
+      const precioDe = (productoId: string, datos: DatosFilaProducto): RegistroPrecioVenta => ({
+        comercioId,
+        productoId,
+        precioVenta: datos.precioVenta,
+        alicuotaIva: datos.alicuotaIva ?? Number(ivaDefault),
+        origen: 'IMPORT',
+        usuarioId,
+      });
       const detalles: ResultadoImportacionProductos['detalles'] = [];
       for (const fila of dto.filas) {
         const parsed = DatosFilaProductoSchema.safeParse({
@@ -177,8 +201,13 @@ export class ImportService {
           });
           continue;
         }
-        if (existente) actualizar.push({ id: existente.id, datos: parsed.data });
-        else crear.push({ fila, datos: parsed.data });
+        if (existente) {
+          actualizar.push({ id: existente.id, datos: parsed.data });
+          const nuevo = precioDe(existente.id, parsed.data);
+          if (cambiaPrecio(existente, nuevo)) precios.push(nuevo);
+        } else {
+          crear.push({ fila, datos: parsed.data });
+        }
       }
 
       const limite = LIMITES_PLAN[plan].productos;
@@ -207,6 +236,7 @@ export class ImportService {
           stockSeguridad: datos.stockSeguridad,
         }));
         await tx.producto.createMany({ data: productos });
+        productos.forEach((p, i) => precios.push(precioDe(p.id, crear[i]!.datos)));
         // El stock inicial entra como INGRESO STOCK_INICIAL, igual que en el alta manual (HU-10).
         const ingresos = productos
           .filter((p) => p.stockActual > 0)
@@ -246,6 +276,8 @@ export class ImportService {
             WHERE p.id = v.id AND p.comercio_id = ${comercioId}::uuid`,
         );
       }
+
+      await registrarPreciosVenta(tx, precios);
 
       return {
         creados: crear.length,

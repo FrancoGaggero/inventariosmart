@@ -58,6 +58,7 @@ model Comercio {
   reportesSemanales ReporteSemanal[]
   gastos            Gasto[]
   alertas           Alerta[]
+  preciosVenta      PrecioVentaHistorial[]
 
   @@map("comercio")
 }
@@ -95,6 +96,7 @@ model Producto {
 
   alertas          Alerta[]
   itemsOrdenCompra OrdenCompraItem[]
+  preciosVenta     PrecioVentaHistorial[]
 
   @@unique([comercioId, codigoNormalizado])
   @@index([comercioId, activo, nombre])
@@ -114,12 +116,13 @@ model Usuario {
   activo      Boolean  @default(true)
   creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
 
-  comercio           Comercio          @relation(fields: [comercioId], references: [id])
+  comercio           Comercio               @relation(fields: [comercioId], references: [id])
   movimientos        Movimiento[]
   precios            PrecioProveedor[]
   gastos             Gasto[]
-  ordenesCreadas     OrdenCompra[]     @relation("OrdenCreadaPor")
-  ordenesConfirmadas OrdenCompra[]     @relation("OrdenConfirmadaPor")
+  ordenesCreadas     OrdenCompra[]          @relation("OrdenCreadaPor")
+  ordenesConfirmadas OrdenCompra[]          @relation("OrdenConfirmadaPor")
+  preciosVenta       PrecioVentaHistorial[]
 
   @@index([comercioId])
   @@map("usuario")
@@ -451,4 +454,76 @@ enum MotivoNoEnvioReporte {
   SIN_DESTINATARIOS
 
   @@map("motivo_no_envio_reporte")
+}
+
+/// Serie de un indicador económico oficial (HU-15).
+enum SerieIndicador {
+  IPC_GENERAL
+  IPC_BIENES
+  INFLACION_MENSUAL
+  INFLACION_INTERANUAL
+  USD_MINORISTA
+
+  @@map("serie_indicador")
+}
+
+/// Indicador económico oficial (INDEC, BCRA). Dato público de referencia: es la única tabla sin
+/// comercio_id; cualquiera la lee y sólo el contexto de sistema la escribe (ADR 0014).
+model IndicadorEconomico {
+  id            String         @id @default(uuid()) @db.Uuid
+  serie         SerieIndicador
+  /// Día del dato; en las series mensuales, el primer día del mes.
+  fecha         DateTime       @db.Date
+  valor         Decimal        @db.Decimal(18, 4)
+  fuente        String         @db.VarChar(40)
+  actualizadoEn DateTime       @default(now()) @map("actualizado_en") @db.Timestamptz(3)
+
+  @@unique([serie, fecha])
+  @@index([serie, fecha(sort: Desc)])
+  @@map("indicador_economico")
+}
+
+/// Última consulta a cada fuente de indicadores (HU-15): evita llamarlas en cada pedido.
+model IndicadorActualizacion {
+  fuente        String    @id @db.VarChar(40)
+  /// Última consulta que respondió bien.
+  actualizadoEn DateTime? @map("actualizado_en") @db.Timestamptz(3)
+  /// Último intento, haya respondido o no.
+  intentadoEn   DateTime? @map("intentado_en") @db.Timestamptz(3)
+  ultimoError   String?   @map("ultimo_error") @db.VarChar(300)
+
+  @@map("indicador_actualizacion")
+}
+
+/// Origen de una fila del historial de precios de venta (HU-15).
+enum OrigenPrecioVenta {
+  ALTA
+  EDICION
+  IMPORT
+  /// Reconstruido por la migración a partir de las ventas ya registradas.
+  INICIAL
+
+  @@map("origen_precio_venta")
+}
+
+/// Historial de precios de venta por producto: sólo inserción (HU-15).
+/// El rol de la API no puede modificar ni borrar filas.
+model PrecioVentaHistorial {
+  id           String            @id @default(uuid()) @db.Uuid
+  comercioId   String            @map("comercio_id") @db.Uuid
+  productoId   String            @map("producto_id") @db.Uuid
+  /// Precio de venta con IVA incluido, como se carga.
+  precioVenta  Decimal           @map("precio_venta") @db.Decimal(14, 2)
+  alicuotaIva  Decimal           @map("alicuota_iva") @db.Decimal(5, 2)
+  vigenteDesde DateTime          @default(now()) @map("vigente_desde") @db.Timestamptz(3)
+  origen       OrigenPrecioVenta
+  usuarioId    String?           @map("usuario_id") @db.Uuid
+  creadoEn     DateTime          @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+  producto Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([comercioId, productoId, vigenteDesde(sort: Desc), id(sort: Desc)])
+  @@map("precio_venta_historial")
 }

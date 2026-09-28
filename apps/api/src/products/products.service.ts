@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import {
   calcularEstadoStock,
   LIMITES_PLAN,
+  type ListaPrecioHistorial,
   type ListaProductos,
+  type OrigenPrecioVenta,
   type Plan,
   type Producto,
   type ProductoCreate,
@@ -10,11 +12,13 @@ import {
   type ProductosQuery,
 } from '@inventariosmart/shared';
 import { TenantContext } from '../auth/tenant-context';
+import { codificarCursor as cursorDe, decodificarCursor as partesDe } from '../common/cursor';
 import { conflicto, noEncontrado, planRequerido, validacion } from '../common/errors';
 import { Prisma, type Producto as ProductoRow } from '../generated/prisma/client';
 import { MovementsService } from '../movements/movements.service';
 import { PrismaService, type TransaccionRaw } from '../prisma/prisma.service';
 import { PricesService } from '../suppliers/prices.service';
+import { cambiaPrecio, registrarPrecioVenta } from './price-history';
 
 /** Código normalizado para la unicidad por comercio sin distinguir mayúsculas (RN-05). */
 export function normalizarCodigo(codigo: string): string {
@@ -38,6 +42,17 @@ interface FilaProducto {
   actualizadoEn: Date;
   proveedorPrincipalId: string | null;
   proveedorPrincipalNombre: string | null;
+}
+
+/** Fila del historial de precios de venta con su usuario. */
+interface FilaPrecioVenta {
+  id: string;
+  precioVenta: string;
+  alicuotaIva: string;
+  vigenteDesde: Date;
+  origen: OrigenPrecioVenta;
+  usuarioId: string | null;
+  usuarioNombre: string | null;
 }
 
 type Origen = ProductoRow | FilaProducto;
@@ -177,7 +192,7 @@ export class ProductsService {
 
   /** Alta (CP-01.1, CP-01.2, CP-01.6). */
   async crear(dto: ProductoCreate): Promise<Producto> {
-    const { comercioId } = TenantContext.requerido();
+    const { comercioId, usuarioId } = TenantContext.requerido();
     return this.prisma.transaccionTenant(async (tx) => {
       const { plan, ivaDefault } = await this.bloquearComercio(tx, comercioId);
       await this.verificarLimite(tx, comercioId, plan);
@@ -202,6 +217,14 @@ export class ProductsService {
           diasAnticipacionAlerta: dto.diasAnticipacionAlerta,
         },
       });
+      await registrarPrecioVenta(tx, {
+        comercioId,
+        productoId: creado.id,
+        precioVenta: creado.precioVenta.toString(),
+        alicuotaIva: creado.alicuotaIva.toString(),
+        origen: 'ALTA',
+        usuarioId,
+      });
       if (dto.stockInicial > 0) {
         const ingreso = await this.movements.registrarEnTransaccion(tx, {
           productoId: creado.id,
@@ -217,7 +240,7 @@ export class ProductsService {
 
   /** Edición y reactivación (CP-01.4, CP-01.5b). El stock actual no se toca (RN-07). */
   async actualizar(id: string, patch: ProductoPatch): Promise<Producto> {
-    const { comercioId } = TenantContext.requerido();
+    const { comercioId, usuarioId } = TenantContext.requerido();
     return this.prisma.transaccionTenant(async (tx) => {
       const actual = await tx.producto.findFirst({ where: { id, comercioId } });
       if (!actual) throw noEncontrado('No encontramos ese producto en tu comercio.');
@@ -298,8 +321,68 @@ export class ProductsService {
         where: { id },
         include: INCLUIR_PROVEEDOR,
       });
+      // Historial de precios de venta (HU-15): sólo si el precio o la alícuota cambiaron.
+      if (cambiaPrecio(actual, actualizado)) {
+        await registrarPrecioVenta(tx, {
+          comercioId,
+          productoId: id,
+          precioVenta: actualizado.precioVenta.toString(),
+          alicuotaIva: actualizado.alicuotaIva.toString(),
+          origen: 'EDICION',
+          usuarioId,
+        });
+      }
       return aProducto(actualizado, actualizado.proveedorPrincipal);
     });
+  }
+
+  /** Historial de precios de venta, del más reciente al más antiguo (HU-15, CP-15.2). */
+  async historialPrecios(
+    id: string,
+    pag: { cursor?: string | undefined; limit: number },
+  ): Promise<ListaPrecioHistorial> {
+    const { comercioId } = TenantContext.requerido();
+    const cursor = pag.cursor ? partesDe(pag.cursor, 2) : null;
+    const filas = await this.prisma.transaccionTenant(async (tx) => {
+      const producto = await tx.producto.findFirst({
+        where: { id, comercioId },
+        select: { id: true },
+      });
+      if (!producto) throw noEncontrado('No encontramos ese producto en tu comercio.');
+      const condiciones: Prisma.Sql[] = [
+        Prisma.sql`h.comercio_id = ${comercioId}::uuid`,
+        Prisma.sql`h.producto_id = ${id}::uuid`,
+      ];
+      if (cursor) {
+        const fecha = new Date(cursor[0]!);
+        condiciones.push(Prisma.sql`(h.vigente_desde, h.id) < (${fecha}, ${cursor[1]}::uuid)`);
+      }
+      return tx.$queryRaw<FilaPrecioVenta[]>(
+        Prisma.sql`SELECT h.id, h.precio_venta::text AS "precioVenta",
+            h.alicuota_iva::text AS "alicuotaIva", h.vigente_desde AS "vigenteDesde",
+            h.origen::text AS origen, h.usuario_id AS "usuarioId", u.nombre AS "usuarioNombre"
+          FROM precio_venta_historial h
+          LEFT JOIN usuario u ON u.id = h.usuario_id
+          WHERE ${Prisma.join(condiciones, ' AND ')}
+          ORDER BY h.vigente_desde DESC, h.id DESC
+          LIMIT ${pag.limit + 1}`,
+      );
+    });
+    const hayMas = filas.length > pag.limit;
+    const pagina = hayMas ? filas.slice(0, pag.limit) : filas;
+    const ultimo = pagina[pagina.length - 1];
+    return {
+      items: pagina.map((f) => ({
+        id: f.id,
+        precioVenta: Number(f.precioVenta).toFixed(2),
+        alicuotaIva: Number(f.alicuotaIva).toString(),
+        vigenteDesde: f.vigenteDesde.toISOString(),
+        origen: f.origen,
+        usuario: f.usuarioId ? { id: f.usuarioId, nombre: f.usuarioNombre } : null,
+      })),
+      siguienteCursor:
+        hayMas && ultimo ? cursorDe([ultimo.vigenteDesde.toISOString(), ultimo.id]) : null,
+    };
   }
 
   /** Baja lógica (CP-01.5): el producto conserva código e historial. */

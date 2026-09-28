@@ -52,6 +52,12 @@ pnpm dev
   `GET/PATCH /reports/settings` (`activo`, `destinatariosExtra`). Reporte semanal de rentabilidad (semana ISO lunes a
   domingo en Buenos Aires) con productos estrella y oportunidades de ahorro; se genera los lunes a las 08:00 y se
   envía a los dueños activos más los correos extra; el contenido queda guardado tal como se envió.
+  Rutas de HU-15: `GET /indicators` (todos los roles y planes: inflación mensual e interanual, dólar minorista e
+  IPC, con fecha, fuente y `desactualizado`), `GET /insights/inflation?desde&hasta` (plan PRO, dueño y contador:
+  mis precios y mis costos frente a la inflación en índice base 100, brechas en términos reales, estado por producto
+  y precios sugeridos) y `GET /products/:id/price-history` (historial de precios de venta). Los indicadores salen de
+  las APIs públicas del INDEC (datos.gob.ar) y del BCRA, sin credenciales; se actualizan una vez por día y, si la
+  fuente falla, se sirve el último dato guardado. `INDEC_API_URL` y `BCRA_API_URL` son opcionales (ADR 0014).
   Rutas de HU-03: `GET /profitability/products?periodo&q` y `GET /profitability/summary?periodo` (márgenes bruto y
   neto sobre importes netos de IVA; nada se almacena).
   Rutas de HU-13: `GET/POST /expenses`, `GET/PATCH/DELETE /expenses/:id`, `GET /expenses/summary` (todas con

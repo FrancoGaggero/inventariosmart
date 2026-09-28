@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import {
   ESTADOS_STOCK,
+  type ListaPrecioHistorial,
   type ListaPrecios,
   type ListaProductos,
   type Producto,
@@ -36,13 +37,14 @@ import {
   type ProductosQuery,
   ProductosQuerySchema,
 } from '@inventariosmart/shared';
-import { Roles } from '../common/decorators/roles.decorator';
+import { RequierePlan, Roles } from '../common/decorators/roles.decorator';
 import { ApiErrorDto } from '../common/dto/api-error.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { PricesService } from '../suppliers/prices.service';
 import { ListaPreciosDto } from '../suppliers/suppliers.dto';
 import { z } from 'zod';
 import {
+  ListaPrecioHistorialDto,
   ListaProductosDto,
   ProductoCreateBodyDto,
   ProductoDto,
@@ -127,6 +129,33 @@ export class ProductsController {
     @Query(new ZodValidationPipe(PaginacionSchema)) pag: z.infer<typeof PaginacionSchema>,
   ): Promise<ListaPrecios> {
     return this.prices.historialProducto(id, pag);
+  }
+
+  @Get(':id/price-history')
+  @Roles('DUENIO', 'CONTADOR')
+  @RequierePlan('PRO')
+  @ApiOperation({
+    summary: 'Historial de precios de venta del producto (HU-15)',
+    description:
+      'Cada precio de venta que tuvo el producto, del más reciente al más antiguo. Las filas de origen INICIAL se reconstruyeron a partir de las ventas ya registradas.',
+  })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    schema: { type: 'integer', minimum: 1, maximum: 100, default: 25 },
+  })
+  @ApiOkResponse({ type: ListaPrecioHistorialDto })
+  @ApiNotFoundResponse({ type: ApiErrorDto })
+  @ApiPaymentRequiredResponse({
+    type: ApiErrorDto,
+    description: 'Plan FREE: el historial requiere PRO (PLAN_REQUERIDO)',
+  })
+  historialPrecios(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query(new ZodValidationPipe(PaginacionSchema)) pag: z.infer<typeof PaginacionSchema>,
+  ): Promise<ListaPrecioHistorial> {
+    return this.products.historialPrecios(id, pag);
   }
 
   @Post()

@@ -986,6 +986,100 @@
         ]
       }
     },
+    "/api/v1/products/{id}/price-history": {
+      "get": {
+        "description": "Cada precio de venta que tuvo el producto, del más reciente al más antiguo. Las filas de origen INICIAL se reconstruyeron a partir de las ventas ya registradas.",
+        "operationId": "ProductsController_historialPrecios",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaPrecioHistorialDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: el historial requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Rol sin permiso (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Historial de precios de venta del producto (HU-15)",
+        "tags": [
+          "productos"
+        ]
+      }
+    },
     "/api/v1/movements": {
       "get": {
         "description": "Del más reciente al más antiguo, con filtros por producto, tipo y rango de fechas, y paginación por cursor. CONTADOR sólo consulta.",
@@ -4306,6 +4400,131 @@
           "reportes"
         ]
       }
+    },
+    "/api/v1/indicators": {
+      "get": {
+        "description": "Inflación mensual e interanual y dólar minorista (BCRA) e índice de precios al consumidor (INDEC), con la fecha y la fuente de cada dato. Disponible para todos los roles y planes. Si una fuente no responde, devuelve el último dato guardado con `desactualizado: true`.",
+        "operationId": "IndicatorsController_obtener",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadoresDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Indicadores económicos oficiales (HU-15)",
+        "tags": [
+          "indicadores"
+        ]
+      }
+    },
+    "/api/v1/insights/inflation": {
+      "get": {
+        "description": "Series mensuales en índice base 100 de mis precios y mis costos (canasta fija ponderada por las unidades vendidas en el período) junto al IPC del INDEC, variaciones, brechas en términos reales (RN-11) y, por producto, estado y precios sugeridos. Por defecto cubre los últimos 6 meses hasta el último mes con IPC publicado.",
+        "operationId": "InsightsController_inflacion",
+        "parameters": [
+          {
+            "name": "hasta",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM",
+            "schema": {
+              "example": "2026-08"
+            }
+          },
+          {
+            "name": "desde",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM",
+            "schema": {
+              "example": "2026-03"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComparacionInflacionDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Período inválido (VALIDACION con details por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: la comparación requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "EMPLEADO sin acceso: no ve costos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mis precios frente a la inflación (HU-15)",
+        "tags": [
+          "inflación"
+        ]
+      }
     }
   },
   "info": {
@@ -4857,6 +5076,93 @@
           "siguienteCursor": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "UsuarioPrecioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true,
+            "example": "Franco"
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "PrecioHistorialDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "precioVenta": {
+            "type": "string",
+            "description": "Precio de venta con IVA incluido",
+            "example": "1100.00"
+          },
+          "alicuotaIva": {
+            "type": "string",
+            "example": "21"
+          },
+          "vigenteDesde": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "origen": {
+            "type": "string",
+            "enum": [
+              "ALTA",
+              "EDICION",
+              "IMPORT",
+              "INICIAL"
+            ],
+            "description": "INICIAL: reconstruido a partir de las ventas ya registradas"
+          },
+          "usuario": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsuarioPrecioDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "precioVenta",
+          "alicuotaIva",
+          "vigenteDesde",
+          "origen",
+          "usuario"
+        ]
+      },
+      "ListaPrecioHistorialDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrecioHistorialDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cursor de la página siguiente o null"
           }
         },
         "required": [
@@ -8192,6 +8498,405 @@
           "enviadoEn",
           "motivoNoEnvio",
           "generadoEn"
+        ]
+      },
+      "IndicadorValorDto": {
+        "type": "object",
+        "properties": {
+          "valor": {
+            "type": "string",
+            "example": "1.70"
+          },
+          "fecha": {
+            "type": "string",
+            "description": "Fecha del dato",
+            "example": "2026-08-31"
+          },
+          "fuente": {
+            "type": "string",
+            "example": "BCRA"
+          }
+        },
+        "required": [
+          "valor",
+          "fecha",
+          "fuente"
+        ]
+      },
+      "IndicadorIpcDto": {
+        "type": "object",
+        "properties": {
+          "valor": {
+            "type": "string",
+            "description": "Nivel del índice, base diciembre 2016",
+            "example": "12276.77"
+          },
+          "periodo": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "fuente": {
+            "type": "string",
+            "example": "INDEC"
+          }
+        },
+        "required": [
+          "valor",
+          "periodo",
+          "fuente"
+        ]
+      },
+      "IndicadoresDto": {
+        "type": "object",
+        "properties": {
+          "inflacionMensual": {
+            "nullable": true,
+            "description": "Inflación del mes, en %",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndicadorValorDto"
+              }
+            ]
+          },
+          "inflacionInteranual": {
+            "nullable": true,
+            "description": "Inflación interanual, en %",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndicadorValorDto"
+              }
+            ]
+          },
+          "dolarMinorista": {
+            "nullable": true,
+            "description": "Tipo de cambio minorista, pesos por dólar",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndicadorValorDto"
+              }
+            ]
+          },
+          "ipc": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IndicadorIpcDto"
+              }
+            ]
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Última actualización completa desde las fuentes"
+          },
+          "desactualizado": {
+            "type": "boolean",
+            "description": "La última consulta a alguna fuente falló o el dato tiene más de 48 horas"
+          }
+        },
+        "required": [
+          "inflacionMensual",
+          "inflacionInteranual",
+          "dolarMinorista",
+          "ipc",
+          "actualizadoEn",
+          "desactualizado"
+        ]
+      },
+      "SeriesInflacionDto": {
+        "type": "object",
+        "properties": {
+          "misPrecios": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            },
+            "example": [
+              "100.00",
+              "104.20",
+              "118.00"
+            ],
+            "description": "Índice de mis precios (canasta fija); vacía sin ventas"
+          },
+          "misCostos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            },
+            "example": [
+              "100.00",
+              "104.20",
+              "118.00"
+            ],
+            "description": "Índice de mis costos (canasta fija); vacía sin ventas"
+          },
+          "ipc": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            },
+            "example": [
+              "100.00",
+              "104.20",
+              "118.00"
+            ],
+            "description": "IPC nacional, nivel general (INDEC)"
+          },
+          "ipcBienes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "nullable": true
+            },
+            "example": [
+              "100.00",
+              "104.20",
+              "118.00"
+            ],
+            "description": "IPC nacional, bienes (INDEC)"
+          }
+        },
+        "required": [
+          "misPrecios",
+          "misCostos",
+          "ipc",
+          "ipcBienes"
+        ]
+      },
+      "VariacionesInflacionDto": {
+        "type": "object",
+        "properties": {
+          "misPrecios": {
+            "type": "string",
+            "nullable": true,
+            "example": "18.00"
+          },
+          "misCostos": {
+            "type": "string",
+            "nullable": true,
+            "example": "22.00"
+          },
+          "ipc": {
+            "type": "string",
+            "nullable": true,
+            "example": "20.00"
+          },
+          "ipcBienes": {
+            "type": "string",
+            "nullable": true,
+            "example": "19.10"
+          }
+        },
+        "required": [
+          "misPrecios",
+          "misCostos",
+          "ipc",
+          "ipcBienes"
+        ]
+      },
+      "BrechasInflacionDto": {
+        "type": "object",
+        "properties": {
+          "preciosVsIpc": {
+            "type": "string",
+            "nullable": true,
+            "description": "Variación real de mis precios contra la inflación (RN-11)",
+            "example": "-1.67"
+          },
+          "preciosVsCostos": {
+            "type": "string",
+            "nullable": true,
+            "description": "Variación real de mis precios contra mis costos (RN-11)",
+            "example": "-3.28"
+          }
+        },
+        "required": [
+          "preciosVsIpc",
+          "preciosVsCostos"
+        ]
+      },
+      "ProductoRefInflacionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "ProductoInflacionDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoRefInflacionDto"
+          },
+          "unidadesVendidas": {
+            "type": "number",
+            "example": 30
+          },
+          "precioInicial": {
+            "type": "string",
+            "description": "Con IVA, al cierre del primer mes",
+            "example": "1000.00"
+          },
+          "precioFinal": {
+            "type": "string",
+            "description": "Con IVA, al cierre del último mes",
+            "example": "1100.00"
+          },
+          "costoInicial": {
+            "type": "string",
+            "example": "600.00"
+          },
+          "costoFinal": {
+            "type": "string",
+            "example": "720.00"
+          },
+          "variacionPrecio": {
+            "type": "string",
+            "nullable": true,
+            "example": "10.00"
+          },
+          "variacionCosto": {
+            "type": "string",
+            "nullable": true,
+            "example": "20.00"
+          },
+          "variacionReal": {
+            "type": "string",
+            "nullable": true,
+            "description": "Variación del precio descontada la inflación (RN-11)",
+            "example": "-8.33"
+          },
+          "estado": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "ATRASADO",
+              "ALINEADO",
+              "ADELANTADO"
+            ],
+            "description": "ATRASADO si la variación real es menor a −2 %, ADELANTADO si supera +2 %"
+          },
+          "precioSugeridoInflacion": {
+            "type": "string",
+            "nullable": true,
+            "description": "Precio que habría acompañado a la inflación. Informativo: no cambia el precio",
+            "example": "1200.00"
+          },
+          "precioSugeridoMargen": {
+            "type": "string",
+            "description": "Precio que sostiene el margen bruto % del inicio con el costo final",
+            "example": "1200.00"
+          },
+          "datosDesde": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Desde cuándo se conoce el precio"
+          }
+        },
+        "required": [
+          "producto",
+          "unidadesVendidas",
+          "precioInicial",
+          "precioFinal",
+          "costoInicial",
+          "costoFinal",
+          "variacionPrecio",
+          "variacionCosto",
+          "variacionReal",
+          "estado",
+          "precioSugeridoInflacion",
+          "precioSugeridoMargen",
+          "datosDesde"
+        ]
+      },
+      "ComparacionInflacionDto": {
+        "type": "object",
+        "properties": {
+          "desde": {
+            "type": "string",
+            "example": "2026-03"
+          },
+          "hasta": {
+            "type": "string",
+            "example": "2026-08"
+          },
+          "recortado": {
+            "type": "boolean",
+            "description": "El período se recortó al último mes con IPC publicado"
+          },
+          "meses": {
+            "example": [
+              "2026-03",
+              "2026-04"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "series": {
+            "description": "Índices base 100 al primer mes",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SeriesInflacionDto"
+              }
+            ]
+          },
+          "variaciones": {
+            "$ref": "#/components/schemas/VariacionesInflacionDto"
+          },
+          "brechas": {
+            "$ref": "#/components/schemas/BrechasInflacionDto"
+          },
+          "motivo": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SIN_VENTAS",
+              "SIN_IPC"
+            ]
+          },
+          "productos": {
+            "description": "Productos activos, del más atrasado al más adelantado",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoInflacionDto"
+            }
+          }
+        },
+        "required": [
+          "desde",
+          "hasta",
+          "recortado",
+          "meses",
+          "series",
+          "variaciones",
+          "brechas",
+          "motivo",
+          "productos"
         ]
       }
     }

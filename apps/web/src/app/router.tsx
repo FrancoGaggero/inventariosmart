@@ -11,6 +11,7 @@ import { GastosPage } from '@/features/gastos/GastosPage';
 import { UsuariosPage } from '@/features/config/UsuariosPage';
 import { HomePage } from '@/features/home/HomePage';
 import { ImportarProductosPage } from '@/features/importacion/ImportarProductosPage';
+import { InflacionPage } from '@/features/inflacion/InflacionPage';
 import { MovimientoFormPage } from '@/features/movimientos/MovimientoFormPage';
 import { MovimientosPage } from '@/features/movimientos/MovimientosPage';
 import { OrdenPage } from '@/features/ordenes/OrdenPage';
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
               { path: '/ordenes/:id', element: <OrdenPage /> },
               { path: '/reportes', element: <ReportesPage /> },
               { path: '/reportes/:id', element: <ReportePage /> },
+              { path: '/inflacion', element: <InflacionPage /> },
             ],
           },
           {

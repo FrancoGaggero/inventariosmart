@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ESTADOS_STOCK } from '@inventariosmart/shared';
+import { ESTADOS_STOCK, ORIGENES_PRECIO_VENTA } from '@inventariosmart/shared';
 
 export class ProveedorPrincipalDto {
   @ApiProperty({ format: 'uuid' })
@@ -72,6 +72,37 @@ export class ProductoDto {
 export class ListaProductosDto {
   @ApiProperty({ type: ProductoDto, isArray: true })
   items!: ProductoDto[];
+
+  @ApiProperty({
+    nullable: true,
+    type: String,
+    description: 'Cursor de la página siguiente o null',
+  })
+  siguienteCursor!: string | null;
+}
+
+export class UsuarioPrecioDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ nullable: true, type: String, example: 'Franco' }) nombre!: string | null;
+}
+
+export class PrecioHistorialDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ description: 'Precio de venta con IVA incluido', example: '1100.00' })
+  precioVenta!: string;
+  @ApiProperty({ example: '21' }) alicuotaIva!: string;
+  @ApiProperty({ format: 'date-time' }) vigenteDesde!: string;
+  @ApiProperty({
+    enum: ORIGENES_PRECIO_VENTA,
+    description: 'INICIAL: reconstruido a partir de las ventas ya registradas',
+  })
+  origen!: (typeof ORIGENES_PRECIO_VENTA)[number];
+  @ApiProperty({ type: UsuarioPrecioDto, nullable: true }) usuario!: UsuarioPrecioDto | null;
+}
+
+export class ListaPrecioHistorialDto {
+  @ApiProperty({ type: PrecioHistorialDto, isArray: true })
+  items!: PrecioHistorialDto[];
 
   @ApiProperty({
     nullable: true,
