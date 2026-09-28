@@ -61,6 +61,8 @@ model Comercio {
   preciosVenta      PrecioVentaHistorial[]
   remarcaciones     Remarcacion[]
   remarcacionItems  RemarcacionItem[]
+  conversaciones    Conversacion[]
+  mensajesAsistente MensajeAsistente[]
 
   @@map("comercio")
 }
@@ -128,6 +130,7 @@ model Usuario {
   preciosVenta            PrecioVentaHistorial[]
   remarcaciones           Remarcacion[]          @relation("RemarcacionHechaPor")
   remarcacionesRevertidas Remarcacion[]          @relation("RemarcacionRevertidaPor")
+  conversaciones          Conversacion[]
 
   @@index([comercioId])
   @@map("usuario")
@@ -602,4 +605,53 @@ model RemarcacionItem {
   @@unique([remarcacionId, productoId])
   @@index([comercioId, productoId])
   @@map("remarcacion_item")
+}
+
+enum RolMensaje {
+  USUARIO
+  ASISTENTE
+
+  @@map("rol_mensaje")
+}
+
+/// Conversación de un usuario con el asistente de IA (HU-08). RLS aísla comercios;
+/// el servicio filtra además por usuario.
+model Conversacion {
+  id            String   @id @default(uuid()) @db.Uuid
+  comercioId    String   @map("comercio_id") @db.Uuid
+  usuarioId     String   @map("usuario_id") @db.Uuid
+  /// Comienzo del primer mensaje.
+  titulo        String   @db.VarChar(80)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+  actualizadoEn DateTime @default(now()) @map("actualizado_en") @db.Timestamptz(3)
+
+  comercio Comercio           @relation(fields: [comercioId], references: [id])
+  usuario  Usuario            @relation(fields: [usuarioId], references: [id])
+  mensajes MensajeAsistente[]
+
+  @@index([comercioId, usuarioId, actualizadoEn(sort: Desc), id(sort: Desc)])
+  @@map("conversacion")
+}
+
+/// Mensaje de una conversación: sólo inserción. Los del asistente guardan las consultas
+/// que hizo (fuentes), lo que dejó preparado (acciones) y el uso del modelo.
+model MensajeAsistente {
+  id             String     @id @default(uuid()) @db.Uuid
+  comercioId     String     @map("comercio_id") @db.Uuid
+  conversacionId String     @map("conversacion_id") @db.Uuid
+  rol            RolMensaje
+  contenido      String
+  fuentes        Json       @default("[]")
+  acciones       Json       @default("[]")
+  modelo         String?    @db.VarChar(80)
+  tokensEntrada  Int?       @map("tokens_entrada")
+  tokensSalida   Int?       @map("tokens_salida")
+  creadoEn       DateTime   @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio     Comercio     @relation(fields: [comercioId], references: [id])
+  conversacion Conversacion @relation(fields: [conversacionId], references: [id], onDelete: Cascade)
+
+  @@index([comercioId, conversacionId, creadoEn, id])
+  @@index([comercioId, rol, creadoEn])
+  @@map("mensaje_asistente")
 }

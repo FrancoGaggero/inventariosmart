@@ -83,5 +83,18 @@ y ese directorio pasa a ser la especificación viva que se entrega con la tesis.
 
 ## Cuentas a crear (una sola vez)
 
-Firebase (habilitar Google y email) · Neon · Railway · Vercel · Resend · GitHub (repo privado).
+Firebase (habilitar Google y email) · Neon · Railway · Vercel · Resend · GitHub (repo privado) · Anthropic (asistente, HU-08).
 Credenciales en un gestor de contraseñas y en variables de entorno; nunca en el repo.
+
+## Asistente con IA (HU-08): clave de Anthropic
+
+El asistente usa la API de Anthropic, que se paga por uso. Sin clave responde 503 y el resto del sistema funciona igual.
+
+1. En la consola de Anthropic, crear una API key para este proyecto y, si se puede, ponerle un límite de gasto mensual.
+2. Guardarla en el gestor de contraseñas y en `C:\Users\gagge\secrets\inventariosmart\`. No pegarla en chats, issues ni commits.
+3. Local: agregar `ANTHROPIC_API_KEY=...` a `apps/api/.env` (ignorado por git) y reiniciar la API.
+4. Producción: cargar `ANTHROPIC_API_KEY` en Render → Environment. Render redepliega solo.
+5. Opcionales: `ANTHROPIC_MODEL` (por defecto `claude-sonnet-5`) y `ASISTENTE_LIMITE_DIARIO` (por defecto 50).
+6. Probar con el modelo real, fuera de CI: `pnpm --filter @inventariosmart/api test:asistente`.
+
+Si la clave se expone, se revoca en la consola y se crea otra.

@@ -11,6 +11,7 @@
     "typecheck": "prisma generate && tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "test:e2e": "prisma generate && jest --config ./test/jest-e2e.json",
+    "test:asistente": "prisma generate && jest --config ./test/jest-live.json",
     "prisma": "prisma",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -18,6 +19,7 @@
     "openapi:export": "prisma generate && ts-node -r tsconfig-paths/register src/openapi-export.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
     "@inventariosmart/shared": "workspace:*",
     "@nestjs/common": "^11.2.3",
     "@nestjs/config": "^4.0.4",

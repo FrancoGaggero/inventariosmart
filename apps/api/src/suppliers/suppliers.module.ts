@@ -11,6 +11,6 @@ import { SuppliersService } from './suppliers.service';
 @Module({
   controllers: [SuppliersController],
   providers: [SuppliersService, PricesService, PriceListService],
-  exports: [PricesService],
+  exports: [PricesService, SuppliersService],
 })
 export class SuppliersModule {}

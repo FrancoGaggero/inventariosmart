@@ -17,6 +17,8 @@ const TABLA: Record<string, string> = {
   PrecioVentaHistorial: 'precio_venta_historial',
   Remarcacion: 'remarcacion',
   RemarcacionItem: 'remarcacion_item',
+  Conversacion: 'conversacion',
+  MensajeAsistente: 'mensaje_asistente',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -296,6 +298,35 @@ describe('aislamiento entre comercios (e2e)', () => {
         await tx.$executeRaw`DELETE FROM remarcacion WHERE comercio_id = ${comercioA}::uuid`;
       }),
     ).rejects.toThrow(/permission denied|permiso denegado/i);
+  });
+
+  it('CP-08.5e sin contexto la base no devuelve conversaciones y los mensajes son de sólo inserción', async () => {
+    const esperados: Record<string, string[]> = {
+      conversacion: ['INSERT', 'SELECT', 'UPDATE'],
+      mensaje_asistente: ['INSERT', 'SELECT'],
+    };
+    for (const [tabla, permisos] of Object.entries(esperados)) {
+      const [n] = await t.prisma.raw.$queryRawUnsafe<{ n: bigint }[]>(
+        `SELECT count(*)::bigint AS n FROM ${tabla}`,
+      );
+      expect(Number(n!.n)).toBe(0);
+      const privilegios = await t.prisma.raw.$queryRaw<{ privilege_type: string }[]>`
+        SELECT privilege_type FROM information_schema.role_table_grants
+        WHERE table_name = ${tabla} AND grantee = current_user`;
+      expect(privilegios.map((p) => p.privilege_type).sort()).toEqual(permisos);
+    }
+    for (const sentencia of [
+      `UPDATE mensaje_asistente SET contenido = 'x' WHERE true`,
+      `DELETE FROM mensaje_asistente WHERE true`,
+      `DELETE FROM conversacion WHERE true`,
+    ]) {
+      await expect(
+        t.prisma.raw.$transaction(async (tx) => {
+          await tx.$executeRaw`SELECT set_config('app.comercio_id', ${comercioA}, true)`;
+          await tx.$executeRawUnsafe(sentencia);
+        }),
+      ).rejects.toThrow(/permission denied|permiso denegado/i);
+    }
   });
 
   it('toda tabla de negocio tiene RLS activa y forzada (checklist de docs/runbooks/rls.md)', async () => {

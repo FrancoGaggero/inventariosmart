@@ -45,6 +45,10 @@ export const CODIGOS_ERROR = {
   NO_ENCONTRADO: 'NO_ENCONTRADO',
   CONFLICTO: 'CONFLICTO',
   VALIDACION: 'VALIDACION',
+  /** Tope de uso alcanzado (429), p. ej. los mensajes diarios al asistente. */
+  LIMITE_ALCANZADO: 'LIMITE_ALCANZADO',
+  /** Un servicio externo no está configurado o no responde (503). */
+  SERVICIO_NO_DISPONIBLE: 'SERVICIO_NO_DISPONIBLE',
   ERROR_INTERNO: 'ERROR_INTERNO',
 } as const;
 export type CodigoError = (typeof CODIGOS_ERROR)[keyof typeof CODIGOS_ERROR];
@@ -162,3 +166,4 @@ export * from './inflacion';
 export * from './whatsapp';
 export * from './remarcacion';
 export * from './comparador';
+export * from './asistente';

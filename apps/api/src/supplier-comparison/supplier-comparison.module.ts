@@ -8,5 +8,6 @@ import { SupplierComparisonService } from './supplier-comparison.service';
   imports: [PrismaModule],
   controllers: [SupplierComparisonController],
   providers: [SupplierComparisonService],
+  exports: [SupplierComparisonService],
 })
 export class SupplierComparisonModule {}

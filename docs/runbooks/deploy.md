@@ -11,6 +11,9 @@
    - `RESEND_API_KEY` (opcional, HU-06): API key de Resend para el correo de alertas de reposición; sin ella los envíos
      quedan en el log. `MAIL_FROM` (default `InventarioSmart <onboarding@resend.dev>`: sin dominio verificado sólo
      entrega a la casilla del dueño de la cuenta Resend) y `WEB_URL` (enlace de los correos).
+   - `ANTHROPIC_API_KEY` (opcional, HU-08): clave de la API de Anthropic para el asistente; es paga por uso. Sin ella
+     el asistente responde 503 y el resto de la API funciona igual. `ANTHROPIC_MODEL` (default `claude-sonnet-5`) y
+     `ASISTENTE_LIMITE_DIARIO` (default 50 mensajes por día por comercio).
 3. **Manual Deploy → Deploy latest commit**. El primer build tarda unos minutos.
 4. Verificar: `https://inventariosmart-api.onrender.com/api/v1/health` responde `{"status":"ok","db":"ok",…}` y `/docs` muestra Swagger.
 5. Desde entonces cada push a `main` redespliega solo.

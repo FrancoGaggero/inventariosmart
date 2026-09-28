@@ -8,6 +8,7 @@ import {
 import type { Response } from 'express';
 import { CODIGOS_ERROR, type ApiError, type CodigoError } from '@inventariosmart/shared';
 import { Logger } from 'nestjs-pino';
+import { ApiHttpException } from '../errors';
 
 const CODIGO_POR_STATUS: Record<number, CodigoError> = {
   400: CODIGOS_ERROR.VALIDACION,
@@ -40,7 +41,8 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const res = host.switchToHttp().getResponse<Response>();
     const { status, body } = this.normalizar(exception);
 
-    if (status >= 500) {
+    // Un 503 propio (servicio externo caído) es un error previsto: lo registra quien lo lanza.
+    if (status >= 500 && !(exception instanceof ApiHttpException)) {
       this.logger.error({ err: exception }, 'Error no controlado');
     }
 

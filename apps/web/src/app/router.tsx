@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 import { AlertasPage } from '@/features/alertas/AlertasPage';
+import { AsistentePage } from '@/features/asistente/AsistentePage';
 import { AuthGate } from '@/features/auth/AuthGate';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { OnboardingPage } from '@/features/auth/OnboardingPage';
@@ -85,6 +86,7 @@ export const router = createBrowserRouter([
               { path: '/proveedores/:id/importar', element: <ImportarListaPage /> },
               { path: '/gastos/nuevo', element: <GastoFormPage /> },
               { path: '/gastos/:id', element: <GastoFormPage /> },
+              { path: '/asistente', element: <AsistentePage /> },
               { path: '/configuracion/usuarios', element: <UsuariosPage /> },
               { path: '/configuracion/comercio', element: <ComercioPage /> },
             ],

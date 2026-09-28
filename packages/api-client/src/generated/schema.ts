@@ -973,6 +973,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assistant/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enviar una consulta al asistente (HU-08)
+         * @description El asistente responde con datos del comercio, que obtiene de consultas predefinidas (`fuentes`). No modifica datos: a lo sumo deja una orden de compra en borrador (`acciones`), que el dueño confirma desde Órdenes (RN-06).
+         */
+        post: operations["AssistantController_responder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assistant/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Conversaciones del usuario, de la más reciente a la más antigua */
+        get: operations["AssistantController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assistant/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mensajes de una conversación, en orden */
+        get: operations["AssistantController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2939,6 +2993,81 @@ export interface components {
              * @example 14400.00
              */
             ahorroEstimado: string | null;
+        };
+        MensajeCreateBodyDto: {
+            /**
+             * Format: uuid
+             * @description Conversación a continuar; sin indicarla se abre una nueva
+             */
+            conversacionId?: string;
+            /** @example ¿Cuál fue el producto más rentable de la quincena? */
+            mensaje: string;
+        };
+        FuenteAsistenteDto: {
+            /** @example productos_mas_rentables */
+            herramienta: string;
+            /** @example Productos más rentables */
+            nombre: string;
+        };
+        AccionAsistenteDto: {
+            /** @enum {string} */
+            tipo: "ORDEN_BORRADOR";
+            /** Format: uuid */
+            ordenId: string;
+            /** @example OC-0007 */
+            numero: string;
+            /** @example Distribuidora Norte */
+            proveedor: string;
+        };
+        MensajeAsistenteDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            rol: "USUARIO" | "ASISTENTE";
+            contenido: string;
+            /** @description Consultas al sistema que hizo el asistente para responder */
+            fuentes: components["schemas"]["FuenteAsistenteDto"][];
+            /** @description Lo que el asistente dejó preparado para que el dueño revise (RN-06) */
+            acciones: components["schemas"]["AccionAsistenteDto"][];
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        RespuestaAsistenteDto: {
+            /** Format: uuid */
+            conversacionId: string;
+            /** @description Respuesta del asistente */
+            mensaje: components["schemas"]["MensajeAsistenteDto"];
+        };
+        ConversacionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example ¿Cuál fue el producto más rentable de la quincena? */
+            titulo: string;
+            /** Format: date-time */
+            creadoEn: string;
+            /**
+             * Format: date-time
+             * @description Fecha del último mensaje
+             */
+            actualizadoEn: string;
+        };
+        ListaConversacionesDto: {
+            items: components["schemas"]["ConversacionDto"][];
+            siguienteCursor: string | null;
+        };
+        ConversacionDetalleDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example ¿Cuál fue el producto más rentable de la quincena? */
+            titulo: string;
+            /** Format: date-time */
+            creadoEn: string;
+            /**
+             * Format: date-time
+             * @description Fecha del último mensaje
+             */
+            actualizadoEn: string;
+            mensajes: components["schemas"]["MensajeAsistenteDto"][];
         };
     };
     responses: never;
@@ -6547,6 +6676,201 @@ export interface operations {
                 };
             };
             /** @description Sólo el dueño: proveedores y costos no son para EMPLEADO ni CONTADOR */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AssistantController_responder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MensajeCreateBodyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RespuestaAsistenteDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Planes FREE y PRO: el asistente requiere PREMIUM (RN-09) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño: el asistente ve costos y márgenes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description La conversación no es del usuario */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description LIMITE_ALCANZADO: tope diario de consultas del comercio */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description SERVICIO_NO_DISPONIBLE: el proveedor de IA no está configurado o no responde. No descuenta del límite diario */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AssistantController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaConversacionesDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Planes FREE y PRO: el asistente requiere PREMIUM (RN-09) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño: el asistente ve costos y márgenes */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AssistantController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversacionDetalleDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Planes FREE y PRO: el asistente requiere PREMIUM (RN-09) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño: el asistente ve costos y márgenes */
             403: {
                 headers: {
                     [name: string]: unknown;

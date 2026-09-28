@@ -28,6 +28,11 @@ export const envSchema = z.object({
   /** Fuentes públicas de indicadores económicos (HU-15); sin credenciales. */
   INDEC_API_URL: z.string().url().default('https://apis.datos.gob.ar/series/api'),
   BCRA_API_URL: z.string().url().default('https://api.bcra.gob.ar/estadisticas/v4.0'),
+  /** Asistente con IA (HU-08). Sin API key, el asistente responde 503 y el resto funciona igual. */
+  ANTHROPIC_API_KEY: z.string().trim().optional(),
+  ANTHROPIC_MODEL: z.string().trim().min(1).default('claude-sonnet-5'),
+  /** Mensajes al asistente por día y por comercio. */
+  ASISTENTE_LIMITE_DIARIO: z.coerce.number().int().min(1).max(1000).default(50),
 });
 
 export type Env = z.infer<typeof envSchema>;

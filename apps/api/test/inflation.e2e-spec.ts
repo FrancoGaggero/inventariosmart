@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { MODELO_ASISTENTE, ModeloFalso } from '../src/assistant/modelo';
 import { FUENTES_INDICADORES, FuenteFalsa, type LecturaIndicador } from '../src/indicators/fuentes';
 import {
   type AppDePrueba,
@@ -704,6 +705,81 @@ describe('inflation-insights: precios frente a la inflación (e2e)', () => {
       expect(r.body.motivo).toBe('SIN_IPC');
       expect(r.body.resumen).toEqual({ suben: 0, bajan: 0, sinCambio: 0, sinDatos: 3 });
       expect(item(r.body.items, 'A')).toMatchObject({ precioNuevo: null, resultado: 'SIN_DATOS' });
+    }, 120_000);
+  });
+
+  // Las consultas del asistente que dependen del IPC también viven en esta suite.
+  describe('HU-08 el asistente consulta la inflación', () => {
+    let modelo: ModeloFalso;
+    const plan = (valor: 'PRO' | 'PREMIUM') =>
+      t.prisma.comoSistema((tx) =>
+        tx.comercio.update({ where: { id: comercio['a']! }, data: { plan: valor } }),
+      );
+
+    beforeAll(async () => {
+      modelo = t.app.get(MODELO_ASISTENTE);
+      await plan('PREMIUM');
+    });
+
+    afterAll(async () => {
+      modelo.reiniciar();
+      await plan('PRO');
+    });
+
+    it('precios frente a la inflación e indicadores, con los datos de la página', async () => {
+      modelo.reiniciar();
+      modelo.guion = [
+        [
+          {
+            tipo: 'herramienta',
+            id: 'inflacion',
+            nombre: 'precios_frente_a_inflacion',
+            entrada: { desde: '2026-01', hasta: '2026-06' },
+          },
+          { tipo: 'herramienta', id: 'indicadores', nombre: 'indicadores_economicos', entrada: {} },
+          {
+            tipo: 'herramienta',
+            id: 'invalida',
+            nombre: 'precios_frente_a_inflacion',
+            entrada: { desde: 'enero' },
+          },
+        ],
+        [{ tipo: 'texto', texto: 'Tus precios subieron 18 % y la inflación 20 %.' }],
+      ];
+      const r = await t
+        .http()
+        .post('/api/v1/assistant/messages')
+        .set(auth(duenioA))
+        .send({ mensaje: '¿Cómo vienen mis precios contra la inflación?' })
+        .expect(201);
+      expect(r.body.mensaje.fuentes).toEqual([
+        { herramienta: 'precios_frente_a_inflacion', nombre: 'Precios e inflación' },
+        { herramienta: 'indicadores_economicos', nombre: 'Indicadores oficiales' },
+      ]);
+
+      const ultimo = modelo.pedidos[1]!.mensajes.at(-1)!;
+      if (ultimo.rol !== 'resultados') throw new Error('Se esperaban resultados');
+      expect(ultimo.resultados.map((x) => x.error)).toEqual([false, false, true]);
+      const [inflacion, indicadoresDelAsistente] = ultimo.resultados.map(
+        (x) => JSON.parse(x.contenido) as Record<string, unknown>,
+      );
+
+      const pagina = (await comparacion('?desde=2026-01&hasta=2026-06').expect(200)).body;
+      expect(inflacion).toMatchObject({
+        desde: '2026-01',
+        hasta: '2026-06',
+        recortadoAlUltimoMesConIpc: false,
+        variaciones: pagina.variaciones,
+        brechas: pagina.brechas,
+        motivo: null,
+      });
+      expect(inflacion!['variaciones']).toMatchObject({ misPrecios: '18.00', ipc: '20.00' });
+      const productos = inflacion!['productos'] as { codigo: string; estado: string | null }[];
+      expect(productos.map((x) => x.codigo).sort()).toEqual(['A', 'B', 'C']);
+      // Del más atrasado al más adelantado.
+      expect(productos[0]).toMatchObject({ codigo: 'A', estado: 'ATRASADO' });
+
+      expect(indicadoresDelAsistente).toEqual((await indicadores().expect(200)).body);
     }, 120_000);
   });
 

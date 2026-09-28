@@ -27,6 +27,19 @@ export const planRequerido = (planMinimo: Plan, message?: string) =>
     details: { planMinimo },
   });
 
+export const limiteAlcanzado = (message: string, details?: unknown) =>
+  new ApiHttpException(HttpStatus.TOO_MANY_REQUESTS, {
+    code: CODIGOS_ERROR.LIMITE_ALCANZADO,
+    message,
+    details,
+  });
+
+export const servicioNoDisponible = (message: string) =>
+  new ApiHttpException(HttpStatus.SERVICE_UNAVAILABLE, {
+    code: CODIGOS_ERROR.SERVICIO_NO_DISPONIBLE,
+    message,
+  });
+
 export const validacion = (message: string, details?: Record<string, string>) =>
   new ApiHttpException(HttpStatus.BAD_REQUEST, {
     code: CODIGOS_ERROR.VALIDACION,

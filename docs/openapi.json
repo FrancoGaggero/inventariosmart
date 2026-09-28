@@ -5223,6 +5223,272 @@
           "comparador"
         ]
       }
+    },
+    "/api/v1/assistant/messages": {
+      "post": {
+        "description": "El asistente responde con datos del comercio, que obtiene de consultas predefinidas (`fuentes`). No modifica datos: a lo sumo deja una orden de compra en borrador (`acciones`), que el dueño confirma desde Órdenes (RN-06).",
+        "operationId": "AssistantController_responder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MensajeCreateBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespuestaAsistenteDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Planes FREE y PRO: el asistente requiere PREMIUM (RN-09)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño: el asistente ve costos y márgenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La conversación no es del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "LIMITE_ALCANZADO: tope diario de consultas del comercio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "SERVICIO_NO_DISPONIBLE: el proveedor de IA no está configurado o no responde. No descuenta del límite diario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Enviar una consulta al asistente (HU-08)",
+        "tags": [
+          "asistente"
+        ]
+      }
+    },
+    "/api/v1/assistant/conversations": {
+      "get": {
+        "operationId": "AssistantController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaConversacionesDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Planes FREE y PRO: el asistente requiere PREMIUM (RN-09)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño: el asistente ve costos y márgenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Conversaciones del usuario, de la más reciente a la más antigua",
+        "tags": [
+          "asistente"
+        ]
+      }
+    },
+    "/api/v1/assistant/conversations/{id}": {
+      "get": {
+        "operationId": "AssistantController_obtener",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversacionDetalleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Planes FREE y PRO: el asistente requiere PREMIUM (RN-09)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño: el asistente ve costos y márgenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mensajes de una conversación, en orden",
+        "tags": [
+          "asistente"
+        ]
+      }
     }
   },
   "info": {
@@ -10646,6 +10912,218 @@
           "cambiaProveedor",
           "unidades30d",
           "ahorroEstimado"
+        ]
+      },
+      "MensajeCreateBodyDto": {
+        "type": "object",
+        "properties": {
+          "conversacionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Conversación a continuar; sin indicarla se abre una nueva"
+          },
+          "mensaje": {
+            "type": "string",
+            "maxLength": 1000,
+            "example": "¿Cuál fue el producto más rentable de la quincena?"
+          }
+        },
+        "required": [
+          "mensaje"
+        ]
+      },
+      "FuenteAsistenteDto": {
+        "type": "object",
+        "properties": {
+          "herramienta": {
+            "type": "string",
+            "example": "productos_mas_rentables"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Productos más rentables"
+          }
+        },
+        "required": [
+          "herramienta",
+          "nombre"
+        ]
+      },
+      "AccionAsistenteDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ORDEN_BORRADOR"
+            ]
+          },
+          "ordenId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numero": {
+            "type": "string",
+            "example": "OC-0007"
+          },
+          "proveedor": {
+            "type": "string",
+            "example": "Distribuidora Norte"
+          }
+        },
+        "required": [
+          "tipo",
+          "ordenId",
+          "numero",
+          "proveedor"
+        ]
+      },
+      "MensajeAsistenteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rol": {
+            "type": "string",
+            "enum": [
+              "USUARIO",
+              "ASISTENTE"
+            ]
+          },
+          "contenido": {
+            "type": "string"
+          },
+          "fuentes": {
+            "description": "Consultas al sistema que hizo el asistente para responder",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FuenteAsistenteDto"
+            }
+          },
+          "acciones": {
+            "description": "Lo que el asistente dejó preparado para que el dueño revise (RN-06)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccionAsistenteDto"
+            }
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "rol",
+          "contenido",
+          "fuentes",
+          "acciones",
+          "creadoEn"
+        ]
+      },
+      "RespuestaAsistenteDto": {
+        "type": "object",
+        "properties": {
+          "conversacionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mensaje": {
+            "description": "Respuesta del asistente",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MensajeAsistenteDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "conversacionId",
+          "mensaje"
+        ]
+      },
+      "ConversacionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string",
+            "example": "¿Cuál fue el producto más rentable de la quincena?"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha del último mensaje"
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "creadoEn",
+          "actualizadoEn"
+        ]
+      },
+      "ListaConversacionesDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversacionDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "ConversacionDetalleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string",
+            "example": "¿Cuál fue el producto más rentable de la quincena?"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha del último mensaje"
+          },
+          "mensajes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MensajeAsistenteDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "titulo",
+          "creadoEn",
+          "actualizadoEn",
+          "mensajes"
         ]
       }
     }

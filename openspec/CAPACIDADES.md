@@ -25,7 +25,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `purchase-orders`, `suppliers-price-lists` | HU-16 | RF-17 | 2 | 16 · `purchase-orders-whatsapp` (28/09/2026; modifica las dos capacidades) |
 | `bulk-repricing`        | HU-17 | RF-18         | 2    | 17 · `bulk-repricing` (28/09/2026; suma un origen a `inflation-insights`) |
 | `supplier-comparison`   | HU-12 | RF-12         | 2    | 18 · `supplier-comparison` (28/09/2026) |
-| `ai-assistant`          | HU-08 | RF-10         | 3    | 19 · `ai-assistant`              |
+| `ai-assistant`          | HU-08 | RF-10         | 3    | 19 · `ai-assistant` (28/09/2026) |
 | `subscription-plans`    | HU-14 | RF-15         | 3    | 20 · `subscription-plans`        |
 
 ## Reglas de uso

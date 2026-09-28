@@ -58,6 +58,14 @@ pnpm dev
   `GET /repricing/batches`, `GET /repricing/batches/:id` y `POST /repricing/batches/:id/revert` (deshace una vez,
   sin tocar los productos que cambiaron después). El dueño aplica y deshace; el contador sólo consulta. Cada cambio
   queda en el historial de precios con origen `REMARCACION` (RN-12, ADR 0016). La API acepta cuerpos JSON de hasta 2 MB.
+  Rutas de HU-08 (plan PREMIUM, sólo el dueño): `POST /assistant/messages` (`{ conversacionId?, mensaje }`, hasta 1.000
+  caracteres; responde el mensaje del asistente con `fuentes`, las consultas que hizo, y `acciones`, lo que dejó
+  preparado), `GET /assistant/conversations?cursor&limit` y `GET /assistant/conversations/:id`. El asistente consulta
+  los datos del comercio con diez herramientas predefinidas, nunca con SQL libre, y no modifica nada: a lo sumo deja una
+  orden de compra en borrador, que el dueño confirma desde Órdenes (RN-06). Límite de 50 mensajes por día por comercio
+  (429 `LIMITE_ALCANZADO`). Usa la API de Anthropic: sin `ANTHROPIC_API_KEY`, o si el proveedor no responde, contesta 503
+  `SERVICIO_NO_DISPONIBLE` y el resto funciona igual (RN-09, ADR 0018). Las pruebas con el modelo real se corren a mano
+  con `pnpm --filter @inventariosmart/api test:asistente`.
   Rutas de HU-12 (plan PREMIUM, sólo el dueño): `GET /supplier-comparison?soloOportunidades&q&cursor&limit` (insumos
   con dos o más proveedores, ordenados por ahorro mensual estimado, con totales) y
   `GET /products/:id/supplier-comparison` (proveedores de un insumo de mayor a menor puntaje, con el recomendado, el
@@ -106,11 +114,11 @@ pnpm dev
 
 ## Variables de entorno
 
-| Archivo         | Variables                                                                                                                                                                            | Origen                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| `apps/api/.env` | `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (base64), `CORS_ORIGINS`, `PORT`, `LOG_LEVEL`; opcionales `RESEND_API_KEY`, `MAIL_FROM`, `WEB_URL` (correo de alertas) | Neon / Firebase → Cuentas de servicio / Resend → API keys |
-| `apps/web/.env` | `VITE_API_URL`, `VITE_FIREBASE_*`                                                                                                                                                    | Firebase → Configuración del proyecto → app web           |
-| `apps/mobile`   | `android/app/google-services.json` (ignorado por git); `--dart-define=API_URL`                                                                                                       | Firebase → app Android                                    |
+| Archivo         | Variables                                                                                                                                                                                                                                                            | Origen                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `apps/api/.env` | `DATABASE_URL`, `DIRECT_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (base64), `CORS_ORIGINS`, `PORT`, `LOG_LEVEL`; opcionales `RESEND_API_KEY`, `MAIL_FROM`, `WEB_URL` (correo de alertas) y `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `ASISTENTE_LIMITE_DIARIO` (asistente) | Neon / Firebase → Cuentas de servicio / Resend → API keys / Consola de Anthropic → API keys |
+| `apps/web/.env` | `VITE_API_URL`, `VITE_FIREBASE_*`                                                                                                                                                                                                                                    | Firebase → Configuración del proyecto → app web                                             |
+| `apps/mobile`   | `android/app/google-services.json` (ignorado por git); `--dart-define=API_URL`                                                                                                                                                                                       | Firebase → app Android                                                                      |
 
 Los valores reales viven fuera del repositorio (carpeta de secretos del desarrollador, panel de Render y de Vercel). Ningún `.env` se commitea.
 

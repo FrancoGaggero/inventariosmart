@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import type { INestApplication, Type } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, type TestingModuleBuilder } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { TokenVerifier } from '../src/auth/firebase.service';
@@ -50,11 +50,16 @@ export interface AppDePrueba {
   limpiar: () => Promise<void>;
 }
 
-export async function crearAppDePrueba(controllers: Type[] = []): Promise<AppDePrueba> {
-  const moduleRef = await Test.createTestingModule({ imports: [AppModule], controllers })
-    .overrideProvider(TokenVerifier)
-    .useClass(VerificadorSimulado)
-    .compile();
+export async function crearAppDePrueba(
+  controllers: Type[] = [],
+  /** Reemplazos extra de proveedores (p. ej. el modelo real del asistente). */
+  ajustar: (modulo: TestingModuleBuilder) => TestingModuleBuilder = (modulo) => modulo,
+): Promise<AppDePrueba> {
+  const moduleRef = await ajustar(
+    Test.createTestingModule({ imports: [AppModule], controllers })
+      .overrideProvider(TokenVerifier)
+      .useClass(VerificadorSimulado),
+  ).compile();
   const app = moduleRef.createNestApplication({ bufferLogs: true });
   configurarApp(app);
   await app.init();
@@ -72,6 +77,8 @@ export async function crearAppDePrueba(controllers: Type[] = []): Promise<AppDeP
       });
       const comercios = [...new Set(usuarios.map((u) => u.comercioId))];
       // Tablas de negocio primero (FK a comercio), después usuarios y comercios.
+      await owner.mensajeAsistente.deleteMany({ where: { comercioId: { in: comercios } } });
+      await owner.conversacion.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.remarcacionItem.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.remarcacion.deleteMany({ where: { comercioId: { in: comercios } } });
       await owner.precioVentaHistorial.deleteMany({ where: { comercioId: { in: comercios } } });

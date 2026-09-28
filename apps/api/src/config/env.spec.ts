@@ -23,6 +23,29 @@ describe('validateEnv', () => {
     expect(() => validateEnv({})).toThrow(/DATABASE_URL/);
   });
 
+  it('el asistente es opcional: sin clave la API arranca con el modelo y el límite por defecto', () => {
+    const env = validateEnv(base);
+    expect(env.ANTHROPIC_API_KEY).toBeUndefined();
+    expect(env.ANTHROPIC_MODEL).toBe('claude-sonnet-5');
+    expect(env.ASISTENTE_LIMITE_DIARIO).toBe(50);
+    expect(validateEnv({ ...base, ANTHROPIC_API_KEY: '' }).ANTHROPIC_API_KEY).toBe('');
+  });
+
+  it('toma la clave, el modelo y el límite del asistente cuando están', () => {
+    const env = validateEnv({
+      ...base,
+      ANTHROPIC_API_KEY: ' clave-de-prueba ',
+      ANTHROPIC_MODEL: 'claude-opus-5-5',
+      ASISTENTE_LIMITE_DIARIO: '20',
+    });
+    expect(env.ANTHROPIC_API_KEY).toBe('clave-de-prueba');
+    expect(env.ANTHROPIC_MODEL).toBe('claude-opus-5-5');
+    expect(env.ASISTENTE_LIMITE_DIARIO).toBe(20);
+    expect(() => validateEnv({ ...base, ASISTENTE_LIMITE_DIARIO: '0' })).toThrow(
+      /ASISTENTE_LIMITE_DIARIO/,
+    );
+  });
+
   it('rechaza un PORT no numérico', () => {
     expect(() => validateEnv({ ...base, PORT: 'abc' })).toThrow(/PORT/);
   });

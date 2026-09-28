@@ -13,6 +13,7 @@ import {
   Receipt,
   Settings,
   ShoppingCart,
+  Sparkles,
   Sun,
   Tags,
   TrendingUp,
@@ -111,6 +112,7 @@ export function AppShell() {
     ...(esDuenio
       ? [
           { to: '/proveedores', etiqueta: 'Proveedores', Icono: Truck },
+          { to: '/asistente', etiqueta: 'Asistente', Icono: Sparkles },
           { to: '/configuracion/usuarios', etiqueta: 'Usuarios', Icono: Users },
           { to: '/configuracion/comercio', etiqueta: 'Comercio', Icono: Settings },
         ]

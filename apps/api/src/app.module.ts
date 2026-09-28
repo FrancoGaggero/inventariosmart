@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AlertsModule } from './alerts/alerts.module';
+import { AssistantModule } from './assistant/assistant.module';
 import { AuthModule } from './auth/auth.module';
 import { ComercioModule } from './comercio/comercio.module';
 import { DashboardModule } from './dashboard/dashboard.module';
@@ -66,6 +67,7 @@ import { UsersModule } from './users/users.module';
     InsightsModule,
     RepricingModule,
     SupplierComparisonModule,
+    AssistantModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
