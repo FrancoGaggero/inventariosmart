@@ -114,9 +114,12 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
 
   it('CP-08.2b sin ventas lo dice y no informa productos ni cifras de venta', async () => {
     const r = await preguntar('¿Cuál fue mi producto más vendido del mes?', duenioB);
-    expect(r.fuentes.length).toBeGreaterThan(0);
+    // Con el texto en la comparación, una falla muestra qué respondió el modelo.
+    expect({ consulto: r.fuentes.length > 0, contenido: r.contenido }).toMatchObject({
+      consulto: true,
+    });
     expect(r.contenido).toMatch(
-      /no (hay|hubo|tenés|tuviste|se registr|registr)|sin ventas|todavía no/i,
+      /no (hay|hubo|tenés|tuviste|encontr|figura|se registr|registr)|sin ventas|ninguna venta|todavía no/i,
     );
     expect(r.contenido).not.toMatch(/FA-220|AC-5L/);
   });

@@ -9,3 +9,5 @@ process.env['NODE_ENV'] = 'test';
 process.env['LOG_LEVEL'] = 'error';
 // El verificador de Firebase se reemplaza por un doble en los tests: la credencial real no hace falta.
 delete process.env['FIREBASE_SERVICE_ACCOUNT_JSON'];
+// El límite diario del asistente es el del contrato, no el que tenga cada uno en su .env.
+process.env['ASISTENTE_LIMITE_DIARIO'] = '50';
