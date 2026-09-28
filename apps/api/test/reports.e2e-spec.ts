@@ -16,6 +16,8 @@ describe('weekly-reports: reportes semanales de rentabilidad (e2e)', () => {
   const prod: Record<string, string> = {};
   const prov: Record<string, string> = {};
   let reporteW38: string;
+  /** Comercios de esta suite: el job se acota a ellos porque la base es compartida. */
+  let propios: string[] = [];
 
   const auth = (p: { token: string }) => ({ Authorization: `Bearer ${p.token}` });
   const listar = (query = '', quien = duenioA) =>
@@ -62,6 +64,7 @@ describe('weekly-reports: reportes semanales de rentabilidad (e2e)', () => {
     const comercioB = (await t.http().get('/api/v1/me').set(auth(duenioB)).expect(200)).body
       .comercio.id;
     await t.http().get('/api/v1/me').set(auth(duenioF)).expect(200);
+    propios = [comercioA, comercioB];
     await t.prisma.comoSistema((tx) =>
       tx.comercio.updateMany({
         where: { id: { in: [comercioA, comercioB] } },
@@ -306,7 +309,7 @@ describe('weekly-reports: reportes semanales de rentabilidad (e2e)', () => {
     const semana = ultimaSemanaCerrada();
     const antes = correosA(duenioB.email).length;
     await listar('', duenioB).expect(200);
-    await t.app.get(ReportsCron).correr(semana);
+    await t.app.get(ReportsCron).correr(semana, propios);
     const r = await generar({ semana }, duenioB).expect(200);
     expect(r.body.enviadoEn).toBeTruthy();
     expect(correosA(duenioB.email)).toHaveLength(antes);
@@ -335,7 +338,7 @@ describe('weekly-reports: reportes semanales de rentabilidad (e2e)', () => {
 
   it('CP-09.3d con los reportes desactivados no se genera nada automáticamente', async () => {
     await patchAjustes({ activo: false }, duenioB).expect(200);
-    const r = await t.app.get(ReportsCron).correr('2026-W33');
+    const r = await t.app.get(ReportsCron).correr('2026-W33', propios);
     expect(r.fallidos).toBe(0);
     const deB = (await listar('', duenioB).expect(200)).body.items;
     expect(deB.some((x: { semana: string }) => x.semana === '2026-W33')).toBe(false);

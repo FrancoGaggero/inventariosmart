@@ -44,6 +44,29 @@ describe('ReportsCron (design D4)', () => {
     expect(r).toEqual({ comercios: 2, generados: 1, fallidos: 1 });
   });
 
+  it('puede acotarse a una lista de comercios', async () => {
+    const vistos: unknown[] = [];
+    const acotado = {
+      comoSistema: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn({
+          comercio: {
+            findMany: jest.fn(async (args: { where: unknown }) => {
+              vistos.push(args.where);
+              return [];
+            }),
+          },
+        }),
+      ),
+    } as unknown as PrismaService;
+    const cron = new ReportsCron(acotado, reports, config('production') as never);
+    await cron.correr('2026-W38', ['c-pro']);
+    await cron.correr('2026-W38');
+    expect(vistos).toEqual([
+      { plan: { in: ['PRO', 'PREMIUM'] }, reportesActivos: true, id: { in: ['c-pro'] } },
+      { plan: { in: ['PRO', 'PREMIUM'] }, reportesActivos: true },
+    ]);
+  });
+
   it('en tests el job semanal no corre', async () => {
     const cron = new ReportsCron(prisma, reports, config('test') as never);
     (reports.generarSiFalta as jest.Mock).mockClear();

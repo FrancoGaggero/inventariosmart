@@ -32,12 +32,21 @@ export class ReportsCron {
     this.logger.log(r, 'Reportes semanales generados');
   }
 
+  /**
+   * `soloComercios` acota la corrida: lo usan los tests e2e, que comparten la base con otras
+   * suites en paralelo y no deben generar reportes para comercios ajenos.
+   */
   async correr(
     semana = ultimaSemanaCerrada(),
+    soloComercios?: string[],
   ): Promise<{ comercios: number; generados: number; fallidos: number }> {
     const comercios = await this.prisma.comoSistema((tx) =>
       tx.comercio.findMany({
-        where: { plan: { in: ['PRO', 'PREMIUM'] }, reportesActivos: true },
+        where: {
+          plan: { in: ['PRO', 'PREMIUM'] },
+          reportesActivos: true,
+          ...(soloComercios ? { id: { in: soloComercios } } : {}),
+        },
         select: { id: true, plan: true },
       }),
     );
