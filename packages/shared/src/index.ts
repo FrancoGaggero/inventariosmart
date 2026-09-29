@@ -10,24 +10,9 @@ export const ROLES = ['DUENIO', 'EMPLEADO', 'CONTADOR'] as const;
 export const RolSchema = z.enum(ROLES);
 export type Rol = z.infer<typeof RolSchema>;
 
-/** Planes de suscripción por comercio (Propuesta v2.0 §4, RF-15). */
-export const PLANES = ['FREE', 'PRO', 'PREMIUM'] as const;
-export const PlanSchema = z.enum(PLANES);
-export type Plan = z.infer<typeof PlanSchema>;
-
-/** Límites del plan; `null` significa ilimitado. */
-export const LIMITES_PLAN: Record<Plan, { productos: number | null; usuarios: number | null }> = {
-  FREE: { productos: 50, usuarios: 1 },
-  PRO: { productos: null, usuarios: null },
-  PREMIUM: { productos: null, usuarios: null },
-};
-
-/** Orden de los planes, para comparar "plan mínimo requerido". */
-const ORDEN_PLAN: Record<Plan, number> = { FREE: 0, PRO: 1, PREMIUM: 2 };
-
-export function planCumple(planActual: Plan, planMinimo: Plan): boolean {
-  return ORDEN_PLAN[planActual] >= ORDEN_PLAN[planMinimo];
-}
+// Planes de suscripción (RF-15): en su propio módulo, como `cuit`, para no crear un ciclo.
+import { PlanSchema } from './planes';
+export * from './planes';
 
 /** Formato único de error de la API (convención del contrato). */
 export const ApiErrorSchema = z.object({

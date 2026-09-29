@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  BadgeCheck,
   BarChart3,
   BellRing,
   FileBarChart,
@@ -117,6 +118,7 @@ export function AppShell() {
           { to: '/configuracion/comercio', etiqueta: 'Comercio', Icono: Settings },
         ]
       : []),
+    { to: '/configuracion/plan', etiqueta: 'Plan', Icono: BadgeCheck },
   ];
 
   const [abierto, setAbierto] = useState(false);

@@ -18,6 +18,7 @@ import { IndicatorsModule } from './indicators/indicators.module';
 import { InsightsModule } from './insights/insights.module';
 import { MeModule } from './me/me.module';
 import { MovementsModule } from './movements/movements.module';
+import { PlansModule } from './plans/plans.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { ProfitabilityModule } from './profitability/profitability.module';
@@ -68,6 +69,7 @@ import { UsersModule } from './users/users.module';
     RepricingModule,
     SupplierComparisonModule,
     AssistantModule,
+    PlansModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

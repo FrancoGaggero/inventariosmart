@@ -36,14 +36,11 @@ Limitación del plan Free: el servicio se suspende tras 15 minutos sin tráfico 
 
 En Vercel, **Environment Variables → Preview**: `VITE_API_URL` puede apuntar al mismo servicio de Render (la API no tiene entorno de preview en el plan Free). La rama `dev` de Neon se usa desde la máquina local y desde CI.
 
-## Cambiar el plan de un comercio (hasta HU-14)
+## Cambiar el plan de un comercio
 
-Las alertas de reposición (HU-06) exigen plan PRO. Mientras no exista la gestión de planes (HU-14, Fase 3), el plan se
-cambia por SQL con la propietaria de la base (`DIRECT_URL` de la carpeta de secretos), nunca con `app_api`:
-
-```sql
-UPDATE comercio SET plan = 'PRO' WHERE id = '<uuid del comercio>';
-```
+Desde HU-14 el dueño cambia el plan en la web, en **Plan** (`POST /api/v1/plan/change`), y cada cambio queda en
+`cambio_plan`. Ya no hace falta escribir en la base: un `UPDATE` directo sobre `comercio.plan` saltea las reglas de
+límites y no deja registro en el historial.
 
 El `PlanGuard` lee el plan en cada request: el cambio aplica sin reiniciar la API.
 

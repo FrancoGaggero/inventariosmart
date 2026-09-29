@@ -7,6 +7,7 @@ import { OnboardingPage } from '@/features/auth/OnboardingPage';
 import { RegistroPage } from '@/features/auth/RegistroPage';
 import { RequireRole } from '@/features/auth/RequireRole';
 import { ComercioPage } from '@/features/config/ComercioPage';
+import { PlanPage } from '@/features/config/PlanPage';
 import { GastoFormPage } from '@/features/gastos/GastoFormPage';
 import { GastosPage } from '@/features/gastos/GastosPage';
 import { UsuariosPage } from '@/features/config/UsuariosPage';
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <HomePage /> },
           { path: '/movimientos', element: <MovimientosPage /> },
+          { path: '/configuracion/plan', element: <PlanPage /> },
           {
             element: <RequireRole roles={['DUENIO', 'CONTADOR']} />,
             children: [

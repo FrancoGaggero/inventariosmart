@@ -63,6 +63,7 @@ model Comercio {
   remarcacionItems  RemarcacionItem[]
   conversaciones    Conversacion[]
   mensajesAsistente MensajeAsistente[]
+  cambiosPlan       CambioPlan[]
 
   @@map("comercio")
 }
@@ -131,6 +132,7 @@ model Usuario {
   remarcaciones           Remarcacion[]          @relation("RemarcacionHechaPor")
   remarcacionesRevertidas Remarcacion[]          @relation("RemarcacionRevertidaPor")
   conversaciones          Conversacion[]
+  cambiosPlan             CambioPlan[]
 
   @@index([comercioId])
   @@map("usuario")
@@ -654,4 +656,20 @@ model MensajeAsistente {
   @@index([comercioId, conversacionId, creadoEn, id])
   @@index([comercioId, rol, creadoEn])
   @@map("mensaje_asistente")
+}
+
+/// Cambio de plan del comercio (HU-14): quién lo hizo, cuándo y de cuál a cuál. Sólo inserción.
+model CambioPlan {
+  id           String   @id @default(uuid()) @db.Uuid
+  comercioId   String   @map("comercio_id") @db.Uuid
+  usuarioId    String   @map("usuario_id") @db.Uuid
+  planAnterior Plan     @map("plan_anterior")
+  planNuevo    Plan     @map("plan_nuevo")
+  creadoEn     DateTime @default(now()) @map("creado_en") @db.Timestamptz(3)
+
+  comercio Comercio @relation(fields: [comercioId], references: [id])
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@index([comercioId, creadoEn(sort: Desc), id(sort: Desc)])
+  @@map("cambio_plan")
 }

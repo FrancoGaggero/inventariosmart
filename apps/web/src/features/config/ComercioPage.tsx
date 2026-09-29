@@ -1,3 +1,5 @@
+import { RUTA_PLAN } from '@/lib/plan';
+import { Link } from 'react-router';
 import {
   AjustesReportesPatchSchema,
   ComercioPatchSchema,
@@ -118,7 +120,10 @@ export function ComercioPage() {
             Guardar
           </button>
           <span className="text-xs text-t3">
-            Plan actual: <span className="font-mono text-brand-3">{me.data?.plan}</span>
+            Plan actual:{' '}
+            <Link to={RUTA_PLAN} className="font-mono text-brand-3 hover:underline">
+              {me.data?.plan}
+            </Link>
           </span>
         </div>
       </form>

@@ -5489,6 +5489,194 @@
           "asistente"
         ]
       }
+    },
+    "/api/v1/plan": {
+      "get": {
+        "description": "Disponible en todos los planes y para todos los roles. El `planMinimo` de cada funcionalidad es el mismo que informa el 402 `PLAN_REQUERIDO` de sus rutas.",
+        "operationId": "PlansController_obtener",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Plan vigente, funcionalidades y uso contra los límites (HU-14)",
+        "tags": [
+          "plan"
+        ]
+      }
+    },
+    "/api/v1/plan/change": {
+      "post": {
+        "description": "Rige desde el pedido siguiente, sin cerrar sesión, y no tiene cobro. Bajar de plan no borra datos. Para bajar a FREE el comercio tiene que entrar en sus límites de productos y usuarios activos.",
+        "operationId": "PlansController_cambiar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambioPlanBodyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanDetalleDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sólo el dueño cambia el plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`details.motivo`: `MISMO_PLAN` o `SUPERA_LIMITES`, con `details.excesos` (recurso, cantidad y límite)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambiar el plan del comercio (HU-14)",
+        "tags": [
+          "plan"
+        ]
+      }
+    },
+    "/api/v1/plan/history": {
+      "get": {
+        "operationId": "PlansController_historial",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistorialPlanDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cambios de plan del comercio, del más reciente al más antiguo",
+        "tags": [
+          "plan"
+        ]
+      }
     }
   },
   "info": {
@@ -11124,6 +11312,205 @@
           "creadoEn",
           "actualizadoEn",
           "mensajes"
+        ]
+      },
+      "LimitesPlanDto": {
+        "type": "object",
+        "properties": {
+          "productos": {
+            "type": "number",
+            "nullable": true,
+            "example": 50,
+            "description": "null: sin tope"
+          },
+          "usuarios": {
+            "type": "number",
+            "nullable": true,
+            "example": 1,
+            "description": "null: sin tope"
+          }
+        },
+        "required": [
+          "productos",
+          "usuarios"
+        ]
+      },
+      "UsoPlanDto": {
+        "type": "object",
+        "properties": {
+          "productos": {
+            "type": "number",
+            "example": 12,
+            "description": "Productos activos"
+          },
+          "usuarios": {
+            "type": "number",
+            "example": 3,
+            "description": "Usuarios activos, incluidos los invitados"
+          }
+        },
+        "required": [
+          "productos",
+          "usuarios"
+        ]
+      },
+      "FuncionalidadPlanDto": {
+        "type": "object",
+        "properties": {
+          "clave": {
+            "type": "string",
+            "example": "alertas"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Alertas de reposición"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "planMinimo": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ],
+            "description": "Plan más bajo que la incluye"
+          },
+          "incluida": {
+            "type": "boolean",
+            "description": "El plan vigente la incluye"
+          }
+        },
+        "required": [
+          "clave",
+          "nombre",
+          "descripcion",
+          "planMinimo",
+          "incluida"
+        ]
+      },
+      "PlanDetalleDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ]
+          },
+          "limites": {
+            "$ref": "#/components/schemas/LimitesPlanDto"
+          },
+          "uso": {
+            "$ref": "#/components/schemas/UsoPlanDto"
+          },
+          "funcionalidades": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FuncionalidadPlanDto"
+            }
+          }
+        },
+        "required": [
+          "plan",
+          "limites",
+          "uso",
+          "funcionalidades"
+        ]
+      },
+      "CambioPlanBodyDto": {
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ],
+            "example": "PRO"
+          }
+        },
+        "required": [
+          "plan"
+        ]
+      },
+      "UsuarioCambioPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "nombre"
+        ]
+      },
+      "RegistroCambioPlanDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planAnterior": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ]
+          },
+          "planNuevo": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PRO",
+              "PREMIUM"
+            ]
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioCambioPlanDto"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "planAnterior",
+          "planNuevo",
+          "usuario",
+          "creadoEn"
+        ]
+      },
+      "HistorialPlanDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistroCambioPlanDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "siguienteCursor"
         ]
       }
     }

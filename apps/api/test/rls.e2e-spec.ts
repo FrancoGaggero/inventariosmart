@@ -19,6 +19,7 @@ const TABLA: Record<string, string> = {
   RemarcacionItem: 'remarcacion_item',
   Conversacion: 'conversacion',
   MensajeAsistente: 'mensaje_asistente',
+  CambioPlan: 'cambio_plan',
 };
 
 describe('aislamiento entre comercios (e2e)', () => {
@@ -300,10 +301,12 @@ describe('aislamiento entre comercios (e2e)', () => {
     ).rejects.toThrow(/permission denied|permiso denegado/i);
   });
 
-  it('CP-08.5e sin contexto la base no devuelve conversaciones y los mensajes son de sólo inserción', async () => {
+  it('CP-08.5e y CP-14.5f sin contexto la base no devuelve conversaciones ni cambios de plan, y son de sólo inserción', async () => {
     const esperados: Record<string, string[]> = {
       conversacion: ['INSERT', 'SELECT', 'UPDATE'],
       mensaje_asistente: ['INSERT', 'SELECT'],
+      // HU-14: el historial de cambios de plan tampoco se modifica.
+      cambio_plan: ['INSERT', 'SELECT'],
     };
     for (const [tabla, permisos] of Object.entries(esperados)) {
       const [n] = await t.prisma.raw.$queryRawUnsafe<{ n: bigint }[]>(
@@ -319,6 +322,8 @@ describe('aislamiento entre comercios (e2e)', () => {
       `UPDATE mensaje_asistente SET contenido = 'x' WHERE true`,
       `DELETE FROM mensaje_asistente WHERE true`,
       `DELETE FROM conversacion WHERE true`,
+      `UPDATE cambio_plan SET plan_nuevo = 'FREE' WHERE true`,
+      `DELETE FROM cambio_plan WHERE true`,
     ]) {
       await expect(
         t.prisma.raw.$transaction(async (tx) => {

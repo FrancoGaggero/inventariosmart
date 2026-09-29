@@ -291,7 +291,7 @@ html{scroll-behavior:smooth}
       <tr><td class="k">FirebaseAuthGuard</td><td>Verifica el ID token con <span class="id">firebase-admin</span>. Si es válido, carga el usuario de PostgreSQL por <span class="id">firebase_uid</span>. Primer login: crea Comercio (plan Free) y Usuario con rol Dueño.</td><td>RF-11, RNF-03</td></tr>
       <tr><td class="k">TenantContext</td><td>Fija <span class="id">comercio_id</span> en el contexto del request (AsyncLocalStorage). Toda consulta Prisma lo usa de forma automática.</td><td>RN-10, RNF-10</td></tr>
       <tr><td class="k">RolesGuard</td><td>Decorador <span class="id">@Roles('DUENIO')</span> por endpoint. Empleado no ve costos ni márgenes; Contador sólo lectura.</td><td>§2.4</td></tr>
-      <tr><td class="k">PlanGuard</td><td>Decorador <span class="id">@RequierePlan('PRO')</span>. Bloquea alertas, reportes, asistente y aplica el límite de 50 productos del plan Free.</td><td>RF-15, RN-09</td></tr>
+      <tr><td class="k">PlanGuard</td><td>Decorador <span class="id">@RequierePlan('PRO')</span>. Bloquea alertas, reportes, asistente y aplica el límite de 50 productos del plan Free. El plan se lee de la base en cada request: un cambio de plan (<span class="id">subscription-plans</span>, ADR 0019) rige desde el pedido siguiente.</td><td>RF-15, RN-09</td></tr>
     </tbody>
   </table></div>
   <pre><code><span class="cmt">// prisma/tenant.extension.ts — todo modelo con comercio_id se filtra solo</span>
@@ -490,7 +490,7 @@ CREATE POLICY producto_sistema ON producto
       <tr><td class="k">repricing</td><td class="id">POST /repricing/preview · POST /repricing/apply · GET /repricing/batches?cursor · GET /repricing/batches/:id · POST /repricing/batches/:id/revert</td><td>Dueño (aplica y deshace), Contador (vista previa y lotes) · plan PRO</td><td class="id">HU-17</td><td><span class="pill f2">2</span></td></tr>
       <tr><td class="k">supplier-compare</td><td class="id">GET /supplier-comparison?soloOportunidades&amp;q&amp;cursor · GET /products/:id/supplier-comparison</td><td>Dueño · plan PREMIUM</td><td class="id">HU-12</td><td><span class="pill f2">2</span></td></tr>
       <tr><td class="k">assistant</td><td class="id">POST /assistant/messages · GET /assistant/conversations?cursor · GET /assistant/conversations/:id</td><td>Dueño · plan PREMIUM</td><td class="id">HU-08</td><td><span class="pill f3">3</span></td></tr>
-      <tr><td class="k">plans</td><td class="id">GET /plan · POST /plan/change</td><td>Dueño</td><td class="id">HU-14</td><td><span class="pill f3">3</span></td></tr>
+      <tr><td class="k">plans</td><td class="id">GET /plan · POST /plan/change · GET /plan/history?cursor</td><td>Todos consultan; Dueño cambia y ve el historial · todos los planes</td><td class="id">HU-14</td><td><span class="pill f3">3</span></td></tr>
     </tbody>
   </table></div>
   <h3>Convenciones del contrato</h3>

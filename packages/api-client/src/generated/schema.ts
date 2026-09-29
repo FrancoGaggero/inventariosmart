@@ -1027,6 +1027,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plan vigente, funcionalidades y uso contra los límites (HU-14)
+         * @description Disponible en todos los planes y para todos los roles. El `planMinimo` de cada funcionalidad es el mismo que informa el 402 `PLAN_REQUERIDO` de sus rutas.
+         */
+        get: operations["PlansController_obtener"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan/change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cambiar el plan del comercio (HU-14)
+         * @description Rige desde el pedido siguiente, sin cerrar sesión, y no tiene cobro. Bajar de plan no borra datos. Para bajar a FREE el comercio tiene que entrar en sus límites de productos y usuarios activos.
+         */
+        post: operations["PlansController_cambiar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cambios de plan del comercio, del más reciente al más antiguo */
+        get: operations["PlansController_historial"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3068,6 +3125,78 @@ export interface components {
              */
             actualizadoEn: string;
             mensajes: components["schemas"]["MensajeAsistenteDto"][];
+        };
+        LimitesPlanDto: {
+            /**
+             * @description null: sin tope
+             * @example 50
+             */
+            productos: number | null;
+            /**
+             * @description null: sin tope
+             * @example 1
+             */
+            usuarios: number | null;
+        };
+        UsoPlanDto: {
+            /**
+             * @description Productos activos
+             * @example 12
+             */
+            productos: number;
+            /**
+             * @description Usuarios activos, incluidos los invitados
+             * @example 3
+             */
+            usuarios: number;
+        };
+        FuncionalidadPlanDto: {
+            /** @example alertas */
+            clave: string;
+            /** @example Alertas de reposición */
+            nombre: string;
+            descripcion: string;
+            /**
+             * @description Plan más bajo que la incluye
+             * @enum {string}
+             */
+            planMinimo: "FREE" | "PRO" | "PREMIUM";
+            /** @description El plan vigente la incluye */
+            incluida: boolean;
+        };
+        PlanDetalleDto: {
+            /** @enum {string} */
+            plan: "FREE" | "PRO" | "PREMIUM";
+            limites: components["schemas"]["LimitesPlanDto"];
+            uso: components["schemas"]["UsoPlanDto"];
+            funcionalidades: components["schemas"]["FuncionalidadPlanDto"][];
+        };
+        CambioPlanBodyDto: {
+            /**
+             * @example PRO
+             * @enum {string}
+             */
+            plan: "FREE" | "PRO" | "PREMIUM";
+        };
+        UsuarioCambioPlanDto: {
+            /** Format: uuid */
+            id: string;
+            nombre: string | null;
+        };
+        RegistroCambioPlanDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            planAnterior: "FREE" | "PRO" | "PREMIUM";
+            /** @enum {string} */
+            planNuevo: "FREE" | "PRO" | "PREMIUM";
+            usuario: components["schemas"]["UsuarioCambioPlanDto"];
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        HistorialPlanDto: {
+            items: components["schemas"]["RegistroCambioPlanDto"][];
+            siguienteCursor: string | null;
         };
     };
     responses: never;
@@ -6880,6 +7009,136 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PlansController_obtener: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetalleDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PlansController_cambiar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CambioPlanBodyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetalleDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Sólo el dueño cambia el plan */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description `details.motivo`: `MISMO_PLAN` o `SUPERA_LIMITES`, con `details.excesos` (recurso, cantidad y límite) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PlansController_historial: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistorialPlanDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

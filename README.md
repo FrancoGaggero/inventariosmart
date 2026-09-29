@@ -58,6 +58,11 @@ pnpm dev
   `GET /repricing/batches`, `GET /repricing/batches/:id` y `POST /repricing/batches/:id/revert` (deshace una vez,
   sin tocar los productos que cambiaron después). El dueño aplica y deshace; el contador sólo consulta. Cada cambio
   queda en el historial de precios con origen `REMARCACION` (RN-12, ADR 0016). La API acepta cuerpos JSON de hasta 2 MB.
+  Rutas de HU-14 (todos los planes): `GET /plan` (todos los roles: plan vigente, límites, uso de productos y usuarios
+  activos, y funcionalidades con su plan mínimo), `POST /plan/change` (`{ plan }`, sólo el dueño) y
+  `GET /plan/history?cursor&limit` (sólo el dueño). El cambio rige desde el pedido siguiente, no tiene cobro y no borra
+  datos. Para bajar a FREE el comercio tiene que entrar en sus límites: si no, responde 409 con `details.excesos`
+  (ADR 0019). El catálogo de funcionalidades vive en `packages/shared` y lo usan la API, la página Plan y la portada.
   Rutas de HU-08 (plan PREMIUM, sólo el dueño): `POST /assistant/messages` (`{ conversacionId?, mensaje }`, hasta 1.000
   caracteres; responde el mensaje del asistente con `fuentes`, las consultas que hizo, y `acciones`, lo que dejó
   preparado), `GET /assistant/conversations?cursor&limit` y `GET /assistant/conversations/:id`. El asistente consulta

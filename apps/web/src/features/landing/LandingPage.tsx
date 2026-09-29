@@ -1,4 +1,5 @@
-import { LIMITES_PLAN } from '@inventariosmart/shared';
+import { tarjetasDePlanes } from '@/lib/plan-formato';
+import { LIMITES_PLAN, type Plan } from '@inventariosmart/shared';
 import {
   ArrowRight,
   BarChart3,
@@ -88,50 +89,20 @@ const PASOS = [
   },
 ];
 
-const PLANES = [
-  {
-    nombre: 'Free',
-    clave: 'FREE',
-    precio: 'Gratis',
-    boton: 'Crear cuenta gratis',
-    detalle: 'Para empezar',
-    incluye: [
-      `Hasta ${LIMITES_PLAN.FREE.productos} productos`,
-      `${LIMITES_PLAN.FREE.usuarios} usuario`,
-      'Inventario, movimientos y panel',
-      'Importación desde Excel',
-    ],
-    destacado: false,
-  },
-  {
-    nombre: 'Pro',
-    clave: 'PRO',
-    precio: 'Mensual',
-    boton: 'Quiero el plan Pro',
-    detalle: 'Para el día a día',
-    incluye: [
-      'Productos y usuarios sin límite',
-      'Alertas predictivas de reposición',
-      'Órdenes de compra en modo copiloto',
-      'Reportes semanales',
-    ],
-    destacado: true,
-  },
-  {
-    nombre: 'Premium',
-    clave: 'PREMIUM',
-    precio: 'Mensual',
-    boton: 'Quiero Premium',
-    detalle: 'Para decidir mejor',
-    incluye: [
-      'Todo lo de Pro',
-      'Asistente con IA sobre tus datos',
-      'Comparador de proveedores',
-      'Soporte prioritario',
-    ],
-    destacado: false,
-  },
-];
+/** Lo propio de la portada; qué incluye cada plan sale del catálogo compartido (HU-14). */
+const PORTADA: Record<Plan, { precio: string; boton: string; destacado: boolean }> = {
+  FREE: { precio: 'Gratis', boton: 'Crear cuenta gratis', destacado: false },
+  PRO: { precio: 'Mensual', boton: 'Quiero el plan Pro', destacado: true },
+  PREMIUM: { precio: 'Mensual', boton: 'Quiero Premium', destacado: false },
+};
+
+const PLANES = tarjetasDePlanes().map((t) => ({
+  nombre: t.nombre,
+  clave: t.plan,
+  detalle: t.detalle,
+  incluye: t.incluye,
+  ...PORTADA[t.plan],
+}));
 
 /** Portada pública en `/` para visitantes sin sesión (design D8). */
 export function LandingPage() {
@@ -318,8 +289,8 @@ export function LandingPage() {
             ))}
           </div>
           <p className="text-xs text-t3">
-            Toda cuenta empieza en Free. Si elegís Pro o Premium, creá la cuenta y avisanos: hasta
-            que llegue la gestión de planes dentro de la app, lo activamos nosotros.
+            Toda cuenta empieza en Free. Después cambiás de plan cuando quieras desde la app, en
+            Plan.
           </p>
         </section>
       </main>
