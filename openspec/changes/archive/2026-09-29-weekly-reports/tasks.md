@@ -24,5 +24,5 @@
 
 - [x] 4.1 ADR 0013 (reporte como snapshot semanal, cron + bajo demanda, oportunidades por reglas), README (rutas de HU-09), `docs/arquitectura.html` (§6 `reports`), `docs/runbooks/rls.md`, `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D9
 - [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: migración aplicada por Render; Franco genera el reporte de la semana desde `/reportes`, recibe el correo en su casilla, revisa el detalle y prueba los ajustes. Listo cuando: CP-09.3, CP-09.4 y CP-09.5 se cumplen en `https://inventariosmart0.vercel.app/reportes`
+- [x] 4.3 Producción: migración aplicada por Render; Franco genera el reporte de la semana desde `/reportes`, recibe el correo en su casilla, revisa el detalle y prueba los ajustes. Listo cuando: CP-09.3, CP-09.4 y CP-09.5 se cumplen en `https://inventariosmart0.vercel.app/reportes`
 - [ ] 4.4 (manual, Franco) Mover HU-09 a Hecho en Trello, `Backlog_InventarioSmart_v2.xlsx` y Gantt. Listo cuando: Trello, backlog y Gantt coinciden
