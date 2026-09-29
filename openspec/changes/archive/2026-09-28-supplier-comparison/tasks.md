@@ -20,5 +20,5 @@
 
 - [x] 4.1 ADR 0017, README, `docs/arquitectura.html`, `openspec/config.yaml` (RN-13) y `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D7
 - [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: el comercio de la demo en plan PREMIUM (con aprobación de Franco); Franco carga el mismo producto en las listas de dos proveedores, abre el comparador y marca al recomendado como principal. Listo cuando: CP-12.1, CP-12.3 y CP-12.6 se cumplen en `https://inventariosmart0.vercel.app` y el producto tiene el principal nuevo en la base de producción
+- [x] 4.3 Producción: el comercio de la demo en plan PREMIUM (con aprobación de Franco); Franco carga el mismo producto en las listas de dos proveedores, abre el comparador y marca al recomendado como principal. Listo cuando: CP-12.1, CP-12.3 y CP-12.6 se cumplen en `https://inventariosmart0.vercel.app` y el producto tiene el principal nuevo en la base de producción
 - [ ] 4.4 (manual, Franco) Mover HU-12 a Hecho y sumar RN-13 al backlog, a la Propuesta y al Gantt, y mover la tarjeta en Trello. Listo cuando: Trello, backlog y Gantt coinciden

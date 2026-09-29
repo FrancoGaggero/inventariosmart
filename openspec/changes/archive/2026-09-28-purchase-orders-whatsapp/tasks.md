@@ -19,5 +19,5 @@
 
 - [x] 4.1 ADR 0015, README, `docs/arquitectura.html`, `openspec/config.yaml` (HU-16, RF-17) y `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D10
 - [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API en verde local; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: migración aplicada por Render; Franco carga el teléfono de un proveedor, confirma una orden por WhatsApp, la envía y la marca como enviada. Listo cuando: CP-16.2, CP-16.3 y CP-16.5 se cumplen en `https://inventariosmart0.vercel.app/ordenes`
+- [x] 4.3 Producción: migración aplicada por Render; Franco carga el teléfono de un proveedor, confirma una orden por WhatsApp, la envía y la marca como enviada. Listo cuando: CP-16.2, CP-16.3 y CP-16.5 se cumplen en `https://inventariosmart0.vercel.app/ordenes`
 - [ ] 4.4 (manual, Franco) Sumar HU-16 y RF-17 al backlog, a la Propuesta y al Gantt, y mover la tarjeta en Trello. Listo cuando: Trello, backlog y Gantt coinciden

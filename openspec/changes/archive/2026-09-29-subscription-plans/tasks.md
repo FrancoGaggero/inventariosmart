@@ -26,5 +26,5 @@
 
 - [x] 5.1 ADR 0019, README, `docs/arquitectura.html`, `docs/runbooks/deploy.md` y `openspec/CAPACIDADES.md`. Listo cuando: los documentos reflejan D1 a D9
 - [x] 5.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 5.3 Producción: Franco baja el comercio de la demo a PRO, comprueba que el asistente pide PREMIUM, y vuelve a PREMIUM. Listo cuando: CP-14.5, CP-14.5b y CP-14.6 se cumplen en `https://inventariosmart0.vercel.app` y los dos cambios figuran en `cambio_plan` en la base de producción
+- [x] 5.3 Producción: Franco baja el comercio de la demo a PRO, comprueba que el asistente pide PREMIUM, y vuelve a PREMIUM. Listo cuando: CP-14.5, CP-14.5b y CP-14.6 se cumplen en `https://inventariosmart0.vercel.app` y los dos cambios figuran en `cambio_plan` en la base de producción
 - [ ] 5.4 (manual, Franco) Mover HU-14 a Hecho en Trello y actualizar el backlog y el Gantt. Listo cuando: Trello, backlog y Gantt coinciden

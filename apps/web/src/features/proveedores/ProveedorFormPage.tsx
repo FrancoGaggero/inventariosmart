@@ -8,7 +8,7 @@ import {
   ProveedorPatchSchema,
   validarCanalPreferido,
 } from '@inventariosmart/shared';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Wand2 } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ErrorApi, mensajeDe } from '@/lib/api';
@@ -16,6 +16,7 @@ import { ayudaTelefono } from '@/lib/canales';
 import { useActualizarProveedor, useCrearProveedor, useProveedor } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
 import { Campo } from '@/ui/Campo';
+import { IconoCanal } from '@/ui/IconoCanal';
 
 interface Valores {
   nombre: string;
@@ -199,31 +200,50 @@ export function ProveedorFormPage() {
             ayuda={telefono.texto}
             error={errores['telefono']}
           />
-          <label className="block md:col-span-2">
-            <span className="block text-xs font-semibold text-t2 mb-1.5">
+          <div className="block md:col-span-2">
+            <span id="canal-preferido" className="block text-xs font-semibold text-t2 mb-1.5">
               Canal para enviarle órdenes
             </span>
-            <select
-              value={v.canalPreferido}
-              onChange={(e) => set('canalPreferido')(e.target.value)}
+            <div
+              className="flex flex-wrap gap-2"
+              role="radiogroup"
+              aria-labelledby="canal-preferido"
               aria-invalid={errores['canalPreferido'] ? true : undefined}
-              className="campo"
             >
-              <option value="">Automático: correo si tiene y, si no, WhatsApp</option>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={v.canalPreferido === ''}
+                className={`chip ${v.canalPreferido === '' ? 'chip-activo' : ''}`}
+                onClick={() => set('canalPreferido')('')}
+                title="Correo si tiene y, si no, WhatsApp"
+              >
+                <Wand2 className="w-3.5 h-3.5" aria-hidden />
+                Automático
+              </button>
               {CANALES_PROVEEDOR.map((c) => (
-                <option key={c} value={c}>
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={v.canalPreferido === c}
+                  className={`chip ${v.canalPreferido === c ? 'chip-activo' : ''}`}
+                  onClick={() => set('canalPreferido')(c)}
+                >
+                  <IconoCanal canal={c} className="w-3.5 h-3.5" />
                   {ETIQUETA_CANAL[c]}
-                </option>
+                </button>
               ))}
-            </select>
+            </div>
             {errores['canalPreferido'] ? (
               <span className="block text-xs text-crit mt-1.5">{errores['canalPreferido']}</span>
             ) : (
               <span className="block text-xs text-t3 mt-1.5">
-                Por WhatsApp, el mensaje lo enviás vos desde tu teléfono con el texto ya escrito.
+                Automático usa el correo si el proveedor tiene y, si no, WhatsApp. Por WhatsApp, el
+                mensaje lo enviás vos desde tu teléfono con el texto ya escrito.
               </span>
             )}
-          </label>
+          </div>
           <Campo
             label="Plazo de entrega (días)"
             value={v.leadTimeDias}

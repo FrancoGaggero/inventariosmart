@@ -9,17 +9,7 @@ import {
   subtotalItem,
   totalOrden,
 } from '@inventariosmart/shared';
-import {
-  ArrowLeft,
-  Check,
-  CheckCheck,
-  Copy,
-  MessageCircle,
-  Send,
-  Trash2,
-  Undo2,
-  X,
-} from 'lucide-react';
+import { ArrowLeft, Check, CheckCheck, Copy, Trash2, Undo2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { formatearCalculo } from '@/lib/alertas';
@@ -39,6 +29,7 @@ import {
 import { type Producto, formatearPesos, useProductos } from '@/lib/productos';
 import { useProveedores } from '@/lib/proveedores';
 import { Aviso } from '@/ui/Aviso';
+import { IconoCanal, IconoWhatsApp } from '@/ui/IconoCanal';
 import { ChipCanal } from '@/ui/ChipCanal';
 
 interface ItemEditable {
@@ -323,12 +314,12 @@ export function OrdenPage() {
                   abren después de una llamada asíncrona. Sólo existe tras confirmar (RN-06). */}
               {o.whatsappUrl && (
                 <a
-                  className="btn btn-primary"
+                  className="btn btn-whatsapp"
                   href={o.whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MessageCircle className="w-4 h-4" aria-hidden />
+                  <IconoWhatsApp plano />
                   Abrir WhatsApp
                 </a>
               )}
@@ -358,11 +349,7 @@ export function OrdenPage() {
                     onClick={confirmarYEnviar}
                     disabled={ocupado}
                   >
-                    {canal === 'WHATSAPP' ? (
-                      <MessageCircle className="w-4 h-4" aria-hidden />
-                    ) : (
-                      <Send className="w-4 h-4" aria-hidden />
-                    )}
+                    <IconoCanal canal={canal ?? 'OTRO'} />
                     {textoConfirmar(canal)}
                   </button>
                 </>
@@ -399,6 +386,7 @@ export function OrdenPage() {
                       aria-pressed={canal === c}
                       onClick={() => setCanalElegido(c)}
                     >
+                      <IconoCanal canal={c} className="w-3.5 h-3.5" />
                       {ETIQUETA_CANAL[c]}
                     </button>
                   ))}

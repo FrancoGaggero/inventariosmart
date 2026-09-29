@@ -18,6 +18,9 @@
   --color-warn: #f59e0b;
   --color-crit: #ef4444;
   --color-violet: #8b5cf6;
+  /* Verde de WhatsApp: igual en los dos temas, para que se reconozca de un vistazo. */
+  --color-whatsapp: #25d366;
+  --color-on-whatsapp: #062b14;
   --color-t1: #f1f5f9;
   --color-t2: #94a3b8;
   --color-t3: #64748b;
@@ -199,6 +202,14 @@ body::before {
   }
   .btn-primary:hover {
     box-shadow: 0 10px 24px -8px var(--color-glow);
+    filter: brightness(1.06);
+  }
+  .btn-whatsapp {
+    background: var(--color-whatsapp);
+    color: var(--color-on-whatsapp);
+    box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--color-whatsapp) 60%, transparent);
+  }
+  .btn-whatsapp:hover {
     filter: brightness(1.06);
   }
   .btn-ghost {

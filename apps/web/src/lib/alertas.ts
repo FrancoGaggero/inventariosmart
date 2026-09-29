@@ -91,6 +91,8 @@ const fechaHora = new Intl.DateTimeFormat('es-AR', {
   month: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
+  // Sin esto algunos navegadores muestran "04:21 p. m.".
+  hourCycle: 'h23',
 });
 
 /** "23/09, 14:05" en hora local; "—" si es null. */
