@@ -25,7 +25,7 @@
 
 ## 5. Modelo real
 
-- [ ] 5.1 (manual, Franco) Crear la clave en la consola de Anthropic y cargarla en `apps/api/.env` y en Render, sin pegarla en el chat ni en el repo. Listo cuando: `POST /assistant/messages` deja de responder 503 en local y en producción
+- [x] 5.1 (manual, Franco) Crear la clave en la consola de Anthropic y cargarla en `apps/api/.env` y en Render, sin pegarla en el chat ni en el repo. Listo cuando: `POST /assistant/messages` deja de responder 503 en local y en producción
 - [x] 5.2 Suite `assistant.live-spec.ts` con el modelo real, fuera de CI (D9). Listo cuando: CP-08.1, CP-08.2b, CP-08.2c, CP-08.4 y CP-08.4b pasan en local con la clave cargada
 
 ## 6. Documentación y cierre
