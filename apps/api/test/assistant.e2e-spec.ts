@@ -41,7 +41,8 @@ interface VendidoDato {
   dadoDeBaja: boolean;
   unidadesVendidas: number;
   facturacionNeta: string;
-  participacionPct: number;
+  participacionUnidadesPct: number;
+  participacionFacturacionPct: number;
 }
 
 /** Lo que devuelven las consultas, con los campos que mira esta suite. */
@@ -476,7 +477,10 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
         ['FA-220', 40, false],
         ['BA-120', 5, true],
       ]);
-      expect(datos.vendidos[0]!.participacionPct).toBe(72.7);
+      expect(datos.vendidos[0]).toMatchObject({
+        participacionUnidadesPct: 72.7,
+        participacionFacturacionPct: 36.1,
+      });
 
       // El más rentable del mismo comercio es otro.
       modelo.reiniciar();

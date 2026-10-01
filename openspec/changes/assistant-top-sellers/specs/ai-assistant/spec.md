@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Productos más vendidos
-El asistente SHALL poder consultar los productos con ventas en un período, de hasta un año, ordenados por unidades vendidas o por facturación neta de IVA (RN-03), y SHALL usar esa consulta para las preguntas sobre lo que más se vende o lo que más factura. Las preguntas sobre lo más rentable SHALL seguir respondiéndose con el margen bruto (RN-01). Si la pregunta no aclara el criterio, el asistente SHALL usar unidades y decirlo. Cada producto del resultado SHALL incluir código, nombre, unidades vendidas, facturación neta y su participación porcentual en el total del período; el resultado SHALL incluir también el total de unidades y de facturación neta del período y traer como máximo 10 productos. Sólo SHALL contar las ventas no anuladas del comercio del usuario. Los productos dados de baja que tuvieron ventas en el período SHALL aparecer igual, porque sus ventas existieron.
+El asistente SHALL poder consultar los productos con ventas en un período, de hasta un año, ordenados por unidades vendidas o por facturación neta de IVA (RN-03), y SHALL usar esa consulta para las preguntas sobre lo que más se vende o lo que más factura. Las preguntas sobre lo más rentable SHALL seguir respondiéndose con el margen bruto (RN-01). Si la pregunta no aclara el criterio, el asistente SHALL usar unidades y decirlo. Cada producto del resultado SHALL incluir código, nombre, unidades vendidas, facturación neta y dos participaciones porcentuales identificadas por separado: su parte del total de unidades y su parte del total de facturación neta del período; el asistente SHALL atribuir cada porcentaje al total que corresponde; el resultado SHALL incluir también el total de unidades y de facturación neta del período y traer como máximo 10 productos. Sólo SHALL contar las ventas no anuladas del comercio del usuario. Los productos dados de baja que tuvieron ventas en el período SHALL aparecer igual, porque sus ventas existieron.
 
 #### Scenario: CP-08.7 El más vendido no es el más rentable
 - **GIVEN** un comercio PREMIUM en el que, en los últimos 15 días, `AC-5L` vendió 120 unidades con poco margen y `FA-220` vendió 40 unidades con el mayor margen bruto
@@ -16,7 +16,7 @@ El asistente SHALL poder consultar los productos con ventas en un período, de h
 #### Scenario: CP-08.7c Las cifras coinciden con los movimientos
 - **GIVEN** las ventas de CP-08.7, más una venta de 10 unidades de `AC-5L` que después se anuló
 - **WHEN** se consulta lo más vendido de la quincena
-- **THEN** `AC-5L` figura con 120 unidades y no 130; las unidades y la facturación neta de cada producto coinciden con la suma de sus ventas en Movimientos para el mismo período; y la participación de cada producto es su parte del total de unidades o de facturación según el criterio pedido
+- **THEN** `AC-5L` figura con 120 unidades y no 130; las unidades y la facturación neta de cada producto coinciden con la suma de sus ventas en Movimientos para el mismo período; y cada producto informa por separado su parte del total de unidades y su parte del total de facturación, sea cual sea el criterio pedido
 
 #### Scenario: CP-08.7d Sin ventas en el período
 - **GIVEN** un comercio PREMIUM sin ventas registradas en el mes

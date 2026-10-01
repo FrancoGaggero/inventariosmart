@@ -140,7 +140,7 @@ const DESCRIPCIONES: Record<HerramientaAsistente, string> = {
   productos_mas_rentables:
     'Productos con ventas entre dos fechas, ordenados por la ganancia (margen bruto total) que dejaron, no por unidades. Sirve para saber cuál fue el producto más rentable de un período.',
   productos_mas_vendidos:
-    'Productos más vendidos entre dos fechas, ordenados por unidades vendidas o por facturación neta de IVA (con la alícuota actual de cada producto), no por ganancia. Trae unidades, facturación y participación de cada producto, y los totales del período. Incluye productos dados de baja que se vendieron en el período.',
+    'Productos más vendidos entre dos fechas, ordenados por unidades vendidas o por facturación neta de IVA (con la alícuota actual de cada producto), no por ganancia. Trae unidades, facturación, participación en el total de unidades y participación en el total de facturación de cada producto, y los totales del período. Incluye productos dados de baja que se vendieron en el período.',
   buscar_productos:
     'Busca productos activos por código o nombre, o por estado de stock. Devuelve precio de venta (con IVA), costo de reposición (sin IVA), stock y proveedor principal. Trae como máximo 10.',
   alertas_de_reposicion:

@@ -109,8 +109,18 @@ describe('herramientas del asistente (design D2)', () => {
       totalUnidades: 160,
       totalFacturacionNeta: '640000.00',
       productos: [
-        { codigo: 'AC-5L', unidadesVendidas: 120, participacionPct: 75 },
-        { codigo: 'FA-220', unidadesVendidas: 40, participacionPct: 25 },
+        {
+          codigo: 'AC-5L',
+          unidadesVendidas: 120,
+          participacionUnidadesPct: 75,
+          participacionFacturacionPct: 37.5,
+        },
+        {
+          codigo: 'FA-220',
+          unidadesVendidas: 40,
+          participacionUnidadesPct: 25,
+          participacionFacturacionPct: 62.5,
+        },
       ],
     });
     const f = await herramientas.ejecutar('productos_mas_vendidos', {
@@ -121,7 +131,14 @@ describe('herramientas del asistente (design D2)', () => {
     });
     expect(leer(f.contenido)).toMatchObject({
       criterio: 'FACTURACION',
-      productos: [{ codigo: 'FA-220', facturacionNeta: '400000.00', participacionPct: 62.5 }],
+      productos: [
+        {
+          codigo: 'FA-220',
+          facturacionNeta: '400000.00',
+          participacionFacturacionPct: 62.5,
+          participacionUnidadesPct: 25,
+        },
+      ],
     });
   });
 

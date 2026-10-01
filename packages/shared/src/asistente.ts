@@ -155,8 +155,10 @@ export interface ProductoMasVendido {
   dadoDeBaja: boolean;
   unidadesVendidas: number;
   facturacionNeta: string;
-  /** Parte del total del período según el criterio, en porcentaje con un decimal. */
-  participacionPct: number;
+  /** Parte del total de unidades del período, en porcentaje con un decimal. */
+  participacionUnidadesPct: number;
+  /** Parte del total de facturación neta del período, en porcentaje con un decimal. */
+  participacionFacturacionPct: number;
 }
 
 export interface RankingDeVentas {
@@ -173,8 +175,9 @@ const redondear = (n: number, decimales: number) => {
 
 /**
  * Ordena las ventas del período por unidades o por facturación neta de IVA (RN-03, con la
- * alícuota actual del producto). Los totales y la participación se calculan sobre todas las
- * filas, antes de recortar a `cantidad` (como máximo ASISTENTE_MAX_FILAS).
+ * alícuota actual del producto). Los totales y las dos participaciones (en unidades y en
+ * facturación, con nombres explícitos para que el modelo no las confunda) se calculan sobre todas
+ * las filas, antes de recortar a `cantidad` (como máximo ASISTENTE_MAX_FILAS).
  */
 export function rankingDeVentas(
   filas: VentasDeProducto[],
@@ -192,7 +195,7 @@ export function rankingDeVentas(
   const otro = (f: Fila) => (criterio === 'UNIDADES' ? f.neto : f.unidades);
   const totalUnidades = conVentas.reduce((t, f) => t + f.unidades, 0);
   const totalNeto = conVentas.reduce((t, f) => t + f.neto, 0);
-  const total = criterio === 'UNIDADES' ? totalUnidades : totalNeto;
+  const parte = (n: number, total: number) => (total > 0 ? redondear((n / total) * 100, 1) : 0);
   const tope = Math.min(Math.max(Math.trunc(cantidad), 1), ASISTENTE_MAX_FILAS);
   const productos = conVentas
     .sort(
@@ -206,7 +209,8 @@ export function rankingDeVentas(
       dadoDeBaja: !f.activo,
       unidadesVendidas: f.unidades,
       facturacionNeta: redondear2(f.neto),
-      participacionPct: total > 0 ? redondear((valor(f) / total) * 100, 1) : 0,
+      participacionUnidadesPct: parte(f.unidades, totalUnidades),
+      participacionFacturacionPct: parte(f.neto, totalNeto),
     }));
   return { criterio, totalUnidades, totalFacturacionNeta: redondear2(totalNeto), productos };
 }

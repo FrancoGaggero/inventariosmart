@@ -21,6 +21,6 @@
 ## 5. Documentación y cierre
 
 - [x] 5.1 README y `docs/arquitectura.html` pasan de "diez" a "once" herramientas; ADR 0018 conserva su texto y suma una nota fechada que menciona la consulta nueva. Listo cuando: README y arquitectura dicen "once" y el ADR tiene la nota
-- [ ] 5.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API; no hace falta regenerar OpenAPI (D1, sin cambios de contrato), y se confirma con `pnpm openapi` sin diferencias. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 5.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API; no hace falta regenerar OpenAPI (D1, sin cambios de contrato), y se confirma con `pnpm openapi` sin diferencias. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 5.3 Producción: Franco pregunta al asistente "¿qué fue lo que más vendí este mes?" en `https://inventariosmart0.vercel.app`. Listo cuando: la respuesta dice "Consulté: Productos más vendidos" y el producto y las unidades coinciden con la suma de ventas de ese mes en la base de producción
 - [ ] 5.4 (manual, Franco) Anotar el ajuste de HU-08 en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

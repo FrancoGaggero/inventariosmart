@@ -45,7 +45,8 @@ describe('productos más vendidos', () => {
     expect(r.productos[0]).toMatchObject({
       unidadesVendidas: 120,
       facturacionNeta: '240000.00',
-      participacionPct: 72.7,
+      participacionUnidadesPct: 72.7,
+      participacionFacturacionPct: 34.8,
       dadoDeBaja: false,
     });
     expect(r.productos[2]!.dadoDeBaja).toBe(true);
@@ -55,7 +56,11 @@ describe('productos más vendidos', () => {
     const exento = fila('EX-0', 10, 100_000, { alicuotaIva: 0 });
     const r = rankingDeVentas([...filas, exento], 'FACTURACION');
     expect(r.productos.map((p) => p.codigo)).toEqual(['FA-220', 'AC-5L', 'EX-0', 'BA-120']);
-    expect(r.productos[0]).toMatchObject({ facturacionNeta: '400000.00', participacionPct: 50.6 });
+    expect(r.productos[0]).toMatchObject({
+      facturacionNeta: '400000.00',
+      participacionFacturacionPct: 50.6,
+      participacionUnidadesPct: 22.9,
+    });
     expect(r.productos[2]!.facturacionNeta).toBe('100000.00');
     expect(r.totalFacturacionNeta).toBe('790000.00');
   });
@@ -76,7 +81,11 @@ describe('productos más vendidos', () => {
 
   it('redondea la facturación neta a dos decimales', () => {
     const r = rankingDeVentas([fila('R', 1, 100)], 'FACTURACION');
-    expect(r.productos[0]).toMatchObject({ facturacionNeta: '82.64', participacionPct: 100 });
+    expect(r.productos[0]).toMatchObject({
+      facturacionNeta: '82.64',
+      participacionUnidadesPct: 100,
+      participacionFacturacionPct: 100,
+    });
   });
 
   it('los totales y la participación cuentan todas las filas, aunque se recorte a 10', () => {
@@ -84,11 +93,17 @@ describe('productos más vendidos', () => {
     const r = rankingDeVentas(muchas, 'UNIDADES', 50);
     expect(r.productos).toHaveLength(10);
     expect(r.totalUnidades).toBe(120);
-    expect(r.productos[0]).toMatchObject({ codigo: 'P-14', participacionPct: 12.5 });
+    expect(r.productos[0]).toMatchObject({
+      codigo: 'P-14',
+      participacionUnidadesPct: 12.5,
+      participacionFacturacionPct: 12.5,
+    });
     expect(rankingDeVentas(muchas, 'UNIDADES', 3).productos).toHaveLength(3);
     const diez = rankingDeVentas(muchas.slice(0, 10), 'UNIDADES').productos;
-    const suma = diez.reduce((t, p) => t + p.participacionPct, 0);
-    expect(Math.abs(suma - 100)).toBeLessThanOrEqual(0.5);
+    for (const campo of ['participacionUnidadesPct', 'participacionFacturacionPct'] as const) {
+      const suma = diez.reduce((t, p) => t + p[campo], 0);
+      expect(Math.abs(suma - 100)).toBeLessThanOrEqual(0.5);
+    }
   });
 
   it('sin ventas devuelve la lista vacía y los totales en cero', () => {

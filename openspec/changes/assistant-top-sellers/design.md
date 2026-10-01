@@ -25,7 +25,7 @@ Se agrega `ventasEntre(desde, hasta)`, que devuelve, por cada producto con venta
 
 ### D2. El ranking es una función pura en `packages/shared`
 
-`rankingDeVentas(filas, criterio, cantidad)` recibe las filas de D1 y devuelve `{ criterio, totalUnidades, totalFacturacionNeta, productos[] }`. Para cada fila calcula la facturación neta como `importe / (1 + alícuota/100)` redondeada a 2 decimales (RN-03). Ordena por el criterio, desempata por el otro criterio y después por nombre, y calcula la participación sobre el total del criterio con un decimal. Los totales se suman antes de recortar a `cantidad`, con un máximo de 10 (`ASISTENTE_MAX_FILAS`). Los montos viajan como string con dos decimales, igual que en el resto de la API.
+`rankingDeVentas(filas, criterio, cantidad)` recibe las filas de D1 y devuelve `{ criterio, totalUnidades, totalFacturacionNeta, productos[] }`. Para cada fila calcula la facturación neta como `importe / (1 + alícuota/100)` redondeada a 2 decimales (RN-03). Ordena por el criterio, desempata por el otro criterio y después por nombre, y calcula dos participaciones con un decimal, `participacionUnidadesPct` y `participacionFacturacionPct`, sea cual sea el criterio. En producción (01/10/2026), con un único `participacionPct` que dependía del criterio, el modelo informó el 50 % de las unidades como "el 50 % de la facturación": con nombres explícitos no hay qué interpretar. Los totales se suman antes de recortar a `cantidad`, con un máximo de 10 (`ASISTENTE_MAX_FILAS`). Los montos viajan como string con dos decimales, igual que en el resto de la API.
 
 Que sea pura permite probar con unitarios los desempates, el redondeo, la participación y la lista vacía, sin base de datos.
 
