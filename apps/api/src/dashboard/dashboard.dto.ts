@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MOTIVOS_RESUMEN, SEVERIDADES_ALERTA } from '@inventariosmart/shared';
+import { QuiebresDashboardDto } from '../stockouts/stockouts.dto';
 
 export class StockDashboardDto {
   @ApiProperty({ example: 120 }) productosActivos!: number;
@@ -105,4 +106,10 @@ export class DashboardDto {
   @ApiProperty({ type: MesAnteriorDashboardDto }) mesAnterior!: MesAnteriorDashboardDto;
   @ApiProperty({ type: TopRentableDto, isArray: true }) topRentables!: TopRentableDto[];
   @ApiProperty({ type: AlertasDashboardDto }) alertas!: AlertasDashboardDto;
+  @ApiProperty({
+    type: QuiebresDashboardDto,
+    nullable: true,
+    description: 'Pérdidas por falta de stock de los últimos 30 días (HU-18); null debajo de PRO',
+  })
+  quiebres!: QuiebresDashboardDto | null;
 }

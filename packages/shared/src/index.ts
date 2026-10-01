@@ -152,3 +152,4 @@ export * from './whatsapp';
 export * from './remarcacion';
 export * from './comparador';
 export * from './asistente';
+export * from './quiebres';

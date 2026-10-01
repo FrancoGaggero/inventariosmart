@@ -28,6 +28,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `ai-assistant`          | HU-08 | RF-10         | 3    | 19 · `ai-assistant` (28/09/2026) |
 | `subscription-plans`    | HU-14 | RF-15         | 3    | 20 · `subscription-plans` (29/09/2026) |
 | `ai-assistant`          | HU-08 | RF-10         | 3    | 21 · `assistant-top-sellers` (01/10/2026; ajuste: consulta de más vendidos) |
+| `stockout-losses`       | HU-18 | RF-19         | 2    | 22 · `stockout-losses` (01/10/2026; modifica `financial-dashboard` y `subscription-plans`) |
 
 ## Reglas de uso
 

@@ -16,6 +16,7 @@ import { mensajeDe } from '@/lib/api';
 import { useDashboard } from '@/lib/dashboard';
 import { formatearMes } from '@/lib/gastos';
 import { formatearPesos } from '@/lib/productos';
+import { RUTA_QUIEBRES, detallePanel, formatearPerdida } from '@/lib/quiebres-formato';
 import { claseSigno, formatearPct } from '@/lib/rentabilidad';
 import { Anillo } from '@/ui/Anillo';
 import { Aviso } from '@/ui/Aviso';
@@ -227,6 +228,33 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
             </Link>
           )}
         </Aviso>
+      )}
+
+      {d?.quiebres && Number(d.quiebres.gananciaPerdida) > 0 && (
+        <Entrada as="article" indice={4} className="card p-5">
+          <Link
+            to={RUTA_QUIEBRES}
+            className="flex flex-wrap items-center justify-between gap-3 group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-10 h-10 rounded-xl bg-crit/15 text-crit grid place-items-center shrink-0">
+                <PackageX className="w-5 h-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <h3 className="font-bold">Perdiste por falta de stock</h3>
+                <p className="text-sm text-t2">
+                  <span className="font-extrabold text-crit tabular-nums">
+                    {formatearPerdida(d.quiebres.gananciaPerdida)}
+                  </span>{' '}
+                  {detallePanel(d.quiebres.productosAfectados)}
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-brand-3 group-hover:underline">
+              Ver detalle
+            </span>
+          </Link>
+        </Entrada>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">

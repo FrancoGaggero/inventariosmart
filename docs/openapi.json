@@ -3224,6 +3224,102 @@
         ]
       }
     },
+    "/api/v1/stockouts": {
+      "get": {
+        "description": "RN-14: un quiebre es el tiempo en que un producto activo estuvo en 0, reconstruido con el stock que dejó cada movimiento. La pérdida se estima con lo que el producto vendía en los días con stock de los últimos 90 días. Ordenado por ganancia perdida; los no calculables, al final.",
+        "operationId": "StockoutsController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                30,
+                60,
+                90
+              ],
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaQuiebresDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El EMPLEADO no ve márgenes (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pérdidas por falta de stock en los últimos 30, 60 o 90 días (HU-18)",
+        "tags": [
+          "quiebres"
+        ]
+      }
+    },
     "/api/v1/import/preview": {
       "post": {
         "description": "Valida cada fila con las reglas del alta de producto y la clasifica: NUEVO, ACTUALIZA (el código existe) o INVALIDA. Informa si la importación superaría el límite del plan. No registra nada.",
@@ -8006,6 +8102,28 @@
           "reposicion"
         ]
       },
+      "QuiebresDashboardDto": {
+        "type": "object",
+        "properties": {
+          "gananciaPerdida": {
+            "type": "string",
+            "example": "4000.00"
+          },
+          "ventaPerdida": {
+            "type": "string",
+            "example": "10000.00"
+          },
+          "productosAfectados": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "gananciaPerdida",
+          "ventaPerdida",
+          "productosAfectados"
+        ]
+      },
       "DashboardDto": {
         "type": "object",
         "properties": {
@@ -8030,6 +8148,16 @@
           },
           "alertas": {
             "$ref": "#/components/schemas/AlertasDashboardDto"
+          },
+          "quiebres": {
+            "nullable": true,
+            "description": "Pérdidas por falta de stock de los últimos 30 días (HU-18); null debajo de PRO",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/QuiebresDashboardDto"
+              }
+            ]
           }
         },
         "required": [
@@ -8038,7 +8166,8 @@
           "ventas",
           "mesAnterior",
           "topRentables",
-          "alertas"
+          "alertas",
+          "quiebres"
         ]
       },
       "ProductoAlertaDto": {
@@ -8313,6 +8442,179 @@
         },
         "required": [
           "accion"
+        ]
+      },
+      "TotalesQuiebresDto": {
+        "type": "object",
+        "properties": {
+          "gananciaPerdida": {
+            "type": "string",
+            "example": "13000.00"
+          },
+          "ventaPerdida": {
+            "type": "string",
+            "example": "32500.00"
+          },
+          "unidadesPerdidas": {
+            "type": "string",
+            "example": "25.0"
+          },
+          "productosAfectados": {
+            "type": "number",
+            "example": 3
+          },
+          "enCurso": {
+            "type": "number",
+            "description": "Productos que siguen sin stock",
+            "example": 1
+          }
+        },
+        "required": [
+          "gananciaPerdida",
+          "ventaPerdida",
+          "unidadesPerdidas",
+          "productosAfectados",
+          "enCurso"
+        ]
+      },
+      "ProductoQuiebreRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "FA-220"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Filtro Aire FA-220"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "ProductoConQuiebresDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoQuiebreRefDto"
+          },
+          "quiebres": {
+            "type": "number",
+            "description": "Quiebres que tocan el período",
+            "example": 1
+          },
+          "diasSinStock": {
+            "type": "number",
+            "description": "Días sin stock dentro del período, con un decimal",
+            "example": 5
+          },
+          "enCurso": {
+            "type": "boolean",
+            "description": "Sigue sin stock al momento de la consulta"
+          },
+          "inicioUltimo": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Inicio del último quiebre; como mucho, el de la ventana de 90 días"
+          },
+          "demandaDiaria": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unidades por día en los días con stock de los últimos 90 (RN-14)",
+            "example": "2.0"
+          },
+          "unidadesPerdidas": {
+            "type": "string",
+            "nullable": true,
+            "example": "10.0"
+          },
+          "ventaPerdida": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unidades perdidas × precio neto de IVA vigente (RN-03)",
+            "example": "10000.00"
+          },
+          "gananciaPerdida": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unidades perdidas × margen bruto unitario vigente (RN-01)",
+            "example": "4000.00"
+          },
+          "motivo": {
+            "type": "string",
+            "enum": [
+              "SIN_HISTORIAL"
+            ],
+            "nullable": true,
+            "description": "Menos de 7 días con stock o ninguna venta en los últimos 90: no se estima"
+          }
+        },
+        "required": [
+          "producto",
+          "quiebres",
+          "diasSinStock",
+          "enCurso",
+          "inicioUltimo",
+          "demandaDiaria",
+          "unidadesPerdidas",
+          "ventaPerdida",
+          "gananciaPerdida",
+          "motivo"
+        ]
+      },
+      "ListaQuiebresDto": {
+        "type": "object",
+        "properties": {
+          "dias": {
+            "type": "number",
+            "enum": [
+              30,
+              60,
+              90
+            ],
+            "example": 30
+          },
+          "desde": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totales": {
+            "description": "Sobre todos los productos, sin paginar",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TotalesQuiebresDto"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoConQuiebresDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "dias",
+          "desde",
+          "hasta",
+          "totales",
+          "items",
+          "siguienteCursor"
         ]
       },
       "ArchivoProductosDto": {

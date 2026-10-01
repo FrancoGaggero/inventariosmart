@@ -32,6 +32,7 @@ import { RemarcarPage } from '@/features/remarcacion/RemarcarPage';
 import { RentabilidadPage } from '@/features/rentabilidad/RentabilidadPage';
 import { ReportePage } from '@/features/reportes/ReportePage';
 import { ReportesPage } from '@/features/reportes/ReportesPage';
+import { QuiebresPage } from '@/features/quiebres/QuiebresPage';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
               { path: '/gastos', element: <GastosPage /> },
               { path: '/rentabilidad', element: <RentabilidadPage /> },
               { path: '/alertas', element: <AlertasPage /> },
+              { path: '/quiebres', element: <QuiebresPage /> },
               { path: '/ordenes', element: <OrdenesPage /> },
               { path: '/ordenes/nueva', element: <SugerenciaPage /> },
               { path: '/ordenes/:id', element: <OrdenPage /> },

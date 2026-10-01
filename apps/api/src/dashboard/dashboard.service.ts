@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   mesActual,
+  planCumple,
   redondear2,
   sumarMeses,
   variacionPct,
@@ -12,6 +13,7 @@ import { AlertsService } from '../alerts/alerts.service';
 import { TenantContext } from '../auth/tenant-context';
 import { ProfitabilityService } from '../profitability/profitability.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { StockoutsService } from '../stockouts/stockouts.service';
 
 interface FilaStock {
   productosActivos: number;
@@ -31,20 +33,23 @@ export class DashboardService {
     private readonly prisma: PrismaService,
     private readonly alerts: AlertsService,
     private readonly profitability: ProfitabilityService,
+    private readonly stockouts: StockoutsService,
   ) {}
 
   async obtener(periodo: Mes | undefined): Promise<Dashboard> {
-    const { comercioId } = TenantContext.requerido();
+    const { comercioId, plan } = TenantContext.requerido();
     const mes = periodo ?? this.mesActualBuenosAires();
     const anterior = sumarMeses(mes, -1);
 
-    const [ventas, previo, stock, topRentables, alertas, reposicion] = await Promise.all([
+    const [ventas, previo, stock, topRentables, alertas, reposicion, quiebres] = await Promise.all([
       this.profitability.resumen(mes),
       this.profitability.resumen(anterior),
       this.stock(comercioId),
       this.profitability.topDelMes(mes, TOP_MAX),
       this.alertas(),
       this.alerts.reposicionParaPanel(),
+      // Siempre los últimos 30 días, sin importar el mes pedido (HU-18, design D7).
+      planCumple(plan, 'PRO') ? this.stockouts.totales(30) : Promise.resolve(null),
     ]);
 
     return {
@@ -69,6 +74,11 @@ export class DashboardService {
       },
       topRentables,
       alertas: { ...alertas, faltanGastos: ventas.motivo === 'SIN_GASTOS', reposicion },
+      quiebres: quiebres && {
+        gananciaPerdida: quiebres.gananciaPerdida,
+        ventaPerdida: quiebres.ventaPerdida,
+        productosAfectados: quiebres.productosAfectados,
+      },
     };
   }
 

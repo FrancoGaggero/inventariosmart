@@ -308,6 +308,8 @@ model Movimiento {
   @@unique([comercioId, claveIdempotencia])
   @@index([comercioId, fecha(sort: Desc), id(sort: Desc)])
   @@index([comercioId, productoId, fecha(sort: Desc), id(sort: Desc)])
+  /// Orden en que cambió el stock: quiebres de stock (HU-18).
+  @@index([comercioId, creadoEn, id])
   @@map("movimiento")
 }
 

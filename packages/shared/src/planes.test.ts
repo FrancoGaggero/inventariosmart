@@ -15,6 +15,7 @@ const claves = (lista: readonly { clave: string }[]) => lista.map((f) => f.clave
 
 describe('catálogo de funcionalidades (design D1)', () => {
   it('tiene claves únicas y un plan mínimo válido en cada una', () => {
+    expect(FUNCIONALIDADES).toHaveLength(13);
     expect(new Set(claves(FUNCIONALIDADES)).size).toBe(FUNCIONALIDADES.length);
     for (const f of FUNCIONALIDADES) {
       expect(PLANES).toContain(f.planMinimo);
@@ -33,6 +34,7 @@ describe('catálogo de funcionalidades (design D1)', () => {
     ]);
     expect(claves(funcionalidadesPropias('PRO'))).toEqual([
       'alertas',
+      'quiebres',
       'ordenes',
       'reportes',
       'inflacion',

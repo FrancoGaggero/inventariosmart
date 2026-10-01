@@ -9,11 +9,13 @@ import {
   BellRing,
   CheckCircle2,
   Clock,
+  PackageX,
   RefreshCw,
   ShoppingCart,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { RUTA_QUIEBRES } from '@/lib/quiebres-formato';
 import {
   type Alerta,
   type FiltroEstadoAlerta,
@@ -193,6 +195,10 @@ export function AlertasPage() {
         derecha={
           <div className="flex flex-col items-end gap-1">
             <div className="flex flex-wrap gap-2 justify-end">
+              <Link to={RUTA_QUIEBRES} className="btn btn-ghost">
+                <PackageX className="w-4 h-4" aria-hidden />
+                Cuánto perdiste por falta de stock
+              </Link>
               {esDuenio && (
                 <Link
                   to={`/ordenes/nueva${(resumen.data?.criticas ?? 0) > 0 ? '' : '?severidad=TODAS'}`}

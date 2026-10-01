@@ -76,6 +76,12 @@ export const FUNCIONALIDADES = [
     planMinimo: 'PRO',
   },
   {
+    clave: 'quiebres',
+    nombre: 'Pérdidas por falta de stock',
+    descripcion: 'Cuánto dejaste de vender y de ganar por quedarte sin stock.',
+    planMinimo: 'PRO',
+  },
+  {
     clave: 'ordenes',
     nombre: 'Órdenes de compra',
     descripcion: 'Pedidos redactados para enviar por correo o WhatsApp.',

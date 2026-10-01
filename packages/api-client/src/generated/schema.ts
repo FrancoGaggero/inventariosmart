@@ -554,6 +554,26 @@ export interface paths {
         patch: operations["AlertsController_accionar"];
         trace?: never;
     };
+    "/api/v1/stockouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pérdidas por falta de stock en los últimos 30, 60 o 90 días (HU-18)
+         * @description RN-14: un quiebre es el tiempo en que un producto activo estuvo en 0, reconstruido con el stock que dejó cada movimiento. La pérdida se estima con lo que el producto vendía en los días con stock de los últimos 90 días. Ordenado por ganancia perdida; los no calculables, al final.
+         */
+        get: operations["StockoutsController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/import/preview": {
         parameters: {
             query?: never;
@@ -1972,6 +1992,14 @@ export interface components {
             /** @description Alertas de reposición activas (HU-06); null si el plan no las incluye */
             reposicion: components["schemas"]["ReposicionDashboardDto"] | null;
         };
+        QuiebresDashboardDto: {
+            /** @example 4000.00 */
+            gananciaPerdida: string;
+            /** @example 10000.00 */
+            ventaPerdida: string;
+            /** @example 1 */
+            productosAfectados: number;
+        };
         DashboardDto: {
             /** @example 2026-09 */
             periodo: string;
@@ -1980,6 +2008,8 @@ export interface components {
             mesAnterior: components["schemas"]["MesAnteriorDashboardDto"];
             topRentables: components["schemas"]["TopRentableDto"][];
             alertas: components["schemas"]["AlertasDashboardDto"];
+            /** @description Pérdidas por falta de stock de los últimos 30 días (HU-18); null debajo de PRO */
+            quiebres: components["schemas"]["QuiebresDashboardDto"] | null;
         };
         ProductoAlertaDto: {
             /** Format: uuid */
@@ -2075,6 +2105,86 @@ export interface components {
              * @enum {string}
              */
             accion: "ATENDER" | "POSPONER";
+        };
+        TotalesQuiebresDto: {
+            /** @example 13000.00 */
+            gananciaPerdida: string;
+            /** @example 32500.00 */
+            ventaPerdida: string;
+            /** @example 25.0 */
+            unidadesPerdidas: string;
+            /** @example 3 */
+            productosAfectados: number;
+            /**
+             * @description Productos que siguen sin stock
+             * @example 1
+             */
+            enCurso: number;
+        };
+        ProductoQuiebreRefDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example FA-220 */
+            codigo: string;
+            /** @example Filtro Aire FA-220 */
+            nombre: string;
+        };
+        ProductoConQuiebresDto: {
+            producto: components["schemas"]["ProductoQuiebreRefDto"];
+            /**
+             * @description Quiebres que tocan el período
+             * @example 1
+             */
+            quiebres: number;
+            /**
+             * @description Días sin stock dentro del período, con un decimal
+             * @example 5
+             */
+            diasSinStock: number;
+            /** @description Sigue sin stock al momento de la consulta */
+            enCurso: boolean;
+            /**
+             * Format: date-time
+             * @description Inicio del último quiebre; como mucho, el de la ventana de 90 días
+             */
+            inicioUltimo: string;
+            /**
+             * @description Unidades por día en los días con stock de los últimos 90 (RN-14)
+             * @example 2.0
+             */
+            demandaDiaria: string | null;
+            /** @example 10.0 */
+            unidadesPerdidas: string | null;
+            /**
+             * @description Unidades perdidas × precio neto de IVA vigente (RN-03)
+             * @example 10000.00
+             */
+            ventaPerdida: string | null;
+            /**
+             * @description Unidades perdidas × margen bruto unitario vigente (RN-01)
+             * @example 4000.00
+             */
+            gananciaPerdida: string | null;
+            /**
+             * @description Menos de 7 días con stock o ninguna venta en los últimos 90: no se estima
+             * @enum {string|null}
+             */
+            motivo: "SIN_HISTORIAL" | null;
+        };
+        ListaQuiebresDto: {
+            /**
+             * @example 30
+             * @enum {number}
+             */
+            dias: 30 | 60 | 90;
+            /** Format: date-time */
+            desde: string;
+            /** Format: date-time */
+            hasta: string;
+            /** @description Sobre todos los productos, sin paginar */
+            totales: components["schemas"]["TotalesQuiebresDto"];
+            items: components["schemas"]["ProductoConQuiebresDto"][];
+            siguienteCursor: string | null;
         };
         ArchivoProductosDto: {
             /**
@@ -5388,6 +5498,63 @@ export interface operations {
             };
             /** @description La alerta ya está cerrada (CONFLICTO) */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    StockoutsController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+                dias?: 30 | 60 | 90;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaQuiebresDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description El EMPLEADO no ve márgenes (SIN_PERMISO) */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

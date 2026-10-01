@@ -77,6 +77,10 @@ pnpm dev
   más barato y el principal). El puntaje pondera precio (60 %), plazo (25 %) y confiabilidad (15 %) y se calcula al
   consultar con el último costo de cada proveedor activo; no se guarda nada (RN-13, ADR 0017). Para usar al
   recomendado como principal se edita el producto con `PATCH /products/:id`.
+  Rutas de HU-18 (plan PRO, dueño y contador): `GET /stockouts?dias=30|60|90&cursor&limit` (productos que se
+  quedaron sin stock en el período, ordenados por ganancia perdida, con totales). Los quiebres se reconstruyen al
+  consultar con el stock que dejó cada movimiento de los últimos 90 días, y la pérdida se estima con lo que el producto
+  vendía en los días con stock (RN-14, ADR 0020). `GET /dashboard` suma el bloque `quiebres` de los últimos 30 días.
   Rutas de HU-16 (plan PRO): `POST /purchase-orders/:id/confirm` acepta `{ canal? }` (`EMAIL` o `WHATSAPP`; sin
   indicarlo, el que corresponde al proveedor) y `POST /purchase-orders/:id/mark-sent` marca como enviada una orden
   confirmada. Por WhatsApp la orden queda `CONFIRMADA` con `whatsappUrl`, un enlace `wa.me` con el mensaje redactado

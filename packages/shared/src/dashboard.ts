@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ReposicionDashboardSchema } from './alertas';
 import { MesSchema, MotivoResumenSchema } from './gastos';
+import { QuiebresDashboardSchema } from './quiebres';
 import { porcentaje } from './rentabilidad';
 
 // ---------------------------------------------------------------------------
@@ -80,5 +81,7 @@ export const DashboardSchema = z.object({
   mesAnterior: MesAnteriorDashboardSchema,
   topRentables: z.array(TopRentableSchema),
   alertas: AlertasDashboardSchema,
+  /** Pérdidas por falta de stock de los últimos 30 días (HU-18); null si el plan no las incluye. */
+  quiebres: QuiebresDashboardSchema,
 });
 export type Dashboard = z.infer<typeof DashboardSchema>;

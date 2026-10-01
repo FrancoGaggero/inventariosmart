@@ -13,6 +13,7 @@ const RUTA: Record<ClaveFuncionalidad, string | null> = {
   proveedores: '/api/v1/suppliers',
   importacion: null,
   alertas: '/api/v1/alerts',
+  quiebres: '/api/v1/stockouts',
   ordenes: '/api/v1/purchase-orders',
   reportes: '/api/v1/reports/weekly',
   inflacion: '/api/v1/insights/inflation',
@@ -120,7 +121,7 @@ describe('subscription-plans: gestión de plan (e2e)', () => {
           expect(r.body.details.planMinimo).toBe(f.planMinimo);
         }
       }
-      expect(detalle.funcionalidades.filter((f) => !f.incluida)).toHaveLength(7);
+      expect(detalle.funcionalidades.filter((f) => !f.incluida)).toHaveLength(8);
     }, 120_000);
 
     it('CP-14.2b y CP-14.4 el plan FREE en el límite', async () => {
@@ -198,6 +199,11 @@ describe('subscription-plans: gestión de plan (e2e)', () => {
         plan: 'PRO',
         limites: { productos: null, usuarios: null },
         uso: { productos: 12, usuarios: 3 },
+      });
+      const deA = (await plan().expect(200)).body.funcionalidades as Detalle['funcionalidades'];
+      expect(deA.find((f) => f.clave === 'quiebres')).toMatchObject({
+        incluida: true,
+        planMinimo: 'PRO',
       });
 
       for (const quien of [empleada, contador]) {
