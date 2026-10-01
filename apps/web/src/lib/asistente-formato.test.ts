@@ -27,7 +27,8 @@ describe('campo de la consulta', () => {
   });
 
   it('ofrece cuatro preguntas para empezar', () => {
-    expect(PREGUNTAS_SUGERIDAS).toHaveLength(4);
+    expect(PREGUNTAS_SUGERIDAS).toHaveLength(5);
+    expect(PREGUNTAS_SUGERIDAS).toContain('¿Qué fue lo que más vendí este mes?');
     expect(PREGUNTAS_SUGERIDAS).toContain('¿Qué productos tengo que reponer?');
   });
 });

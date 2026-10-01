@@ -5,6 +5,7 @@ import { ASISTENTE_MAX_CARACTERES, type FuenteAsistente } from '@inventariosmart
 /** Preguntas para empezar una conversación vacía (CP-08.6). */
 export const PREGUNTAS_SUGERIDAS = [
   '¿Qué productos tengo que reponer?',
+  '¿Qué fue lo que más vendí este mes?',
   '¿Cuál fue mi producto más rentable del mes?',
   '¿Cómo vienen mis precios frente a la inflación?',
   '¿Cuánto gasté este mes?',

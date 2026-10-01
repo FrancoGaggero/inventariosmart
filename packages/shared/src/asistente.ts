@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { redondear2 } from './rentabilidad';
 
 // Asistente conversacional con IA (HU-08, RF-10). Plan PREMIUM (RN-09), sólo DUENIO.
 
@@ -22,6 +23,7 @@ export type RolMensaje = z.infer<typeof RolMensajeSchema>;
 export const HERRAMIENTAS_ASISTENTE = {
   resumen_rentabilidad: 'Rentabilidad del período',
   productos_mas_rentables: 'Productos más rentables',
+  productos_mas_vendidos: 'Productos más vendidos',
   buscar_productos: 'Productos',
   alertas_de_reposicion: 'Alertas de reposición',
   gastos_del_periodo: 'Gastos',
@@ -125,4 +127,86 @@ export function inicioDelDiaBuenosAires(ahora: Date = new Date()): Date {
 /** "2026-10-02": la fecha de hoy en Buenos Aires. */
 export function fechaBuenosAires(ahora: Date = new Date()): string {
   return new Date(ahora.getTime() - DESFASE_BUENOS_AIRES_MS).toISOString().slice(0, 10);
+}
+
+// ---------------------------------------------------------------------------
+// Productos más vendidos (consulta del asistente, HU-08)
+// ---------------------------------------------------------------------------
+
+export const CRITERIOS_VENTAS = ['UNIDADES', 'FACTURACION'] as const;
+export const CriterioVentasSchema = z.enum(CRITERIOS_VENTAS);
+export type CriterioVentas = z.infer<typeof CriterioVentasSchema>;
+
+/** Ventas de un producto en un período: el importe es con IVA, como se registró la venta. */
+export interface VentasDeProducto {
+  id: string;
+  codigo: string;
+  nombre: string;
+  activo: boolean;
+  unidades: number;
+  importeConIva: string | number;
+  alicuotaIva: string | number;
+}
+
+export interface ProductoMasVendido {
+  id: string;
+  codigo: string;
+  nombre: string;
+  dadoDeBaja: boolean;
+  unidadesVendidas: number;
+  facturacionNeta: string;
+  /** Parte del total del período según el criterio, en porcentaje con un decimal. */
+  participacionPct: number;
+}
+
+export interface RankingDeVentas {
+  criterio: CriterioVentas;
+  totalUnidades: number;
+  totalFacturacionNeta: string;
+  productos: ProductoMasVendido[];
+}
+
+const redondear = (n: number, decimales: number) => {
+  const f = 10 ** decimales;
+  return Math.round((n + Number.EPSILON) * f) / f;
+};
+
+/**
+ * Ordena las ventas del período por unidades o por facturación neta de IVA (RN-03, con la
+ * alícuota actual del producto). Los totales y la participación se calculan sobre todas las
+ * filas, antes de recortar a `cantidad` (como máximo ASISTENTE_MAX_FILAS).
+ */
+export function rankingDeVentas(
+  filas: VentasDeProducto[],
+  criterio: CriterioVentas,
+  cantidad: number = ASISTENTE_MAX_FILAS,
+): RankingDeVentas {
+  const conVentas = filas
+    .filter((f) => f.unidades > 0)
+    .map((f) => ({
+      ...f,
+      neto: redondear(Number(f.importeConIva) / (1 + Number(f.alicuotaIva) / 100), 2),
+    }));
+  type Fila = (typeof conVentas)[number];
+  const valor = (f: Fila) => (criterio === 'UNIDADES' ? f.unidades : f.neto);
+  const otro = (f: Fila) => (criterio === 'UNIDADES' ? f.neto : f.unidades);
+  const totalUnidades = conVentas.reduce((t, f) => t + f.unidades, 0);
+  const totalNeto = conVentas.reduce((t, f) => t + f.neto, 0);
+  const total = criterio === 'UNIDADES' ? totalUnidades : totalNeto;
+  const tope = Math.min(Math.max(Math.trunc(cantidad), 1), ASISTENTE_MAX_FILAS);
+  const productos = conVentas
+    .sort(
+      (a, b) => valor(b) - valor(a) || otro(b) - otro(a) || a.nombre.localeCompare(b.nombre, 'es'),
+    )
+    .slice(0, tope)
+    .map((f): ProductoMasVendido => ({
+      id: f.id,
+      codigo: f.codigo,
+      nombre: f.nombre,
+      dadoDeBaja: !f.activo,
+      unidadesVendidas: f.unidades,
+      facturacionNeta: redondear2(f.neto),
+      participacionPct: total > 0 ? redondear((valor(f) / total) * 100, 1) : 0,
+    }));
+  return { criterio, totalUnidades, totalFacturacionNeta: redondear2(totalNeto), productos };
 }

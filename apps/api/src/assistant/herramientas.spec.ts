@@ -7,7 +7,7 @@ const UUID_2 = '8b1d7c10-4c2e-4f6a-9a55-2f0b7f3e9d22';
 
 function armar() {
   const servicios = {
-    profitability: { resumenEntre: jest.fn(), topEntre: jest.fn() },
+    profitability: { resumenEntre: jest.fn(), topEntre: jest.fn(), ventasEntre: jest.fn() },
     products: { listar: jest.fn() },
     alerts: { listar: jest.fn(), resumen: jest.fn() },
     expenses: { resumen: jest.fn() },
@@ -34,7 +34,7 @@ function armar() {
 const leer = (contenido: string) => JSON.parse(contenido) as Record<string, unknown>;
 
 describe('herramientas del asistente (design D2)', () => {
-  it('define las diez consultas con su esquema de entrada', () => {
+  it('define las once consultas con su esquema de entrada', () => {
     const { herramientas } = armar();
     const definiciones = herramientas.definiciones();
     expect(definiciones.map((d) => d.nombre)).toEqual(NOMBRES_HERRAMIENTA);
@@ -47,6 +47,82 @@ describe('herramientas del asistente (design D2)', () => {
     }
     const top = definiciones.find((d) => d.nombre === 'productos_mas_rentables');
     expect(top?.esquema).toMatchObject({ required: ['desde', 'hasta'] });
+    expect(top?.descripcion).toMatch(/no por unidades/);
+    const vendidos = definiciones.find((d) => d.nombre === 'productos_mas_vendidos');
+    expect(vendidos?.esquema).toMatchObject({
+      required: ['desde', 'hasta'],
+      properties: { criterio: { enum: ['UNIDADES', 'FACTURACION'] } },
+    });
+    expect(vendidos?.descripcion).toMatch(/no por ganancia/);
+  });
+
+  it('CP-08.7e los más vendidos con un período inválido vuelven como error, sin consultar ventas', async () => {
+    const { herramientas, servicios } = armar();
+    for (const entrada of [
+      { desde: '2026-09-16', hasta: '2026-09-01' },
+      { desde: '2026-02-30', hasta: '2026-03-01' },
+      { desde: '2025-09-01', hasta: '2026-09-30' },
+      { desde: '2026-09-01', hasta: '2026-09-15', criterio: 'GANANCIA' },
+    ]) {
+      const r = await herramientas.ejecutar('productos_mas_vendidos', entrada);
+      expect(r.error).toBe(true);
+      expect(leer(r.contenido)['error']).toMatch(/no son válidos/);
+    }
+    expect(servicios.profitability.ventasEntre).not.toHaveBeenCalled();
+  });
+
+  it('los más vendidos traen totales y participación, por unidades si no se indica', async () => {
+    const { herramientas, servicios } = armar();
+    servicios.profitability.ventasEntre.mockResolvedValue([
+      {
+        id: UUID,
+        codigo: 'FA-220',
+        nombre: 'Filtro',
+        activo: true,
+        unidades: 40,
+        importeConIva: '484000.00',
+        alicuotaIva: '21',
+      },
+      {
+        id: UUID_2,
+        codigo: 'AC-5L',
+        nombre: 'Aceite',
+        activo: true,
+        unidades: 120,
+        importeConIva: '290400.00',
+        alicuotaIva: '21',
+      },
+    ]);
+    const r = await herramientas.ejecutar('productos_mas_vendidos', {
+      desde: '2026-09-16',
+      hasta: '2026-09-30',
+    });
+    expect(r.error).toBe(false);
+    expect(servicios.profitability.ventasEntre).toHaveBeenCalledWith(
+      new Date('2026-09-16T03:00:00.000Z'),
+      new Date('2026-10-01T03:00:00.000Z'),
+    );
+    expect(leer(r.contenido)).toMatchObject({
+      desde: '2026-09-16',
+      hasta: '2026-09-30',
+      criterio: 'UNIDADES',
+      totalUnidades: 160,
+      totalFacturacionNeta: '640000.00',
+      productos: [
+        { codigo: 'AC-5L', unidadesVendidas: 120, participacionPct: 75 },
+        { codigo: 'FA-220', unidadesVendidas: 40, participacionPct: 25 },
+      ],
+    });
+    const f = await herramientas.ejecutar('productos_mas_vendidos', {
+      desde: '2026-09-16',
+      hasta: '2026-09-30',
+      criterio: 'FACTURACION',
+      cantidad: 1,
+    });
+    expect(leer(f.contenido)).toMatchObject({
+      criterio: 'FACTURACION',
+      productos: [{ codigo: 'FA-220', facturacionNeta: '400000.00', participacionPct: 62.5 }],
+    });
   });
 
   it('una consulta que no existe o con datos inválidos vuelve como error, sin llamar al servicio', async () => {

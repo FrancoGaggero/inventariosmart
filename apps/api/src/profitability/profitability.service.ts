@@ -13,6 +13,7 @@ import {
   type RentabilidadQuery,
   type ResumenRentabilidad,
   type TopRentable,
+  type VentasDeProducto,
 } from '@inventariosmart/shared';
 import { TenantContext } from '../auth/tenant-context';
 import { codificarCursor, decodificarCursor } from '../common/cursor';
@@ -250,6 +251,33 @@ export class ProfitabilityService {
         margenBrutoPct: r.margenBrutoPct,
         margenBrutoMes: r.margenBrutoMes,
       };
+    });
+  }
+
+  /**
+   * Ventas por producto en el rango, incluidos los productos dados de baja: sus ventas
+   * existieron y cuentan en el total (consulta "Productos más vendidos" del asistente).
+   */
+  async ventasEntre(desde: Date, hasta: Date): Promise<VentasDeProducto[]> {
+    const { comercioId } = TenantContext.requerido();
+    return this.prisma.transaccionTenant(async (tx) => {
+      const ventas = (await ventasPorProducto(tx, comercioId, desde, hasta)).filter(
+        (v) => v.unidades > 0,
+      );
+      if (ventas.length === 0) return [];
+      const productos = await tx.$queryRaw<
+        { id: string; codigo: string; nombre: string; activo: boolean; alicuotaIva: string }[]
+      >(
+        Prisma.sql`SELECT p.id, p.codigo, p.nombre, p.activo, p.alicuota_iva::text AS "alicuotaIva"
+          FROM producto p
+          WHERE p.comercio_id = ${comercioId}::uuid
+            AND p.id = ANY(${ventas.map((v) => v.productoId)}::uuid[])`,
+      );
+      const deProducto = new Map(productos.map((p) => [p.id, p]));
+      return ventas.flatMap((v): VentasDeProducto[] => {
+        const p = deProducto.get(v.productoId);
+        return p ? [{ ...p, unidades: v.unidades, importeConIva: v.importe }] : [];
+      });
     });
   }
 

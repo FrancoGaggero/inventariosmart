@@ -39,3 +39,7 @@ HU-08 (RF-10) pide que el dueño pregunte por su negocio en lenguaje natural y r
 - El peor caso de una instrucción escondida en los datos es una respuesta incorrecta o un borrador de más: nada se envía ni se modifica sin el dueño.
 - El filtro de errores deja de registrar como "no controlado" un 503 propio: lo registra quien lo lanza.
 - `SuppliersService` y `SupplierComparisonService` pasan a exportarse de sus módulos.
+
+## Notas posteriores
+
+- **01/10/2026** (change `assistant-top-sellers`): se suma la undécima consulta, `productos_mas_vendidos`, que ordena las ventas del período por unidades o por facturación neta de IVA. Antes, una pregunta por "lo más vendido" se respondía con la consulta de rentables. Confirma la consecuencia de arriba: una pregunta nueva pidió una herramienta nueva, sin cambiar la arquitectura.

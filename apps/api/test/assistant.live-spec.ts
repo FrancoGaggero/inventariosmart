@@ -39,7 +39,13 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
   const herramientas = (r: Respuesta) => r.fuentes.map((f) => f.herramienta);
 
   const crearProducto = async (
-    datos: { codigo: string; nombre: string; stockInicial: number },
+    datos: {
+      codigo: string;
+      nombre: string;
+      stockInicial: number;
+      precioVenta?: number;
+      costoReposicion?: number;
+    },
     quien = duenioA,
   ): Promise<string> =>
     (
@@ -75,10 +81,13 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
       nombre: 'Filtro Aire FA-220',
       stockInicial: 100,
     });
+    // AC-5L vende más unidades que FA-220 pero deja menos margen (CP-08.7).
     prod['AC-5L'] = await crearProducto({
       codigo: 'AC-5L',
       nombre: 'Aceite 5W-30 5L',
-      stockInicial: 50,
+      stockInicial: 200,
+      precioVenta: 2420,
+      costoReposicion: 1900,
     });
     prod['TRAMPA'] = await crearProducto({
       codigo: 'TR-01',
@@ -87,7 +96,7 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
     });
     for (const [codigo, cantidad] of [
       ['FA-220', 40],
-      ['AC-5L', 5],
+      ['AC-5L', 120],
     ] as const) {
       await t
         .http()
@@ -110,6 +119,16 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
     expect(r.contenido).toMatch(/FA-220|Filtro Aire/i);
     expect(r.contenido).toMatch(/\b40\b/);
     expect(r.acciones).toEqual([]);
+  });
+
+  it('CP-08.7 lo más vendido se responde por unidades y no por margen', async () => {
+    const r = await preguntar('¿Qué fue lo que más vendí en la quincena?');
+    expect({ herramientas: herramientas(r), contenido: r.contenido }).toMatchObject({
+      herramientas: expect.arrayContaining(['productos_mas_vendidos']),
+    });
+    expect(r.contenido).toMatch(/AC-5L|Aceite/i);
+    expect(r.contenido).toMatch(/\b120\b/);
+    expect(r.contenido).toMatch(/unidades/i);
   });
 
   it('CP-08.2b sin ventas lo dice y no informa productos ni cifras de venta', async () => {

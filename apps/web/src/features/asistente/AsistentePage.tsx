@@ -287,7 +287,7 @@ export function AsistentePage() {
                     <p className="font-bold">¿Qué querés saber?</p>
                     <ul className="grid gap-2 sm:grid-cols-2">
                       {PREGUNTAS_SUGERIDAS.map((p) => (
-                        <li key={p}>
+                        <li key={p} className="sm:last:odd:col-span-2">
                           <button
                             type="button"
                             className="chip w-full !whitespace-normal !h-auto !py-2 text-left"

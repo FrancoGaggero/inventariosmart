@@ -34,9 +34,24 @@ interface ProductoDato {
   margenBrutoTotal: string;
 }
 
+/** Fila de la consulta de más vendidos. */
+interface VendidoDato {
+  id: string;
+  codigo: string;
+  dadoDeBaja: boolean;
+  unidadesVendidas: number;
+  facturacionNeta: string;
+  participacionPct: number;
+}
+
 /** Lo que devuelven las consultas, con los campos que mira esta suite. */
 interface Datos {
   productos: ProductoDato[];
+  /** Los `productos` de la consulta de más vendidos, que tienen otra forma. */
+  vendidos: VendidoDato[];
+  criterio: string;
+  totalUnidades: number;
+  totalFacturacionNeta: string;
   proveedores: { id: string; nombre: string }[];
   numero: string;
   error: string;
@@ -45,10 +60,13 @@ interface Datos {
 function resultados(pedido: PedidoModelo): { datos: Datos; error: boolean }[] {
   const ultimo = pedido.mensajes.at(-1) as MensajeModelo;
   if (ultimo.rol !== 'resultados') throw new Error('El último mensaje no trae resultados');
-  return ultimo.resultados.map((r) => ({
-    datos: JSON.parse(r.contenido) as Datos,
-    error: r.error,
-  }));
+  return ultimo.resultados.map((r) => {
+    const datos = JSON.parse(r.contenido) as Datos;
+    return {
+      datos: { ...datos, vendidos: datos.productos as unknown as VendidoDato[] },
+      error: r.error,
+    };
+  });
 }
 
 describe('ai-assistant: asistente conversacional (e2e)', () => {
@@ -59,6 +77,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
   const socioA = persona('socio-a');
   const duenioB = persona('duenio-b');
   const duenioC = persona('duenio-c');
+  const duenioV = persona('duenio-ventas');
   const duenioPro = persona('duenio-pro');
   const duenioFree = persona('duenio-free');
   const empleada = persona('empleada');
@@ -109,6 +128,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       ['a', duenioA],
       ['b', duenioB],
       ['c', duenioC],
+      ['v', duenioV],
       ['pro', duenioPro],
       ['free', duenioFree],
     ] as const) {
@@ -118,7 +138,9 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
     }
     await t.prisma.comoSistema(async (tx) => {
       await tx.comercio.updateMany({
-        where: { id: { in: [comercio['a']!, comercio['b']!, comercio['c']!] } },
+        where: {
+          id: { in: [comercio['a']!, comercio['b']!, comercio['c']!, comercio['v']!] },
+        },
         data: { plan: 'PREMIUM' },
       });
       await tx.comercio.update({ where: { id: comercio['pro']! }, data: { plan: 'PRO' } });
@@ -214,7 +236,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       expect(r.body.mensaje.contenido).toContain('FA-220');
       expect(r.body.mensaje.contenido).toContain('40 unidades');
 
-      // Lo que recibió el modelo: instrucciones fijas, contexto y las diez consultas.
+      // Lo que recibió el modelo: instrucciones fijas, contexto y las once consultas.
       expect(modelo.pedidos).toHaveLength(2);
       const [primero, segundo] = modelo.pedidos as [PedidoModelo, PedidoModelo];
       expect(primero.sistema).toMatch(/Sólo el negocio del comercio/);
@@ -322,15 +344,23 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       expect(modelo.pedidos).toHaveLength(0);
     }, 120_000);
 
-    it('CP-08.2b sin ventas, la consulta vuelve vacía y el asistente lo dice', async () => {
+    it('CP-08.2b y CP-08.7d sin ventas, la consulta vuelve vacía y el asistente lo dice', async () => {
       modelo.guion = [
-        [pedir('productos_mas_rentables', { desde: dia(29), hasta: dia() })],
+        [pedir('productos_mas_vendidos', { desde: dia(29), hasta: dia() })],
         (p) => {
-          const { productos } = resultados(p)[0]!.datos;
+          const [r] = resultados(p);
+          expect(r!.error).toBe(false);
+          expect(r!.datos).toMatchObject({
+            criterio: 'UNIDADES',
+            totalUnidades: 0,
+            totalFacturacionNeta: '0.00',
+            productos: [],
+          });
+          const { vendidos } = r!.datos;
           return decir(
-            productos.length === 0
+            vendidos.length === 0
               ? 'Todavía no hay ventas registradas en ese período.'
-              : `El más vendido fue ${productos[0]!.codigo}.`,
+              : `El más vendido fue ${vendidos[0]!.codigo}.`,
           );
         },
       ];
@@ -338,7 +368,10 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
         { mensaje: '¿Cuál fue mi producto más vendido del mes?' },
         duenioB,
       ).expect(201);
-      expect(r.body.mensaje.contenido).toBe('Todavía no hay ventas registradas en ese período.');
+      expect(r.body.mensaje).toMatchObject({
+        contenido: 'Todavía no hay ventas registradas en ese período.',
+        fuentes: [{ herramienta: 'productos_mas_vendidos', nombre: 'Productos más vendidos' }],
+      });
     }, 120_000);
 
     it('el tope de 6 consultas por respuesta', async () => {
@@ -367,6 +400,159 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       const ultimos = resultados(modelo.pedidos[6]!);
       expect(ultimos.map((u) => u.error)).toEqual([false, true]);
       expect(ultimos[1]!.datos.error).toMatch(/máximo de consultas/);
+    }, 120_000);
+  });
+
+  describe('productos más vendidos', () => {
+    const v: Record<string, string> = {};
+    const ventaV = async (productoId: string, cantidad: number): Promise<string> =>
+      (
+        await t
+          .http()
+          .post('/api/v1/movements')
+          .set(auth(duenioV))
+          .send({ tipo: 'VENTA', productoId, cantidad })
+          .expect(201)
+      ).body.id;
+
+    beforeAll(async () => {
+      // FA-220 deja mucho margen y vende poco; AC-5L vende mucho con poco margen.
+      for (const [codigo, precioVenta, costoReposicion, stockInicial] of [
+        ['FA-220', 12_100, 4_000, 100],
+        ['AC-5L', 2_420, 1_900, 200],
+        ['BA-120', 6_050, 3_000, 10],
+      ] as const) {
+        v[codigo] = (
+          await t
+            .http()
+            .post('/api/v1/products')
+            .set(auth(duenioV))
+            .send({
+              codigo,
+              nombre: `Producto ${codigo}`,
+              precioVenta,
+              costoReposicion,
+              alicuotaIva: 21,
+              stockInicial,
+            })
+            .expect(201)
+        ).body.id;
+      }
+      await ventaV(v['FA-220']!, 40);
+      await ventaV(v['AC-5L']!, 60);
+      await ventaV(v['AC-5L']!, 60);
+      // CP-08.7c: una venta anulada no cuenta.
+      const anulada = await ventaV(v['AC-5L']!, 10);
+      await t.http().post(`/api/v1/movements/${anulada}/anular`).set(auth(duenioV)).expect(201);
+      // Un producto vendido y después dado de baja sigue figurando.
+      await ventaV(v['BA-120']!, 5);
+      await t.http().delete(`/api/v1/products/${v['BA-120']}`).set(auth(duenioV)).expect(200);
+    }, 120_000);
+
+    it('CP-08.7 y CP-08.7c el más vendido por unidades no es el más rentable', async () => {
+      modelo.guion = [
+        [pedir('productos_mas_vendidos', { desde: dia(14), hasta: dia() })],
+        (p) => {
+          const top = resultados(p)[0]!.datos.vendidos[0]!;
+          return decir(
+            `Por unidades vendidas, lo que más vendiste fue ${top.codigo}: ${top.unidadesVendidas} unidades.`,
+          );
+        },
+      ];
+      const r = await enviar(
+        { mensaje: '¿Qué fue lo que más vendí en la quincena?' },
+        duenioV,
+      ).expect(201);
+      expect(r.body.mensaje).toMatchObject({
+        contenido: 'Por unidades vendidas, lo que más vendiste fue AC-5L: 120 unidades.',
+        fuentes: [{ herramienta: 'productos_mas_vendidos', nombre: 'Productos más vendidos' }],
+      });
+      const [primero, segundo] = modelo.pedidos as [PedidoModelo, PedidoModelo];
+      expect(primero.sistema).toMatch(/No confundas tres preguntas distintas/);
+      const { datos } = resultados(segundo)[0]!;
+      expect(datos).toMatchObject({ criterio: 'UNIDADES', totalUnidades: 165 });
+      expect(datos.vendidos.map((x) => [x.codigo, x.unidadesVendidas, x.dadoDeBaja])).toEqual([
+        ['AC-5L', 120, false],
+        ['FA-220', 40, false],
+        ['BA-120', 5, true],
+      ]);
+      expect(datos.vendidos[0]!.participacionPct).toBe(72.7);
+
+      // El más rentable del mismo comercio es otro.
+      modelo.reiniciar();
+      modelo.guion = [
+        [pedir('productos_mas_rentables', { desde: dia(14), hasta: dia() })],
+        decir('Listo.'),
+      ];
+      await enviar({ mensaje: '¿Cuál fue el más rentable?' }, duenioV).expect(201);
+      const rentables = resultados(modelo.pedidos[1] as PedidoModelo)[0]!.datos;
+      expect(rentables.productos[0]!.codigo).toBe('FA-220');
+
+      // CP-08.7c: las cifras coinciden con la suma de las ventas no anuladas de Movimientos.
+      for (const fila of datos.vendidos) {
+        const movs = await t
+          .http()
+          .get(`/api/v1/movements?tipo=VENTA&productoId=${fila.id}&limit=100`)
+          .set(auth(duenioV))
+          .expect(200);
+        const vigentes = (
+          movs.body.items as {
+            cantidad: number;
+            precioUnitario: string;
+            anuladoPorId: string | null;
+          }[]
+        ).filter((m) => m.anuladoPorId === null);
+        const unidades = vigentes.reduce((s, m) => s + m.cantidad, 0);
+        const conIva = vigentes.reduce((s, m) => s + m.cantidad * Number(m.precioUnitario), 0);
+        expect(fila.unidadesVendidas).toBe(unidades);
+        expect(fila.facturacionNeta).toBe((conIva / 1.21).toFixed(2));
+      }
+    }, 120_000);
+
+    it('CP-08.7b el que más facturó, neto de IVA', async () => {
+      modelo.guion = [
+        [
+          pedir('productos_mas_vendidos', {
+            desde: dia(29),
+            hasta: dia(),
+            criterio: 'FACTURACION',
+          }),
+        ],
+        (p) => {
+          const top = resultados(p)[0]!.datos.vendidos[0]!;
+          return decir(`El que más facturó fue ${top.codigo}: $ ${top.facturacionNeta} sin IVA.`);
+        },
+      ];
+      const r = await enviar({ mensaje: '¿Qué producto facturó más este mes?' }, duenioV).expect(
+        201,
+      );
+      expect(r.body.mensaje.contenido).toBe('El que más facturó fue FA-220: $ 400000.00 sin IVA.');
+      const { datos } = resultados(modelo.pedidos[1] as PedidoModelo)[0]!;
+      expect(datos).toMatchObject({ criterio: 'FACTURACION', totalFacturacionNeta: '665000.00' });
+      expect(datos.vendidos.map((x) => [x.codigo, x.facturacionNeta])).toEqual([
+        ['FA-220', '400000.00'],
+        ['AC-5L', '240000.00'],
+        ['BA-120', '25000.00'],
+      ]);
+    }, 120_000);
+
+    it('CP-08.7f cada comercio ve sólo sus ventas', async () => {
+      const consultar = async (quien: typeof duenioA) => {
+        modelo.reiniciar();
+        modelo.guion = [
+          [pedir('productos_mas_vendidos', { desde: dia(29), hasta: dia() })],
+          decir('Listo.'),
+        ];
+        await enviar({ mensaje: '¿Qué fue lo que más vendí?' }, quien).expect(201);
+        return resultados(modelo.pedidos[1] as PedidoModelo)[0]!.datos;
+      };
+      const deV = await consultar(duenioV);
+      const deA = await consultar(duenioA);
+      expect(deV.vendidos.map((x) => x.id).sort()).toEqual(
+        [v['FA-220'], v['AC-5L'], v['BA-120']].sort(),
+      );
+      expect(deA.vendidos.map((x) => x.id).sort()).toEqual([prod['FA-220'], prod['AC-5L']].sort());
+      expect(deA.totalUnidades).toBe(45);
     }, 120_000);
   });
 

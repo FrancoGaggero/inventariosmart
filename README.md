@@ -66,7 +66,7 @@ pnpm dev
   Rutas de HU-08 (plan PREMIUM, sólo el dueño): `POST /assistant/messages` (`{ conversacionId?, mensaje }`, hasta 1.000
   caracteres; responde el mensaje del asistente con `fuentes`, las consultas que hizo, y `acciones`, lo que dejó
   preparado), `GET /assistant/conversations?cursor&limit` y `GET /assistant/conversations/:id`. El asistente consulta
-  los datos del comercio con diez herramientas predefinidas, nunca con SQL libre, y no modifica nada: a lo sumo deja una
+  los datos del comercio con once herramientas predefinidas, nunca con SQL libre, y no modifica nada: a lo sumo deja una
   orden de compra en borrador, que el dueño confirma desde Órdenes (RN-06). Límite de 50 mensajes por día por comercio
   (429 `LIMITE_ALCANZADO`). Usa la API de Anthropic: sin `ANTHROPIC_API_KEY`, o si el proveedor no responde, contesta 503
   `SERVICIO_NO_DISPONIBLE` y el resto funciona igual (RN-09, ADR 0018). Las pruebas con el modelo real se corren a mano

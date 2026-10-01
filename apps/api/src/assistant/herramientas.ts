@@ -1,9 +1,11 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import {
   ASISTENTE_MAX_FILAS,
+  CriterioVentasSchema,
   HERRAMIENTAS_ASISTENTE,
   MesSchema,
   ordenarPorAtraso,
+  rankingDeVentas,
   type AccionAsistente,
   type ApiError,
   type HerramientaAsistente,
@@ -79,6 +81,18 @@ const ENTRADAS = {
       .default(5)
       .describe('Cuántos productos traer, de 1 a 10.'),
   }),
+  productos_mas_vendidos: RangoSchema.safeExtend({
+    criterio: CriterioVentasSchema.default('UNIDADES').describe(
+      'UNIDADES (lo que más se vendió, por cantidad) o FACTURACION (lo que más pesos facturó, sin IVA). Si no está claro, UNIDADES.',
+    ),
+    cantidad: z
+      .number()
+      .int()
+      .min(1)
+      .max(ASISTENTE_MAX_FILAS)
+      .default(5)
+      .describe('Cuántos productos traer, de 1 a 10.'),
+  }),
   buscar_productos: z.object({
     q: z.string().trim().max(120).optional().describe('Parte del código o del nombre.'),
     estado: z
@@ -124,7 +138,9 @@ const DESCRIPCIONES: Record<HerramientaAsistente, string> = {
   resumen_rentabilidad:
     'Resumen de rentabilidad del comercio entre dos fechas: unidades vendidas, ventas netas, costo de lo vendido, margen bruto, gastos y margen neto. Todos los montos son netos de IVA.',
   productos_mas_rentables:
-    'Productos con ventas entre dos fechas, ordenados por el margen bruto total que dejaron. Sirve para saber cuál fue el producto más rentable de un período.',
+    'Productos con ventas entre dos fechas, ordenados por la ganancia (margen bruto total) que dejaron, no por unidades. Sirve para saber cuál fue el producto más rentable de un período.',
+  productos_mas_vendidos:
+    'Productos más vendidos entre dos fechas, ordenados por unidades vendidas o por facturación neta de IVA (con la alícuota actual de cada producto), no por ganancia. Trae unidades, facturación y participación de cada producto, y los totales del período. Incluye productos dados de baja que se vendieron en el período.',
   buscar_productos:
     'Busca productos activos por código o nombre, o por estado de stock. Devuelve precio de venta (con IVA), costo de reposición (sin IVA), stock y proveedor principal. Trae como máximo 10.',
   alertas_de_reposicion:
@@ -264,6 +280,13 @@ export class HerramientasAsistente {
             })),
           },
         };
+      }
+      case 'productos_mas_vendidos': {
+        const { desde, hasta, criterio, cantidad } = entrada as z.infer<
+          typeof ENTRADAS.productos_mas_vendidos
+        >;
+        const ventas = await this.profitability.ventasEntre(instante(desde), diaSiguiente(hasta));
+        return { resultado: { desde, hasta, ...rankingDeVentas(ventas, criterio, cantidad) } };
       }
       case 'buscar_productos': {
         const { q, estado } = entrada as z.infer<typeof ENTRADAS.buscar_productos>;
