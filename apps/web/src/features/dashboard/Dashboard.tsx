@@ -1,6 +1,7 @@
 import { ETIQUETA_MOTIVO_RESUMEN, mesActual, type Mes } from '@inventariosmart/shared';
 import {
   AlertTriangle,
+  Archive,
   BellRing,
   Boxes,
   type LucideIcon,
@@ -17,6 +18,11 @@ import { useDashboard } from '@/lib/dashboard';
 import { formatearMes } from '@/lib/gastos';
 import { formatearPesos } from '@/lib/productos';
 import { RUTA_QUIEBRES, detallePanel, formatearPerdida } from '@/lib/quiebres-formato';
+import {
+  RUTA_STOCK_PARADO,
+  detallePanel as detallePanelParado,
+  formatearCapital,
+} from '@/lib/stock-parado-formato';
 import { claseSigno, formatearPct } from '@/lib/rentabilidad';
 import { Anillo } from '@/ui/Anillo';
 import { Aviso } from '@/ui/Aviso';
@@ -43,6 +49,52 @@ function fraseDelMes(d: {
   const n = Number(v);
   if (n === 0) return `${base}, igual que el mes pasado.`;
   return `${base}, un ${formatearPct(String(Math.abs(n)))} ${n > 0 ? 'más' : 'menos'} que el mes pasado.`;
+}
+
+/** Tarjeta del panel que lleva a una página de análisis del stock (HU-18, HU-19). */
+function TarjetaAnalisis({
+  indice,
+  to,
+  Icono,
+  tono,
+  titulo,
+  monto,
+  detalle,
+}: {
+  indice: number;
+  to: string;
+  Icono: LucideIcon;
+  tono: 'crit' | 'warn';
+  titulo: string;
+  monto: string;
+  detalle: string;
+}) {
+  const color = tono === 'crit' ? 'bg-crit/15 text-crit' : 'bg-warn/15 text-warn';
+  return (
+    <Entrada as="article" indice={indice} className="card p-5">
+      <Link to={to} className="flex flex-wrap items-center justify-between gap-3 group h-full">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${color}`}>
+            <Icono className="w-5 h-5" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-bold">{titulo}</h3>
+            <p className="text-sm text-t2">
+              <span
+                className={`font-extrabold tabular-nums ${tono === 'crit' ? 'text-crit' : 'text-warn'}`}
+              >
+                {monto}
+              </span>{' '}
+              {detalle}
+            </p>
+          </div>
+        </div>
+        <span className="text-xs font-semibold text-brand-3 group-hover:underline">
+          Ver detalle
+        </span>
+      </Link>
+    </Entrada>
+  );
 }
 
 /** Monto que sube hasta su valor (design D4): el `aria-label` lleva el valor final. */
@@ -123,6 +175,8 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
   const [periodo, setPeriodo] = useState<Mes>(mesActual());
   const panel = useDashboard(periodo);
   const d = panel.data;
+  const conQuiebres = !!d?.quiebres && Number(d.quiebres.gananciaPerdida) > 0;
+  const conParado = !!d?.stockParado && Number(d.stockParado.capitalParado) > 0;
   const cargando = panel.isPending;
 
   return (
@@ -230,31 +284,31 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
         </Aviso>
       )}
 
-      {d?.quiebres && Number(d.quiebres.gananciaPerdida) > 0 && (
-        <Entrada as="article" indice={4} className="card p-5">
-          <Link
-            to={RUTA_QUIEBRES}
-            className="flex flex-wrap items-center justify-between gap-3 group"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="w-10 h-10 rounded-xl bg-crit/15 text-crit grid place-items-center shrink-0">
-                <PackageX className="w-5 h-5" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <h3 className="font-bold">Perdiste por falta de stock</h3>
-                <p className="text-sm text-t2">
-                  <span className="font-extrabold text-crit tabular-nums">
-                    {formatearPerdida(d.quiebres.gananciaPerdida)}
-                  </span>{' '}
-                  {detallePanel(d.quiebres.productosAfectados)}
-                </p>
-              </div>
-            </div>
-            <span className="text-xs font-semibold text-brand-3 group-hover:underline">
-              Ver detalle
-            </span>
-          </Link>
-        </Entrada>
+      {(conQuiebres || conParado) && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {conQuiebres && (
+            <TarjetaAnalisis
+              indice={4}
+              to={RUTA_QUIEBRES}
+              Icono={PackageX}
+              tono="crit"
+              titulo="Perdiste por falta de stock"
+              monto={formatearPerdida(d.quiebres!.gananciaPerdida)}
+              detalle={detallePanel(d.quiebres!.productosAfectados)}
+            />
+          )}
+          {conParado && (
+            <TarjetaAnalisis
+              indice={5}
+              to={RUTA_STOCK_PARADO}
+              Icono={Archive}
+              tono="warn"
+              titulo="Plata parada en stock"
+              monto={formatearCapital(d.stockParado!.capitalParado)}
+              detalle={detallePanelParado(d.stockParado!.productos)}
+            />
+          )}
+        </div>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ReposicionDashboardSchema } from './alertas';
 import { MesSchema, MotivoResumenSchema } from './gastos';
 import { QuiebresDashboardSchema } from './quiebres';
+import { StockParadoDashboardSchema } from './stock-parado';
 import { porcentaje } from './rentabilidad';
 
 // ---------------------------------------------------------------------------
@@ -83,5 +84,7 @@ export const DashboardSchema = z.object({
   alertas: AlertasDashboardSchema,
   /** Pérdidas por falta de stock de los últimos 30 días (HU-18); null si el plan no las incluye. */
   quiebres: QuiebresDashboardSchema,
+  /** Capital parado con el criterio de 90 días (HU-19); null si el plan no lo incluye. */
+  stockParado: StockParadoDashboardSchema,
 });
 export type Dashboard = z.infer<typeof DashboardSchema>;

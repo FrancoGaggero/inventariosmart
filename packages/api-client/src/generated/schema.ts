@@ -574,6 +574,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dead-stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Productos con stock y sin ventas en los últimos 30, 60, 90 o 180 días (HU-19)
+         * @description RN-15: un producto activo con stock está parado si no tuvo ventas no anuladas en el período, por fecha de venta; los dados de alta dentro del período no cuentan. Capital parado = stock × costo vigente. Ordenado por capital parado.
+         */
+        get: operations["DeadStockController_listar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/import/preview": {
         parameters: {
             query?: never;
@@ -2000,6 +2020,12 @@ export interface components {
             /** @example 1 */
             productosAfectados: number;
         };
+        StockParadoDashboardDto: {
+            /** @example 21000.00 */
+            capitalParado: string;
+            /** @example 1 */
+            productos: number;
+        };
         DashboardDto: {
             /** @example 2026-09 */
             periodo: string;
@@ -2010,6 +2036,8 @@ export interface components {
             alertas: components["schemas"]["AlertasDashboardDto"];
             /** @description Pérdidas por falta de stock de los últimos 30 días (HU-18); null debajo de PRO */
             quiebres: components["schemas"]["QuiebresDashboardDto"] | null;
+            /** @description Capital parado con el criterio de 90 días (HU-19); null debajo de PRO */
+            stockParado: components["schemas"]["StockParadoDashboardDto"] | null;
         };
         ProductoAlertaDto: {
             /** Format: uuid */
@@ -2184,6 +2212,67 @@ export interface components {
             /** @description Sobre todos los productos, sin paginar */
             totales: components["schemas"]["TotalesQuiebresDto"];
             items: components["schemas"]["ProductoConQuiebresDto"][];
+            siguienteCursor: string | null;
+        };
+        TotalesStockParadoDto: {
+            /** @example 34000.00 */
+            capitalParado: string;
+            /** @example 3 */
+            productos: number;
+            /** @example 15 */
+            unidades: number;
+            /**
+             * @description Capital parado sobre el stock valorizado de los activos, en %
+             * @example 34.00
+             */
+            porcentajeDelStock: string | null;
+        };
+        ProductoParadoRefDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example AC-5L */
+            codigo: string;
+            /** @example Aceite 5W-30 5L */
+            nombre: string;
+        };
+        ProductoParadoDto: {
+            producto: components["schemas"]["ProductoParadoRefDto"];
+            /** @example 10 */
+            stock: number;
+            /**
+             * @description Costo de reposición vigente, neto (RN-08)
+             * @example 2100.00
+             */
+            costoReposicion: string;
+            /**
+             * @description Stock × costo vigente (RN-15)
+             * @example 21000.00
+             */
+            capitalParado: string;
+            /**
+             * Format: date-time
+             * @description Última venta no anulada; null si nunca se vendió
+             */
+            ultimaVenta: string | null;
+            /**
+             * @description Desde la última venta o, si no hay, desde el alta
+             * @example 120
+             */
+            diasSinVender: number;
+        };
+        ListaStockParadoDto: {
+            /**
+             * @example 90
+             * @enum {number}
+             */
+            dias: 30 | 60 | 90 | 180;
+            /** Format: date-time */
+            desde: string;
+            /** Format: date-time */
+            hasta: string;
+            /** @description Sobre todos los productos, sin paginar */
+            totales: components["schemas"]["TotalesStockParadoDto"];
+            items: components["schemas"]["ProductoParadoDto"][];
             siguienteCursor: string | null;
         };
         ArchivoProductosDto: {
@@ -5554,6 +5643,63 @@ export interface operations {
                 };
             };
             /** @description El EMPLEADO no ve márgenes (SIN_PERMISO) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    DeadStockController_listar: {
+        parameters: {
+            query?: {
+                limit?: unknown;
+                cursor?: unknown;
+                dias?: 30 | 60 | 90 | 180;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaStockParadoDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description Plan FREE: requiere PRO (PLAN_REQUERIDO) */
+            402: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description El EMPLEADO no ve costos (SIN_PERMISO) */
             403: {
                 headers: {
                     [name: string]: unknown;

@@ -82,6 +82,12 @@ export const FUNCIONALIDADES = [
     planMinimo: 'PRO',
   },
   {
+    clave: 'stockParado',
+    nombre: 'Stock parado',
+    descripcion: 'Cuánta plata tenés en productos que no se venden hace meses.',
+    planMinimo: 'PRO',
+  },
+  {
     clave: 'ordenes',
     nombre: 'Órdenes de compra',
     descripcion: 'Pedidos redactados para enviar por correo o WhatsApp.',

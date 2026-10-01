@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MOTIVOS_RESUMEN, SEVERIDADES_ALERTA } from '@inventariosmart/shared';
+import { StockParadoDashboardDto } from '../dead-stock/dead-stock.dto';
 import { QuiebresDashboardDto } from '../stockouts/stockouts.dto';
 
 export class StockDashboardDto {
@@ -112,4 +113,10 @@ export class DashboardDto {
     description: 'Pérdidas por falta de stock de los últimos 30 días (HU-18); null debajo de PRO',
   })
   quiebres!: QuiebresDashboardDto | null;
+  @ApiProperty({
+    type: StockParadoDashboardDto,
+    nullable: true,
+    description: 'Capital parado con el criterio de 90 días (HU-19); null debajo de PRO',
+  })
+  stockParado!: StockParadoDashboardDto | null;
 }

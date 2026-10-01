@@ -3320,6 +3320,103 @@
         ]
       }
     },
+    "/api/v1/dead-stock": {
+      "get": {
+        "description": "RN-15: un producto activo con stock está parado si no tuvo ventas no anuladas en el período, por fecha de venta; los dados de alta dentro del período no cuentan. Capital parado = stock × costo vigente. Ordenado por capital parado.",
+        "operationId": "DeadStockController_listar",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "dias",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                30,
+                60,
+                90,
+                180
+              ],
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaStockParadoDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Plan FREE: requiere PRO (PLAN_REQUERIDO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "El EMPLEADO no ve costos (SIN_PERMISO)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Productos con stock y sin ventas en los últimos 30, 60, 90 o 180 días (HU-19)",
+        "tags": [
+          "stock-parado"
+        ]
+      }
+    },
     "/api/v1/import/preview": {
       "post": {
         "description": "Valida cada fila con las reglas del alta de producto y la clasifica: NUEVO, ACTUALIZA (el código existe) o INVALIDA. Informa si la importación superaría el límite del plan. No registra nada.",
@@ -8124,6 +8221,23 @@
           "productosAfectados"
         ]
       },
+      "StockParadoDashboardDto": {
+        "type": "object",
+        "properties": {
+          "capitalParado": {
+            "type": "string",
+            "example": "21000.00"
+          },
+          "productos": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "capitalParado",
+          "productos"
+        ]
+      },
       "DashboardDto": {
         "type": "object",
         "properties": {
@@ -8158,6 +8272,16 @@
                 "$ref": "#/components/schemas/QuiebresDashboardDto"
               }
             ]
+          },
+          "stockParado": {
+            "nullable": true,
+            "description": "Capital parado con el criterio de 90 días (HU-19); null debajo de PRO",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockParadoDashboardDto"
+              }
+            ]
           }
         },
         "required": [
@@ -8167,7 +8291,8 @@
           "mesAnterior",
           "topRentables",
           "alertas",
-          "quiebres"
+          "quiebres",
+          "stockParado"
         ]
       },
       "ProductoAlertaDto": {
@@ -8601,6 +8726,147 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductoConQuiebresDto"
+            }
+          },
+          "siguienteCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "dias",
+          "desde",
+          "hasta",
+          "totales",
+          "items",
+          "siguienteCursor"
+        ]
+      },
+      "TotalesStockParadoDto": {
+        "type": "object",
+        "properties": {
+          "capitalParado": {
+            "type": "string",
+            "example": "34000.00"
+          },
+          "productos": {
+            "type": "number",
+            "example": 3
+          },
+          "unidades": {
+            "type": "number",
+            "example": 15
+          },
+          "porcentajeDelStock": {
+            "type": "string",
+            "nullable": true,
+            "description": "Capital parado sobre el stock valorizado de los activos, en %",
+            "example": "34.00"
+          }
+        },
+        "required": [
+          "capitalParado",
+          "productos",
+          "unidades",
+          "porcentajeDelStock"
+        ]
+      },
+      "ProductoParadoRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "AC-5L"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Aceite 5W-30 5L"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nombre"
+        ]
+      },
+      "ProductoParadoDto": {
+        "type": "object",
+        "properties": {
+          "producto": {
+            "$ref": "#/components/schemas/ProductoParadoRefDto"
+          },
+          "stock": {
+            "type": "number",
+            "example": 10
+          },
+          "costoReposicion": {
+            "type": "string",
+            "description": "Costo de reposición vigente, neto (RN-08)",
+            "example": "2100.00"
+          },
+          "capitalParado": {
+            "type": "string",
+            "description": "Stock × costo vigente (RN-15)",
+            "example": "21000.00"
+          },
+          "ultimaVenta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Última venta no anulada; null si nunca se vendió"
+          },
+          "diasSinVender": {
+            "type": "number",
+            "description": "Desde la última venta o, si no hay, desde el alta",
+            "example": 120
+          }
+        },
+        "required": [
+          "producto",
+          "stock",
+          "costoReposicion",
+          "capitalParado",
+          "ultimaVenta",
+          "diasSinVender"
+        ]
+      },
+      "ListaStockParadoDto": {
+        "type": "object",
+        "properties": {
+          "dias": {
+            "type": "number",
+            "enum": [
+              30,
+              60,
+              90,
+              180
+            ],
+            "example": 90
+          },
+          "desde": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totales": {
+            "description": "Sobre todos los productos, sin paginar",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TotalesStockParadoDto"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductoParadoDto"
             }
           },
           "siguienteCursor": {

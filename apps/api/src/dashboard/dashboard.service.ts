@@ -13,6 +13,7 @@ import { AlertsService } from '../alerts/alerts.service';
 import { TenantContext } from '../auth/tenant-context';
 import { ProfitabilityService } from '../profitability/profitability.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { DeadStockService } from '../dead-stock/dead-stock.service';
 import { StockoutsService } from '../stockouts/stockouts.service';
 
 interface FilaStock {
@@ -34,6 +35,7 @@ export class DashboardService {
     private readonly alerts: AlertsService,
     private readonly profitability: ProfitabilityService,
     private readonly stockouts: StockoutsService,
+    private readonly deadStock: DeadStockService,
   ) {}
 
   async obtener(periodo: Mes | undefined): Promise<Dashboard> {
@@ -41,16 +43,20 @@ export class DashboardService {
     const mes = periodo ?? this.mesActualBuenosAires();
     const anterior = sumarMeses(mes, -1);
 
-    const [ventas, previo, stock, topRentables, alertas, reposicion, quiebres] = await Promise.all([
-      this.profitability.resumen(mes),
-      this.profitability.resumen(anterior),
-      this.stock(comercioId),
-      this.profitability.topDelMes(mes, TOP_MAX),
-      this.alertas(),
-      this.alerts.reposicionParaPanel(),
-      // Siempre los últimos 30 días, sin importar el mes pedido (HU-18, design D7).
-      planCumple(plan, 'PRO') ? this.stockouts.totales(30) : Promise.resolve(null),
-    ]);
+    const conPro = planCumple(plan, 'PRO');
+    const [ventas, previo, stock, topRentables, alertas, reposicion, quiebres, parado] =
+      await Promise.all([
+        this.profitability.resumen(mes),
+        this.profitability.resumen(anterior),
+        this.stock(comercioId),
+        this.profitability.topDelMes(mes, TOP_MAX),
+        this.alertas(),
+        this.alerts.reposicionParaPanel(),
+        // Períodos fijos, sin importar el mes pedido: 30 días de quiebres (HU-18) y 90 de stock
+        // parado (HU-19).
+        conPro ? this.stockouts.totales(30) : Promise.resolve(null),
+        conPro ? this.deadStock.totales(90) : Promise.resolve(null),
+      ]);
 
     return {
       periodo: mes,
@@ -79,6 +85,7 @@ export class DashboardService {
         ventaPerdida: quiebres.ventaPerdida,
         productosAfectados: quiebres.productosAfectados,
       },
+      stockParado: parado && { capitalParado: parado.capitalParado, productos: parado.productos },
     };
   }
 

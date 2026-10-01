@@ -62,17 +62,21 @@ context: |
         últimos 90 / esos días; unidades perdidas = días sin stock × demanda;
         venta y ganancia perdidas con el precio neto y el margen bruto vigentes.
         Con menos de 7 días con stock o sin ventas, no se estima.
+  RN-15 un producto activo con stock está parado si no tuvo ventas no anuladas
+        en los últimos N días (30, 60, 90 o 180) y se dio de alta antes;
+        capital parado = stock × costo de reposición vigente.
 
   Convenciones de API: paginación por cursor; errores { code, message, details }
   con message en español; montos decimal(14,2) como string en JSON; fechas ISO
   8601, zona America/Argentina/Buenos_Aires; Idempotency-Key en POST /movements;
   campos sensibles (costo, margen) filtrados por interceptor para EMPLEADO.
 
-  Trazabilidad: cada change referencia las HU (HU-01…HU-18) y RF (RF-01…RF-19)
+  Trazabilidad: cada change referencia las HU (HU-01…HU-19) y RF (RF-01…RF-20)
   que implementa. HU-15 (RF-16) "Mis precios frente a la inflación", HU-16
   (RF-17) "Enviar la orden por WhatsApp" y HU-17 (RF-18) "Remarcación asistida"
   se sumaron el 28/09/2026 como diferencial del producto (RNF-08); HU-18
-  (RF-19) "Cuánto pierdo por quedarme sin stock" se sumó el 01/10/2026. Alcance comprometido para la entrega del 18/12/2026: Fase 1
+  (RF-19) "Cuánto pierdo por quedarme sin stock" y HU-19 (RF-20) "Plata parada
+  en stock" se sumaron el 01/10/2026. Alcance comprometido para la entrega del 18/12/2026: Fase 1
   (HU-01, 02, 03, 04, 05, 10, 11, 13). Fases 2 y 3 se modelan pero no se
   construyen salvo que sobre tiempo (HU-06 primero).
 

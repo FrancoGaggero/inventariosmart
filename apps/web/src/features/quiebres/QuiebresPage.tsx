@@ -1,9 +1,10 @@
 import { planCumple, type DiasQuiebres, type ProductoConQuiebres } from '@inventariosmart/shared';
-import { BellRing, CalendarClock, PackageX, TrendingDown } from 'lucide-react';
+import { Archive, BellRing, CalendarClock, PackageX, TrendingDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { mensajeDe } from '@/lib/api';
 import { useMe } from '@/lib/me';
+import { RUTA_STOCK_PARADO } from '@/lib/stock-parado-formato';
 import {
   DIAS_QUIEBRES,
   EXPLICACION_QUIEBRES,
@@ -21,6 +22,7 @@ import { Aviso } from '@/ui/Aviso';
 import { Entrada } from '@/ui/Entrada';
 import { EstadoVacio } from '@/ui/EstadoVacio';
 import { SkeletonFilas } from '@/ui/Skeleton';
+import { TarjetaResumen } from '@/ui/TarjetaResumen';
 
 function Estado({ producto }: { producto: ProductoConQuiebres }) {
   if (!producto.enCurso) return null;
@@ -28,34 +30,6 @@ function Estado({ producto }: { producto: ProductoConQuiebres }) {
     <span className="inline-block px-2 py-0.5 rounded-md text-xs font-semibold whitespace-nowrap bg-crit/15 text-crit">
       {SIN_STOCK_AHORA}
     </span>
-  );
-}
-
-function Tarjeta({
-  titulo,
-  valor,
-  detalle,
-  Icono,
-  tono,
-  indice,
-}: {
-  titulo: string;
-  valor: string;
-  detalle: string;
-  Icono: typeof PackageX;
-  tono: 'crit' | 'warn' | 'brand';
-  indice: number;
-}) {
-  const color = { crit: 'text-crit', warn: 'text-warn', brand: 'text-brand-3' }[tono];
-  return (
-    <Entrada as="div" indice={indice} className="card p-5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-t3 flex items-center gap-2">
-        <Icono className={`w-4 h-4 ${color}`} aria-hidden />
-        {titulo}
-      </dt>
-      <dd className="mt-2 text-2xl font-extrabold tabular-nums">{valor}</dd>
-      <dd className="text-xs text-t2 mt-1">{detalle}</dd>
-    </Entrada>
   );
 }
 
@@ -85,10 +59,16 @@ export function QuiebresPage() {
           </p>
         </div>
         {tienePlan && (
-          <Link to="/alertas" className="btn btn-ghost">
-            <BellRing className="w-4 h-4" aria-hidden />
-            Alertas de reposición
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link to={RUTA_STOCK_PARADO} className="btn btn-ghost">
+              <Archive className="w-4 h-4" aria-hidden />
+              Stock parado
+            </Link>
+            <Link to="/alertas" className="btn btn-ghost">
+              <BellRing className="w-4 h-4" aria-hidden />
+              Alertas de reposición
+            </Link>
+          </div>
         )}
       </header>
 
@@ -125,7 +105,7 @@ export function QuiebresPage() {
       {tienePlan && totales && (
         <>
           <dl className="grid gap-4 sm:grid-cols-3">
-            <Tarjeta
+            <TarjetaResumen
               indice={0}
               titulo="Ganancia perdida"
               Icono={TrendingDown}
@@ -133,7 +113,7 @@ export function QuiebresPage() {
               valor={formatearPerdida(totales.gananciaPerdida)}
               detalle="Margen bruto, sin IVA"
             />
-            <Tarjeta
+            <TarjetaResumen
               indice={1}
               titulo="Ventas perdidas"
               Icono={PackageX}
@@ -141,7 +121,7 @@ export function QuiebresPage() {
               valor={formatearPerdida(totales.ventaPerdida)}
               detalle={`${unidadesLegibles(totales.unidadesPerdidas)}, sin IVA`}
             />
-            <Tarjeta
+            <TarjetaResumen
               indice={2}
               titulo="Productos afectados"
               Icono={CalendarClock}

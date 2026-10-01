@@ -18,7 +18,7 @@ Las alertas de reposición (HU-06) avisan antes de que un producto se agote, per
 4. **Viaja poco desde la base**: una sola consulta con funciones de ventana suma por producto lo que se movió y lo que se vendió, y devuelve sólo los movimientos que pasan el stock de cero a positivo o al revés, además del primero de cada producto. Los demás no cortan ningún tramo. Con 50.000 movimientos, eso reduce las filas que viajan a unas pocas miles.
 5. **RN-14 vive en `packages/shared`** (`quiebres.ts`) como funciones puras (`tramosSinStock`, `diasConStock`, `estimarPerdida`, `ordenarQuiebres`, `totalizarQuiebres`), probadas con unitarios. La API las aplica y la web usa los mismos esquemas.
 6. **Orden por ganancia perdida y cursor de posición**, igual que el comparador (ADR 0017). Los totales se suman antes de paginar.
-7. **Reloj inyectable** (`RELOJ_QUIEBRES`): un quiebre en curso cambia de cifra con cada segundo, así que el e2e fija la hora para comprobar los centavos exactos.
+7. **Reloj inyectable** (`RELOJ`, en `common/reloj.ts` desde ADR 0021): un quiebre en curso cambia de cifra con cada segundo, así que el e2e fija la hora para comprobar los centavos exactos.
 8. **El panel reutiliza el mismo servicio** con los últimos 30 días, sin importar el mes elegido, y devuelve `null` debajo del plan PRO.
 
 ## Alternativas consideradas

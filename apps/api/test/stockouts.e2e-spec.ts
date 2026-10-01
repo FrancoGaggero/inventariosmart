@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { DIA_MS } from '@inventariosmart/shared';
-import { RELOJ_QUIEBRES } from '../src/stockouts/stockouts.service';
+import { RELOJ } from '../src/common/reloj';
 import { type AppDePrueba, conCargaExclusiva, crearAppDePrueba, persona } from './helpers';
 
 /** La hora de la consulta queda fija: un quiebre en curso cambia de cifra con cada segundo. */
@@ -98,7 +98,7 @@ describe('stockout-losses: pérdidas por falta de stock (e2e)', () => {
   }
 
   beforeAll(async () => {
-    t = await crearAppDePrueba([], (m) => m.overrideProvider(RELOJ_QUIEBRES).useValue(() => AHORA));
+    t = await crearAppDePrueba([], (m) => m.overrideProvider(RELOJ).useValue(() => AHORA));
     for (const [clave, p] of [
       ['a', duenioA],
       ['b', duenioB],

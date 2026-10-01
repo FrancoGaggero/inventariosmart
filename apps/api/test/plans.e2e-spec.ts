@@ -14,6 +14,7 @@ const RUTA: Record<ClaveFuncionalidad, string | null> = {
   importacion: null,
   alertas: '/api/v1/alerts',
   quiebres: '/api/v1/stockouts',
+  stockParado: '/api/v1/dead-stock',
   ordenes: '/api/v1/purchase-orders',
   reportes: '/api/v1/reports/weekly',
   inflacion: '/api/v1/insights/inflation',
@@ -121,7 +122,7 @@ describe('subscription-plans: gestión de plan (e2e)', () => {
           expect(r.body.details.planMinimo).toBe(f.planMinimo);
         }
       }
-      expect(detalle.funcionalidades.filter((f) => !f.incluida)).toHaveLength(8);
+      expect(detalle.funcionalidades.filter((f) => !f.incluida)).toHaveLength(9);
     }, 120_000);
 
     it('CP-14.2b y CP-14.4 el plan FREE en el límite', async () => {

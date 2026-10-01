@@ -36,6 +36,7 @@ describe('tarjetas de los planes (portada y página Plan)', () => {
           'Productos y usuarios sin límite',
           'Alertas de reposición',
           'Pérdidas por falta de stock',
+          'Stock parado',
           'Órdenes de compra',
           'Reportes semanales',
           'Precios frente a la inflación',
@@ -86,7 +87,7 @@ describe('cambio de plan', () => {
     expect(c.baja).toBe(true);
     expect(c.textoConfirmar).toBe('Bajar a Free');
     expect(c.parrafos).toEqual([
-      'Deja de estar disponible: Alertas de reposición, Pérdidas por falta de stock, Órdenes de compra, Reportes semanales, Precios frente a la inflación, Remarcación asistida, Comparador de proveedores y Asistente con IA.',
+      'Deja de estar disponible: Alertas de reposición, Pérdidas por falta de stock, Stock parado, Órdenes de compra, Reportes semanales, Precios frente a la inflación, Remarcación asistida, Comparador de proveedores y Asistente con IA.',
       'No se borra nada: tus datos quedan guardados y vuelven cuando subas de plan.',
       'El plan Free admite hasta 50 productos activos y 1 usuario.',
       AVISO_SIN_COBRO,

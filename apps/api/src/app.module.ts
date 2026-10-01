@@ -25,6 +25,7 @@ import { ProfitabilityModule } from './profitability/profitability.module';
 import { PurchaseOrdersModule } from './purchase-orders/purchase-orders.module';
 import { ReportsModule } from './reports/reports.module';
 import { RepricingModule } from './repricing/repricing.module';
+import { DeadStockModule } from './dead-stock/dead-stock.module';
 import { StockoutsModule } from './stockouts/stockouts.module';
 import { SupplierComparisonModule } from './supplier-comparison/supplier-comparison.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
@@ -72,6 +73,7 @@ import { UsersModule } from './users/users.module';
     AssistantModule,
     PlansModule,
     StockoutsModule,
+    DeadStockModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: ApiExceptionFilter },

@@ -44,6 +44,7 @@ describe('HU-04 (dashboard)', () => {
         reposicion: null,
       },
       quiebres: { gananciaPerdida: '4000.00', ventaPerdida: '10000.00', productosAfectados: 1 },
+      stockParado: { capitalParado: '21000.00', productos: 1 },
     });
     expect(r.success).toBe(true);
   });

@@ -81,6 +81,10 @@ pnpm dev
   quedaron sin stock en el período, ordenados por ganancia perdida, con totales). Los quiebres se reconstruyen al
   consultar con el stock que dejó cada movimiento de los últimos 90 días, y la pérdida se estima con lo que el producto
   vendía en los días con stock (RN-14, ADR 0020). `GET /dashboard` suma el bloque `quiebres` de los últimos 30 días.
+  Rutas de HU-19 (plan PRO, dueño y contador): `GET /dead-stock?dias=30|60|90|180&cursor&limit` (productos con stock
+  y sin ventas en el período, ordenados por capital parado = stock × costo vigente, con totales y el porcentaje sobre
+  el stock valorizado). Se calcula al consultar por fecha de venta (RN-15, ADR 0021). `GET /dashboard` suma el bloque
+  `stockParado` con el criterio de 90 días.
   Rutas de HU-16 (plan PRO): `POST /purchase-orders/:id/confirm` acepta `{ canal? }` (`EMAIL` o `WHATSAPP`; sin
   indicarlo, el que corresponde al proveedor) y `POST /purchase-orders/:id/mark-sent` marca como enviada una orden
   confirmada. Por WhatsApp la orden queda `CONFIRMADA` con `whatsappUrl`, un enlace `wa.me` con el mensaje redactado

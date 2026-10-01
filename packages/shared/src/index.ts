@@ -153,3 +153,4 @@ export * from './remarcacion';
 export * from './comparador';
 export * from './asistente';
 export * from './quiebres';
+export * from './stock-parado';

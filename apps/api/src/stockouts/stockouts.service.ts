@@ -19,6 +19,7 @@ import {
 import { TenantContext } from '../auth/tenant-context';
 import { codificarCursor, decodificarCursor } from '../common/cursor';
 import { validacion } from '../common/errors';
+import { RELOJ, type Reloj } from '../common/reloj';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -44,11 +45,6 @@ interface FilaCambio {
   vendidas: number;
 }
 
-/** Hora de referencia de los quiebres en curso: inyectable para fijarla en los tests. */
-export const RELOJ_QUIEBRES = Symbol('RELOJ_QUIEBRES');
-export type Reloj = () => Date;
-export const relojProvider = { provide: RELOJ_QUIEBRES, useValue: (() => new Date()) as Reloj };
-
 interface Calculo {
   desde: Date;
   hasta: Date;
@@ -63,7 +59,7 @@ interface Calculo {
 export class StockoutsService {
   constructor(
     private readonly prisma: PrismaService,
-    @Inject(RELOJ_QUIEBRES) private readonly reloj: Reloj,
+    @Inject(RELOJ) private readonly reloj: Reloj,
   ) {}
 
   /** Productos con quiebres en el período, por ganancia perdida, con cursor de posición (D5). */
