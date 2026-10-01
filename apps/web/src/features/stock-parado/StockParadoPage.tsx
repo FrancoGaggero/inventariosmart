@@ -125,7 +125,7 @@ export function StockParadoPage() {
               <EstadoVacio
                 ilustracion="cajas"
                 titulo="No tenés stock parado en este período."
-                texto="Todos los productos con stock vendieron algo."
+                texto="Los productos dados de alta hace menos tiempo que el período elegido todavía no cuentan."
               />
             </div>
           ) : (

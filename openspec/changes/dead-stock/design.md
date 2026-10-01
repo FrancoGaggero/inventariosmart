@@ -20,7 +20,7 @@ Dentro de `transaccionTenant`, siguiendo la convención del proyecto:
 
 1. Productos activos: `id`, `codigo`, `nombre`, `stock_actual`, `costo_reposicion` y `creado_en`. Se leen todos, porque el porcentaje sobre el stock valorizado necesita el total.
 2. Productos con ventas en el período: `SELECT DISTINCT producto_id FROM movimiento WHERE comercio_id = … AND tipo = 'VENTA' AND anulado_por_id IS NULL AND fecha >= desde`, sobre el índice `(comercio_id, fecha)`.
-3. La última venta de cada candidato: `unnest` de los ids con una subconsulta `max(fecha)` filtrada por producto, tipo y anulación, que usa el índice por producto y fecha. Candidatos son los activos con stock mayor a 0, dados de alta antes del inicio del período y sin ventas en él.
+3. La última venta de los candidatos: una sola agregación `max(fecha) … GROUP BY producto_id` sobre las ventas no anuladas con `producto_id = ANY(candidatos)`. Candidatos son los activos con stock mayor a 0, dados de alta antes del inicio del período y sin ventas en él. La primera versión usaba una subconsulta `max(fecha)` por candidato. En CI, con la tabla recién cargada y sin estadísticas, tardó 6,5 s para 1.000 candidatos: el planificador recorría todos los movimientos en cada subconsulta. La agregación agrupada hace una sola pasada sea cual sea el plan.
 
 - *Alternativa:* un `LEFT JOIN LATERAL` en una sola consulta. Se descarta porque mezcla tablas y deja el plan en manos de las estadísticas, que fue lo que hizo lentos al panel y a la inflación con tablas recién cargadas.
 - *Alternativa:* guardar `ultima_venta` en `producto`. Se descarta porque obliga a mantenerla en cada venta y anulación, y la migración tendría que rellenarla.
@@ -75,7 +75,7 @@ El EMPLEADO recibe 403 porque la respuesta trae costos. Se usa el mismo reloj in
 
 - [Un producto de temporada (por ejemplo, anticongelante en verano) figura como parado] → Es información útil igual: la plata está parada. El selector de 180 días permite mirarlo con más perspectiva.
 - [Un producto con ventas sólo anuladas en el período figura como parado] → Es correcto: una venta anulada no ocurrió.
-- [La consulta 3 hace una subconsulta por candidato] → Usa el índice por producto y fecha, que corta en la primera venta. La prueba de carga CP-19.4, con 1.000 candidatos, fija el límite.
+- [La consulta 3 recorre todas las ventas de los candidatos, no sólo la última] → Es una sola pasada, con un costo previsible. La prueba de carga CP-19.4, con 1.000 candidatos, fija el límite.
 - [Mover el reloj a `common` toca `StockoutsService`] → El token cambia de nombre pero no de comportamiento. El e2e de quiebres se actualiza y tiene que seguir pasando.
 
 ## Migration Plan

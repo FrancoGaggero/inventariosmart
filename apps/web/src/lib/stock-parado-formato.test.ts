@@ -37,7 +37,7 @@ describe('stock parado (HU-19)', () => {
       `Tenés $${NBSP}34.000 (el 12,5 % de tu stock) en 1 producto que no se vendió en los últimos 30 días.`,
     );
     expect(fraseTotales(totales({ productos: 0 }), 180)).toBe(
-      'Todos tus productos con stock vendieron algo en los últimos 180 días.',
+      'Ningún producto con stock lleva más de 180 días sin venderse.',
     );
     expect(detallePanel(2)).toBe('en 2 productos sin ventas en 90 días');
   });

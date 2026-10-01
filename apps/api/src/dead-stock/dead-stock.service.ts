@@ -71,7 +71,7 @@ export class DeadStockService {
     const ahora = this.reloj();
     const desde = new Date(ahora.getTime() - dias * DIA_MS);
 
-    const { productos, ultimas } = await this.prisma.transaccionTenant(async (tx) => {
+    const { productos, candidatos, ultimas } = await this.prisma.transaccionTenant(async (tx) => {
       const productos = await tx.$queryRaw<FilaProducto[]>(Prisma.sql`
         SELECT p.id, p.codigo, p.nombre, p.stock_actual AS "stockActual",
                p.costo_reposicion::text AS "costoReposicion", p.creado_en AS "creadoEn"
@@ -87,17 +87,18 @@ export class DeadStockService {
       const candidatos = productos
         .filter((p) => p.stockActual > 0 && p.creadoEn < desde && !vendieron.has(p.id))
         .map((p) => p.id);
+      // Una sola pasada agrupada, no una subconsulta por candidato: con tablas recién cargadas el
+      // planificador puede recorrer todos los movimientos en cada una (D1).
       const ultimas =
         candidatos.length === 0
           ? []
-          : await tx.$queryRaw<{ id: string; ultima: Date | null }[]>(Prisma.sql`
-              SELECT c.id, (
-                SELECT max(m.fecha) FROM movimiento m
-                WHERE m.comercio_id = ${comercioId}::uuid AND m.producto_id = c.id
-                  AND m.tipo = 'VENTA' AND m.anulado_por_id IS NULL
-              ) AS ultima
-              FROM unnest(${candidatos}::uuid[]) AS c(id)`);
-      return { productos, ultimas };
+          : await tx.$queryRaw<{ id: string; ultima: Date }[]>(Prisma.sql`
+              SELECT m.producto_id AS id, max(m.fecha) AS ultima
+              FROM movimiento m
+              WHERE m.comercio_id = ${comercioId}::uuid AND m.tipo = 'VENTA'
+                AND m.anulado_por_id IS NULL AND m.producto_id = ANY(${candidatos}::uuid[])
+              GROUP BY m.producto_id`);
+      return { productos, candidatos: new Set(candidatos), ultimas };
     });
 
     const ultimaDe = new Map(ultimas.map((u) => [u.id, u.ultima]));
@@ -105,8 +106,7 @@ export class DeadStockService {
     let valorizacion = 0;
     for (const p of productos) {
       valorizacion += p.stockActual * Number(p.costoReposicion);
-      // Sólo los candidatos tienen última venta consultada: son los parados.
-      if (!ultimaDe.has(p.id)) continue;
+      if (!candidatos.has(p.id)) continue;
       const ultima = ultimaDe.get(p.id) ?? null;
       items.push({
         producto: { id: p.id, codigo: p.codigo, nombre: p.nombre },

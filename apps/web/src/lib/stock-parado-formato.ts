@@ -45,7 +45,7 @@ const productos = (n: number) => (n === 1 ? '1 producto' : `${entero.format(n)} 
 /** Totales en una frase. */
 export function fraseTotales(t: TotalesStockParado, dias: DiasStockParado): string {
   if (t.productos === 0) {
-    return `Todos tus productos con stock vendieron algo en los últimos ${dias} días.`;
+    return `Ningún producto con stock lleva más de ${dias} días sin venderse.`;
   }
   const parte =
     t.porcentajeDelStock === null
