@@ -19,6 +19,7 @@ import { Link } from 'react-router';
 import { Entrada } from '@/ui/Entrada';
 import { GraficaBarras } from '@/ui/GraficaBarras';
 import { Logo } from '@/ui/Logo';
+import { FrenteAFrente } from './FrenteAFrente';
 
 interface Servicio {
   Icono: LucideIcon;
@@ -116,6 +117,12 @@ export function LandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-1 ml-4 text-sm" aria-label="Secciones">
             <a
+              href="#diferencia"
+              className="px-3 py-2 rounded-lg text-t2 hover:text-t1 hover:bg-fill"
+            >
+              Antes y después
+            </a>
+            <a
               href="#servicios"
               className="px-3 py-2 rounded-lg text-t2 hover:text-t1 hover:bg-fill"
             >
@@ -179,11 +186,15 @@ export function LandingPage() {
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-xl bg-brand text-on-brand p-3">
                 <div className="opacity-75 text-xs">Ventas netas</div>
-                <div className="text-xl font-extrabold tabular-nums">$ 1.451.652</div>
+                <div className="text-lg sm:text-xl font-extrabold tabular-nums whitespace-nowrap">
+                  $ 1.451.652
+                </div>
               </div>
               <div className="rounded-xl border border-[color-mix(in_srgb,var(--color-on-inverso)_18%,transparent)] p-3">
                 <div className="opacity-70 text-xs">Margen bruto</div>
-                <div className="text-xl font-extrabold tabular-nums">38,4 %</div>
+                <div className="text-lg sm:text-xl font-extrabold tabular-nums whitespace-nowrap">
+                  38,4 %
+                </div>
               </div>
             </div>
             <div className="mt-6">
@@ -201,6 +212,8 @@ export function LandingPage() {
             </ul>
           </Entrada>
         </section>
+
+        <FrenteAFrente />
 
         <section id="servicios" className="max-w-6xl mx-auto px-4 md:px-6 py-12 space-y-6">
           <div>

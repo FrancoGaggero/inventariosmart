@@ -434,6 +434,79 @@ body::before {
   animation: trazar 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+/* Animación de la portada (landing-comparison D3), ciclo de 6 s: el stock baja, la alerta avisa,
+   sale la orden y el stock se repone. El estado base, sin animación, es un cuadro legible. */
+.anim-stock {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transform: scaleY(0.6);
+  animation: stock-baja 6s ease-in-out infinite;
+}
+@keyframes stock-baja {
+  0% {
+    transform: scaleY(1);
+  }
+  40%,
+  75% {
+    transform: scaleY(0.35);
+  }
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+}
+.anim-campana {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: campana 6s ease-in-out infinite;
+}
+@keyframes campana {
+  0%,
+  36% {
+    opacity: 0;
+    transform: rotate(0);
+  }
+  42% {
+    opacity: 1;
+    transform: rotate(12deg);
+  }
+  48% {
+    transform: rotate(-12deg);
+  }
+  54% {
+    transform: rotate(8deg);
+  }
+  60%,
+  85% {
+    opacity: 1;
+    transform: rotate(0);
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+.anim-orden {
+  transform-box: fill-box;
+  animation: orden-sale 6s ease-out infinite;
+}
+@keyframes orden-sale {
+  0%,
+  56% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  66%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes brillo {
   from {
     background-position: 200% 0;
@@ -474,7 +547,10 @@ body::before {
   .entra,
   .desliza,
   .pulso,
-  .trazo {
+  .trazo,
+  .anim-stock,
+  .anim-campana,
+  .anim-orden {
     animation: none;
   }
 }
