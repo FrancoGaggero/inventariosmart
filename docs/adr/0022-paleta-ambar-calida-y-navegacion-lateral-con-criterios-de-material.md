@@ -52,3 +52,7 @@ La barra superior de ADR 0012 había llegado a 15 enlaces en una fila: un `Resiz
 - El contenido tiene 256 px menos de ancho con la barra expandida. Por eso la barra arranca como riel por debajo de 1280 px y los KPI del panel pasan a cuatro columnas recién desde `xl`.
 - Las pantallas que sumen colores tienen que usar los tokens. Si alguien escribe un color con bajo contraste en `index.css`, falla el test de contraste.
 - La app Flutter conserva su paleta anterior, que queda como evolución.
+
+## Notas posteriores
+
+- **02/10/2026** (change `mobile-redesign`, ADR 0024): la app Flutter pasa a la paleta ámbar con tema claro y oscuro. Los valores de `Tokens` son copia de `index.css`, un test de la app compara los dos archivos y otro exige el mismo contraste AA. Queda cerrada la consecuencia "La app Flutter conserva su paleta anterior".

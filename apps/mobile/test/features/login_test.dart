@@ -76,12 +76,12 @@ void main() {
     expect(enInicio(), findsOneWidget);
   });
 
-  testWidgets('CP-M.1h cerrar sesión vuelve al login', (tester) async {
+  testWidgets('CP-M.1h cerrar sesión desde "Más" vuelve al login', (tester) async {
     final auth = authConSesion();
     await levantar(tester, servidorBase(), auth: auth);
 
-    await tester.tap(find.byTooltip('Cuenta'));
-    await bombear(tester);
+    expect(find.byTooltip('Cuenta'), findsNothing);
+    await tocar(tester, 'Más');
     await tocar(tester, 'Cerrar sesión');
 
     expect(auth.llamadas, contains('cerrar'));

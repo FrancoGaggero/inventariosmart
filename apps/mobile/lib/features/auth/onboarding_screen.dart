@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
+import '../../ui/logo.dart';
 import '../../core/api_client.dart';
 import '../../core/auth/sesion.dart';
 import '../../ui/aviso.dart';
@@ -61,19 +62,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: AppColors.brand.withValues(alpha: 0.15),
-                    ),
-                    child: const Icon(Icons.storefront_outlined, color: AppColors.brand3),
-                  ),
+                  const Align(alignment: Alignment.centerLeft, child: Logo(icono: Icons.storefront_outlined)),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'PRIMER PASO',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2, color: AppColors.brand3),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2, color: context.tokens.brand3),
                   ),
                   const SizedBox(height: 8),
                   const Text('¿Cómo se llama tu comercio?', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
@@ -81,7 +74,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Text(
                     'Hola ${me?.usuario.nombre ?? me?.usuario.email ?? ''}. Este nombre aparece en tus reportes y '
                     'podés cambiarlo cuando quieras desde la web.',
-                    style: const TextStyle(color: AppColors.t2),
+                    style: TextStyle(color: context.tokens.t2),
                   ),
                   const SizedBox(height: 20),
                   TextField(

@@ -5,6 +5,7 @@ import '../../app/theme.dart';
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/sesion.dart';
 import '../../ui/aviso.dart';
+import '../../ui/logo.dart';
 
 /// Acceso con email y contraseña o Google, y creación de cuenta (CP-M.1 a CP-M.1e).
 /// Al entrar, el router redirige solo cuando cambia la sesión.
@@ -86,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _Logo(),
+                    const Logo(conNombre: true),
                     const SizedBox(height: 28),
                     Text(
                       _crear ? 'Creá tu cuenta' : 'Ingresá a tu comercio',
@@ -97,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       _crear
                           ? 'Usá el mismo email que vas a usar en la web.'
                           : 'La misma cuenta que usás en la web.',
-                      style: const TextStyle(color: AppColors.t2),
+                      style: TextStyle(color: context.tokens.t2),
                     ),
                     const SizedBox(height: 20),
                     if (motivo != null && _error == null) ...[
@@ -172,29 +173,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  const _Logo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: const LinearGradient(colors: [AppColors.brand, Color(0xFF8B5CF6)]),
-          ),
-          child: const Icon(Icons.bar_chart_rounded, color: Colors.white, size: 22),
-        ),
-        const SizedBox(width: 10),
-        const Text('InventarioSmart', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-      ],
     );
   }
 }

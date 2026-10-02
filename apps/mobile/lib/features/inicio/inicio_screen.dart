@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
-import '../../app/shell.dart';
 import '../../app/theme.dart';
 import '../../core/api_client.dart';
 import '../../core/auth/sesion.dart';
@@ -47,7 +46,6 @@ class InicioScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(me?.comercio.nombre ?? 'Inicio'),
-        actions: const [MenuSesion()],
       ),
       body: Column(
         children: [
@@ -118,6 +116,7 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final k = context.tokens;
     final v = d.ventas;
     final motivoNeto = v.motivo == null ? null : (etiquetaMotivoResumen[v.motivo] ?? v.motivo!);
     return ListView(
@@ -161,14 +160,14 @@ class _Panel extends StatelessWidget {
                     valor: 'No calculable',
                     valorChico: true,
                     detalle: v.motivo == 'SIN_GASTOS' ? 'Cargá tus gastos del mes desde la web' : (motivoNeto ?? ''),
-                    tono: AppColors.warn,
+                    tono: k.warn,
                   ),
           ],
         ),
         const SizedBox(height: 20),
         const _Titulo('Más rentables del mes'),
         if (d.topRentables.isEmpty)
-          const Text('Sin ventas en el mes: todavía no hay ranking.', style: TextStyle(color: AppColors.t2))
+          Text('Sin ventas en el mes: todavía no hay ranking.', style: TextStyle(color: k.t2))
         else
           for (final t in d.topRentables.take(3))
             ListTile(
@@ -176,12 +175,12 @@ class _Panel extends StatelessWidget {
               dense: true,
               leading: CircleAvatar(
                 radius: 14,
-                backgroundColor: AppColors.brand.withValues(alpha: 0.2),
-                child: Text('${d.topRentables.indexOf(t) + 1}', style: const TextStyle(fontSize: 12, color: AppColors.brand3)),
+                backgroundColor: k.brand.withValues(alpha: 0.18),
+                child: Text('${d.topRentables.indexOf(t) + 1}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: k.brand3)),
               ),
               title: Text(t.producto.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: Text('${t.producto.codigo} · ${formatoEntero(t.unidadesVendidas)} u. · ${formatoPorcentaje(t.margenBrutoPct)}'),
-              trailing: Text(formatoPesos(t.margenBrutoMes), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.ok)),
+              trailing: Text(formatoPesos(t.margenBrutoMes), style: TextStyle(fontWeight: FontWeight.w700, color: k.ok)),
             ),
         const SizedBox(height: 20),
         const _Titulo('Alertas'),
@@ -195,20 +194,20 @@ class _Panel extends StatelessWidget {
         _AlertaStock(
           titulo: 'Sin stock',
           grupo: d.alertas.sinStock,
-          color: AppColors.crit,
+          color: k.crit,
           onVer: () => context.go('${Rutas.inventario}?estado=SIN_STOCK'),
         ),
         const SizedBox(height: 8),
         _AlertaStock(
           titulo: 'Stock bajo',
           grupo: d.alertas.stockBajo,
-          color: AppColors.warn,
+          color: k.warn,
           onVer: () => context.go('${Rutas.inventario}?estado=BAJO'),
         ),
         if (!d.alertas.faltanGastos && d.alertas.sinStock.total == 0 && d.alertas.stockBajo.total == 0)
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text('Sin alertas activas.', style: TextStyle(color: AppColors.t2)),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('Sin alertas activas.', style: TextStyle(color: k.t2)),
           ),
       ],
     );
@@ -223,7 +222,7 @@ class _Titulo extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
-        child: Text(texto, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: AppColors.t2)),
+        child: Text(texto, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5, color: context.tokens.t2)),
       );
 }
 
@@ -238,25 +237,25 @@ class _Tarjeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final k = context.tokens;
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(titulo, style: const TextStyle(fontSize: 12, color: AppColors.t2, fontWeight: FontWeight.w700)),
+            Text(titulo, style: TextStyle(fontSize: 12, color: k.t2, fontWeight: FontWeight.w700)),
             const Spacer(),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 valor,
-                style: TextStyle(fontSize: valorChico ? 17 : 20, fontWeight: FontWeight.w800, color: tono ?? AppColors.t1),
+                style: TextStyle(fontSize: valorChico ? 17 : 20, fontWeight: FontWeight.w800, color: tono ?? k.t1),
               ),
             ),
             const SizedBox(height: 4),
-            Text(detalle, style: const TextStyle(fontSize: 11, color: AppColors.t2, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text(detalle, style: TextStyle(fontSize: 11, color: k.t2, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -278,7 +277,6 @@ class _AlertaStock extends StatelessWidget {
     final nombres = grupo.items.take(3).map((a) => a.nombre).join(', ');
     final resto = grupo.total - grupo.items.take(3).length;
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Icon(Icons.circle, color: color, size: 12),
         title: Text('$titulo: ${grupo.total}', style: const TextStyle(fontWeight: FontWeight.w700)),

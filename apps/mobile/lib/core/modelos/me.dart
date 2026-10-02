@@ -9,6 +9,12 @@ const nombreRol = <String, String>{
   'CONTADOR': 'Contador',
 };
 
+const nombrePlan = <String, String>{
+  'FREE': 'Free',
+  'PRO': 'Pro',
+  'PREMIUM': 'Premium',
+};
+
 class Comercio {
   const Comercio({
     required this.id,

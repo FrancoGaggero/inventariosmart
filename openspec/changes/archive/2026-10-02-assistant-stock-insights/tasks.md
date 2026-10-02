@@ -16,6 +16,6 @@
 ## 4. Documentación y cierre
 
 - [x] 4.1 README y `docs/arquitectura.html` pasan de "once" a "trece" herramientas; ADR 0018 suma una nota fechada. Listo cuando: los documentos dicen "trece" y el ADR tiene la nota
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API; `pnpm openapi` sin diferencias; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: Franco pregunta al asistente "¿tengo plata parada en productos que no se venden?". Listo cuando: la respuesta dice "Consulté: Stock parado" y lo que informa coincide con la página
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test`, e2e de la API; `pnpm openapi` sin diferencias; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Producción: Franco pregunta al asistente "¿tengo plata parada en productos que no se venden?". Listo cuando: la respuesta dice "Consulté: Stock parado" y lo que informa coincide con la página
 - [ ] 4.4 (manual, Franco) Anotar el ajuste de HU-08 en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

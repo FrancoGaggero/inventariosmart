@@ -9,6 +9,7 @@ import '../features/auth/onboarding_screen.dart';
 import '../features/inicio/inicio_screen.dart';
 import '../features/inventario/inventario_screen.dart';
 import '../features/inventario/producto_nuevo_screen.dart';
+import '../features/mas/mas_screen.dart';
 import '../features/movimientos/movimiento_screen.dart';
 import 'cargando_screen.dart';
 import 'shell.dart';
@@ -22,6 +23,7 @@ abstract final class Rutas {
   static const inventario = '/inventario';
   static const productoNuevo = '/inventario/nuevo';
   static const movimientoNuevo = '/movimientos/nuevo';
+  static const mas = '/mas';
 }
 
 /// Primera pestaña permitida para el rol.
@@ -98,6 +100,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          StatefulShellBranch(routes: [GoRoute(path: Rutas.mas, builder: (_, _) => const MasScreen())]),
         ],
       ),
     ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:inventariosmart_mobile/app/tema_provider.dart';
 import 'package:inventariosmart_mobile/core/auth/auth_repository.dart';
 import 'package:inventariosmart_mobile/main.dart';
 
@@ -9,8 +11,11 @@ import 'dio_falso.dart';
 import 'fixtures.dart';
 
 /// La app completa (router incluido) sobre el servidor falso y sin reintentos automáticos.
-Widget appDePrueba(ServidorFalso servidor, {AuthRepository? auth}) => ProviderScope(
-      overrides: overridesDe(servidor, auth: auth),
+Widget appDePrueba(ServidorFalso servidor, {AuthRepository? auth, SharedPreferences? preferencias}) => ProviderScope(
+      overrides: [
+        ...overridesDe(servidor, auth: auth),
+        if (preferencias != null) preferenciasProvider.overrideWithValue(preferencias),
+      ],
       retry: (_, _) => null,
       child: const InventarioSmartApp(),
     );
@@ -32,11 +37,11 @@ ServidorFalso servidorBase({String rol = 'DUENIO', bool onboardingPendiente = fa
 AuthRepositoryFalso authConSesion() => AuthRepositoryFalso(inicial: AuthRepositoryFalso.usuaria);
 
 /// Levanta la app en una pantalla alta (800×2000 lógicos) para que las listas entren completas.
-Future<void> levantar(WidgetTester tester, ServidorFalso servidor, {AuthRepository? auth}) async {
+Future<void> levantar(WidgetTester tester, ServidorFalso servidor, {AuthRepository? auth, SharedPreferences? preferencias}) async {
   tester.view.physicalSize = const Size(800, 2000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(appDePrueba(servidor, auth: auth));
+  await tester.pumpWidget(appDePrueba(servidor, auth: auth, preferencias: preferencias));
   await bombear(tester);
 }
 

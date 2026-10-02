@@ -9,30 +9,32 @@ Iterable<String> etiquetasDeLaBarra(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('DUENIO ve Inicio, Inventario y Movimiento', (tester) async {
+  testWidgets('CP-M.8 DUENIO ve Inicio, Inventario, Movimiento y Más', (tester) async {
     await levantar(tester, servidorBase(), auth: authConSesion());
 
-    expect(etiquetasDeLaBarra(tester), ['Inicio', 'Inventario', 'Movimiento']);
+    expect(etiquetasDeLaBarra(tester), ['Inicio', 'Inventario', 'Movimiento', 'Más']);
     expect(enInicio(), findsOneWidget);
 
     await tocar(tester, 'Inventario');
     expect(find.text('Filtro de aceite'), findsOneWidget);
     await tocar(tester, 'Movimiento');
     expect(find.text('Registrar movimiento'), findsOneWidget);
+    await tocar(tester, 'Más');
+    expect(find.text('Cerrar sesión'), findsOneWidget);
   });
 
-  testWidgets('CP-M.2e EMPLEADO no tiene panel: su inicio es el inventario', (tester) async {
+  testWidgets('CP-M.2e / CP-M.8b EMPLEADO no tiene panel: su inicio es el inventario', (tester) async {
     await levantar(tester, servidorBase(rol: 'EMPLEADO'), auth: authConSesion());
 
-    expect(etiquetasDeLaBarra(tester), ['Inventario', 'Movimiento']);
+    expect(etiquetasDeLaBarra(tester), ['Inventario', 'Movimiento', 'Más']);
     expect(find.text('Filtro de aceite'), findsOneWidget);
     expect(enInicio(), findsNothing);
   });
 
-  testWidgets('CP-M.3d / CP-M.4g CONTADOR sólo ve el panel, sin pestañas', (tester) async {
+  testWidgets('CP-M.3d / CP-M.4g / CP-M.8b CONTADOR ve el panel y Más, sin inventario ni movimientos', (tester) async {
     await levantar(tester, servidorBase(rol: 'CONTADOR'), auth: authConSesion());
 
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(etiquetasDeLaBarra(tester), ['Inicio', 'Más']);
     expect(enInicio(), findsOneWidget);
     expect(find.text('Registrar movimiento'), findsNothing);
   });

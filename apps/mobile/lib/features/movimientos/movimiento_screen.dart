@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
-import '../../app/shell.dart';
 import '../../app/theme.dart';
 import '../../core/formato.dart';
 import '../../core/modelos/movimiento.dart';
@@ -81,7 +80,7 @@ class _MovimientoScreenState extends ConsumerState<MovimientoScreen> {
     final resultado = estado.resultado;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Registrar movimiento'), actions: const [MenuSesion()]),
+      appBar: AppBar(title: const Text('Registrar movimiento')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -112,7 +111,7 @@ class _MovimientoScreenState extends ConsumerState<MovimientoScreen> {
               const SizedBox(height: 8),
               Text(
                 'Precio de venta vigente: ${formatoPesos(producto.precioVenta)} (con IVA). La venta se registra a ese precio.',
-                style: const TextStyle(color: AppColors.t2, fontSize: 12),
+                style: TextStyle(color: context.tokens.t2, fontSize: 12),
               ),
             ],
             if (motivos.isNotEmpty) ...[
@@ -188,7 +187,7 @@ class _SelectorProductoCampo extends StatelessWidget {
           suffixIcon: const Icon(Icons.search),
         ),
         child: producto == null
-            ? const Text('Elegí un producto', style: TextStyle(color: AppColors.t2))
+            ? Text('Elegí un producto', style: TextStyle(color: context.tokens.t2))
             : Text('${producto!.codigo} · ${producto!.nombre}', maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );
@@ -228,13 +227,13 @@ class _SelectorProductoState extends ConsumerState<SelectorProducto> {
                 loading: () => const Cargando(),
                 error: (e, _) => ErrorConReintento(error: e, onReintentar: () => ref.invalidate(buscarProductosProvider(_q))),
                 data: (items) => items.isEmpty
-                    ? const Center(child: Text('No hay productos que coincidan.', style: TextStyle(color: AppColors.t2)))
+                    ? Center(child: Text('No hay productos que coincidan.', style: TextStyle(color: context.tokens.t2)))
                     : ListView.builder(
                         itemCount: items.length,
                         itemBuilder: (context, i) {
                           final p = items[i];
                           return ListTile(
-                            leading: Icon(Icons.circle, size: 12, color: AppColors.estadoStock(p.estadoStock)),
+                            leading: Icon(Icons.circle, size: 12, color: context.tokens.estadoStock(p.estadoStock)),
                             title: Text(p.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
                             subtitle: Text('${p.codigo} · Stock ${formatoEntero(p.stockActual)} · ${formatoPesos(p.precioVenta)}'),
                             onTap: () => Navigator.of(context).pop(p),

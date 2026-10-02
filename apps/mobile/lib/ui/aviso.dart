@@ -14,11 +14,12 @@ class Aviso extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final k = context.tokens;
     final color = switch (tono) {
-      TonoAviso.ok => AppColors.ok,
-      TonoAviso.warn => AppColors.warn,
-      TonoAviso.error => AppColors.crit,
-      TonoAviso.info => AppColors.brand3,
+      TonoAviso.ok => k.ok,
+      TonoAviso.warn => k.warn,
+      TonoAviso.error => k.crit,
+      TonoAviso.info => k.brand3,
     };
     final icono = switch (tono) {
       TonoAviso.ok => Icons.check_circle_outline,

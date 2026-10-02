@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
-import '../../app/shell.dart';
 import '../../app/theme.dart';
 import '../../core/auth/sesion.dart';
 import '../../core/formato.dart';
@@ -60,7 +59,7 @@ class _InventarioScreenState extends ConsumerState<InventarioScreen> {
     final esDuenio = me?.esDuenio ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Inventario'), actions: const [MenuSesion()]),
+      appBar: AppBar(title: const Text('Inventario')),
       floatingActionButton: esDuenio
           ? FloatingActionButton.extended(
               onPressed: () => context.go(Rutas.productoNuevo),
@@ -102,7 +101,7 @@ class _InventarioScreenState extends ConsumerState<InventarioScreen> {
                 for (final e in const ['OK', 'BAJO', 'SIN_STOCK'])
                   _Chip(
                     etiqueta: etiquetaEstadoStock[e]!,
-                    color: AppColors.estadoStock(e),
+                    color: context.tokens.estadoStock(e),
                     activo: filtros.estado == e,
                     onTap: () => _filtrar(e),
                   ),
@@ -164,19 +163,19 @@ class _Lista extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.inventory_2_outlined, size: 40, color: AppColors.t3),
+              Icon(Icons.inventory_2_outlined, size: 40, color: context.tokens.t3),
               const SizedBox(height: 10),
               Text(
                 conFiltros ? 'No hay productos que coincidan.' : 'Todavía no hay productos.',
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               if (!conFiltros && esDuenio)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
                     'Cargá el primero con "Nuevo producto" o importá tu planilla desde la web.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.t2),
+                    style: TextStyle(color: context.tokens.t2),
                   ),
                 ),
             ],
@@ -232,7 +231,7 @@ class _PieDeLista extends ConsumerWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Text('${pagina.items.length} productos', textAlign: TextAlign.center, style: const TextStyle(color: AppColors.t3, fontSize: 12)),
+      child: Text('${pagina.items.length} productos', textAlign: TextAlign.center, style: TextStyle(color: context.tokens.t2, fontSize: 12)),
     );
   }
 }
@@ -244,7 +243,7 @@ class _FilaProducto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.estadoStock(producto.estadoStock);
+    final color = context.tokens.estadoStock(producto.estadoStock);
     return ListTile(
       leading: Icon(Icons.circle, size: 12, color: color),
       title: Text(producto.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
