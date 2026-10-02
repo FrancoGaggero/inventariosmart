@@ -72,3 +72,7 @@ La portada (`features/landing/LandingPage.tsx`) tiene, en orden, el hero (L144-2
 ## Migration Plan
 
 Sin migración. El deploy es normal en Vercel y para volver atrás alcanza con revertir el commit.
+
+## Nota posterior
+
+**02/10/2026, `landing-motion`:** a pedido de Franco, las tarjetas de esta sección suman movimiento al pasar el mouse (se elevan) y aparecen desde los costados al hacer scroll; el círculo entra con escala y late. Reemplaza el "sin estados de hover" de D2.

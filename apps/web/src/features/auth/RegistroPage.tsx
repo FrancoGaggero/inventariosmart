@@ -7,6 +7,9 @@ import { mensajeFirebase, useAuth } from '@/lib/auth';
 import { useInvalidarMe } from '@/lib/me';
 import { Campo } from '@/ui/Campo';
 import { Logo } from '@/ui/Logo';
+import { Animado } from '@/features/publico/Animado';
+import { FondoAnimado } from '@/features/publico/FondoAnimado';
+import { Escalonado, Item } from '@/features/publico/Revelar';
 
 /** Registro con email: crea la cuenta en Firebase y confirma el nombre del comercio (CP-11.2c). */
 export function RegistroPage() {
@@ -65,71 +68,84 @@ export function RegistroPage() {
   };
 
   return (
-    <main className="min-h-full flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <Logo grande className="mb-8" />
+    <Animado>
+      <FondoAnimado />
+      <main className="min-h-full flex items-center justify-center p-6">
+        <Escalonado alMontar paso={0.07} className="w-full max-w-sm">
+          <Item>
+            <Logo grande className="mb-8" />
+          </Item>
 
-        <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
-          Empezá <span className="text-brand-3">gratis</span> y en minutos.
-        </h1>
-        <p className="text-t2 text-sm mb-6">Registrá tu comercio.</p>
+          <Item>
+            <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
+              Empezá <span className="text-brand-3">gratis</span> y en minutos.
+            </h1>
+          </Item>
+          <Item>
+            <p className="text-t2 text-sm mb-6">Registrá tu comercio.</p>
+          </Item>
 
-        <form onSubmit={(e) => void onSubmit(e)} className="space-y-4" noValidate>
-          <Campo
-            label="Nombre del comercio"
-            value={nombreComercio}
-            onChange={setNombreComercio}
-            placeholder="Repuestos Carlos"
-            autoComplete="organization"
-          />
-          <Campo
-            label="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            placeholder="carlos@repuestoscarlos.com.ar"
-            autoComplete="email"
-          />
-          <Campo
-            label="Contraseña"
-            type="password"
-            value={password}
-            onChange={setPassword}
-            placeholder="Mínimo 8 caracteres"
-            autoComplete="new-password"
-          />
-          <label className="flex items-center gap-2 text-xs text-t2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={acepta}
-              onChange={(e) => setAcepta(e.target.checked)}
-              className="accent-brand"
-            />
-            Acepto los términos y la política de privacidad
-          </label>
+          <Item>
+            <form onSubmit={(e) => void onSubmit(e)} className="space-y-4" noValidate>
+              <Campo
+                label="Nombre del comercio"
+                value={nombreComercio}
+                onChange={setNombreComercio}
+                placeholder="Repuestos Carlos"
+                autoComplete="organization"
+              />
+              <Campo
+                label="Email"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                placeholder="carlos@repuestoscarlos.com.ar"
+                autoComplete="email"
+              />
+              <Campo
+                label="Contraseña"
+                type="password"
+                value={password}
+                onChange={setPassword}
+                placeholder="Mínimo 8 caracteres"
+                autoComplete="new-password"
+              />
+              <label className="flex items-center gap-2 text-xs text-t2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acepta}
+                  onChange={(e) => setAcepta(e.target.checked)}
+                  className="accent-brand"
+                />
+                Acepto los términos y la política de privacidad
+              </label>
 
-          {error && (
-            <p
-              role="alert"
-              className="text-sm text-crit bg-crit/10 border border-crit/30 rounded-lg px-3 py-2"
-            >
-              {error}
+              {error && (
+                <p
+                  role="alert"
+                  className="text-sm text-crit bg-crit/10 border border-crit/30 rounded-lg px-3 py-2"
+                >
+                  {error}
+                </p>
+              )}
+
+              <button type="submit" className="btn btn-primary w-full" disabled={enviando}>
+                <UserPlus className="w-4 h-4" aria-hidden />
+                Crear cuenta
+              </button>
+            </form>
+          </Item>
+
+          <Item>
+            <p className="text-sm text-t2 text-center mt-6">
+              ¿Ya tenés cuenta?{' '}
+              <Link to="/login" className="text-brand-3 font-semibold">
+                Iniciá sesión
+              </Link>
             </p>
-          )}
-
-          <button type="submit" className="btn btn-primary w-full" disabled={enviando}>
-            <UserPlus className="w-4 h-4" aria-hidden />
-            Crear cuenta
-          </button>
-        </form>
-
-        <p className="text-sm text-t2 text-center mt-6">
-          ¿Ya tenés cuenta?{' '}
-          <Link to="/login" className="text-brand-3 font-semibold">
-            Iniciá sesión
-          </Link>
-        </p>
-      </div>
-    </main>
+          </Item>
+        </Escalonado>
+      </main>
+    </Animado>
   );
 }

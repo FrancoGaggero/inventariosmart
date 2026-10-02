@@ -4,6 +4,10 @@ import { Link, Navigate, useLocation } from 'react-router';
 import { useAuth } from '@/lib/auth';
 import { GraficaBarras } from '@/ui/GraficaBarras';
 import { Logo } from '@/ui/Logo';
+import { Animado } from '@/features/publico/Animado';
+import { FondoAnimado } from '@/features/publico/FondoAnimado';
+import { Escalonado, Item, Revelar } from '@/features/publico/Revelar';
+import { TarjetaInclinable } from '@/features/publico/TarjetaInclinable';
 
 const MENSAJES: Record<string, string> = {
   'auth/invalid-credential': 'El email o la contraseña no son correctos.',
@@ -60,115 +64,132 @@ export function LoginPage() {
   };
 
   return (
-    <main className="min-h-full grid lg:grid-cols-2">
-      <section className="flex items-center justify-center p-6">
-        <div className="w-full max-w-sm entra">
-          <Logo grande className="mb-8" />
+    <Animado>
+      <FondoAnimado />
+      <main className="min-h-full grid lg:grid-cols-2">
+        <section className="flex items-center justify-center p-6">
+          <Escalonado alMontar paso={0.07} className="w-full max-w-sm">
+            <Item>
+              <Logo grande className="mb-8" />
+            </Item>
 
-          <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
-            Tu stock y tus <span className="acento-serif text-[1.15em]">números reales</span>, en un
-            solo lugar.
-          </h1>
-          <p className="text-t2 text-sm mb-6">Entrá a tu panel.</p>
+            <Item>
+              <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
+                Tu stock y tus <span className="acento-serif text-[1.15em]">números reales</span>,
+                en un solo lugar.
+              </h1>
+            </Item>
+            <Item>
+              <p className="text-t2 text-sm mb-6">Entrá a tu panel.</p>
+            </Item>
 
-          <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            <label className="block">
-              <span className="block text-xs font-semibold text-t2 mb-1.5">Email</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="campo"
-                placeholder="carlos@repuestoscarlos.com.ar"
-              />
-            </label>
-            <label className="block">
-              <span className="block text-xs font-semibold text-t2 mb-1.5">Contraseña</span>
-              <input
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="campo"
-                placeholder="••••••••••"
-              />
-            </label>
+            <Item>
+              <form onSubmit={onSubmit} className="space-y-4" noValidate>
+                <label className="block">
+                  <span className="block text-xs font-semibold text-t2 mb-1.5">Email</span>
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="campo"
+                    placeholder="carlos@repuestoscarlos.com.ar"
+                  />
+                </label>
+                <label className="block">
+                  <span className="block text-xs font-semibold text-t2 mb-1.5">Contraseña</span>
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="campo"
+                    placeholder="••••••••••"
+                  />
+                </label>
 
-            {error && (
-              <p
-                role="alert"
-                className="text-sm text-crit bg-crit/10 border border-crit/30 rounded-lg px-3 py-2"
+                {error && (
+                  <p
+                    role="alert"
+                    className="text-sm text-crit bg-crit/10 border border-crit/30 rounded-lg px-3 py-2"
+                  >
+                    {error}
+                  </p>
+                )}
+
+                <button type="submit" className="btn btn-primary w-full" disabled={enviando}>
+                  <LogIn className="w-4 h-4" aria-hidden />
+                  Iniciar sesión
+                </button>
+              </form>
+            </Item>
+
+            <Item>
+              <div className="flex items-center gap-3 my-4 text-xs text-t3">
+                <span className="flex-1 h-px bg-line-2" />o
+                <span className="flex-1 h-px bg-line-2" />
+              </div>
+            </Item>
+
+            <Item>
+              <button
+                type="button"
+                className="btn btn-ghost w-full"
+                disabled={enviando}
+                onClick={() => void ejecutar(loginConGoogle)}
               >
-                {error}
+                <GoogleIcon />
+                Continuar con Google
+              </button>
+            </Item>
+
+            <Item>
+              <p className="text-sm text-t2 text-center mt-8">
+                ¿No tenés cuenta?{' '}
+                <Link to="/registro" className="text-brand-3 font-semibold">
+                  Creá una gratis
+                </Link>
               </p>
-            )}
+            </Item>
+          </Escalonado>
+        </section>
 
-            <button type="submit" className="btn btn-primary w-full" disabled={enviando}>
-              <LogIn className="w-4 h-4" aria-hidden />
-              Iniciar sesión
-            </button>
-          </form>
-
-          <div className="flex items-center gap-3 my-4 text-xs text-t3">
-            <span className="flex-1 h-px bg-line-2" />o<span className="flex-1 h-px bg-line-2" />
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-ghost w-full"
-            disabled={enviando}
-            onClick={() => void ejecutar(loginConGoogle)}
-          >
-            <GoogleIcon />
-            Continuar con Google
-          </button>
-
-          <p className="text-sm text-t2 text-center mt-8">
-            ¿No tenés cuenta?{' '}
-            <Link to="/registro" className="text-brand-3 font-semibold">
-              Creá una gratis
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      <aside
-        className="hidden lg:flex flex-col justify-between p-10 m-4 card card-inversa !rounded-3xl shadow-3 entra"
-        style={{ ['--i' as string]: 2 }}
-        aria-label="Qué hace InventarioSmart"
-      >
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-acento-inverso">
-            Para PyMEs argentinas
-          </p>
-          <h2 className="text-3xl font-extrabold leading-tight mt-3 max-w-md">
-            Sabé qué te deja plata y qué se te va a acabar,{' '}
-            <span className="acento-serif">antes de que pase</span>.
-          </h2>
-        </div>
-        <div className="my-8">
-          <GraficaBarras className="text-acento-inverso" />
-        </div>
-        <ul className="space-y-3">
-          {BENEFICIOS.map((b, i) => (
-            <li
-              key={b.titulo}
-              className="flex items-start gap-3 entra"
-              style={{ ['--i' as string]: 4 + i }}
+        <Revelar desde="derecha" retraso={0.2} className="hidden lg:flex m-4">
+          <TarjetaInclinable max={4} elevacion={0} redondeo="rounded-3xl" className="flex w-full">
+            <aside
+              className="flex flex-col justify-between p-10 w-full card card-inversa !rounded-3xl shadow-3"
+              aria-label="Qué hace InventarioSmart"
             >
-              <span className="w-9 h-9 rounded-xl bg-brand text-on-brand grid place-items-center shrink-0">
-                <b.Icono className="w-4 h-4" aria-hidden />
-              </span>
-              <span>
-                <span className="block font-bold">{b.titulo}</span>
-                <span className="block text-sm opacity-70">{b.texto}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    </main>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-acento-inverso">
+                  Para PyMEs argentinas
+                </p>
+                <h2 className="text-3xl font-extrabold leading-tight mt-3 max-w-md">
+                  Sabé qué te deja plata y qué se te va a acabar,{' '}
+                  <span className="acento-serif">antes de que pase</span>.
+                </h2>
+              </div>
+              <div className="my-8">
+                <GraficaBarras className="text-acento-inverso" />
+              </div>
+              <Escalonado como="ul" alMontar inicio={0.7} paso={0.15} className="space-y-3">
+                {BENEFICIOS.map((b) => (
+                  <Item como="li" desde="derecha" key={b.titulo} className="flex items-start gap-3">
+                    <span className="w-9 h-9 rounded-xl bg-brand text-on-brand grid place-items-center shrink-0">
+                      <b.Icono className="w-4 h-4" aria-hidden />
+                    </span>
+                    <span>
+                      <span className="block font-bold">{b.titulo}</span>
+                      <span className="block text-sm opacity-70">{b.texto}</span>
+                    </span>
+                  </Item>
+                ))}
+              </Escalonado>
+            </aside>
+          </TarjetaInclinable>
+        </Revelar>
+      </main>
+    </Animado>
   );
 }
 

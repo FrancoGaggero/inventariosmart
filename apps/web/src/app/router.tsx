@@ -2,9 +2,7 @@ import { createBrowserRouter } from 'react-router';
 import { AlertasPage } from '@/features/alertas/AlertasPage';
 import { AsistentePage } from '@/features/asistente/AsistentePage';
 import { AuthGate } from '@/features/auth/AuthGate';
-import { LoginPage } from '@/features/auth/LoginPage';
 import { OnboardingPage } from '@/features/auth/OnboardingPage';
-import { RegistroPage } from '@/features/auth/RegistroPage';
 import { RequireRole } from '@/features/auth/RequireRole';
 import { ComercioPage } from '@/features/config/ComercioPage';
 import { PlanPage } from '@/features/config/PlanPage';
@@ -34,11 +32,26 @@ import { ReportePage } from '@/features/reportes/ReportePage';
 import { ReportesPage } from '@/features/reportes/ReportesPage';
 import { QuiebresPage } from '@/features/quiebres/QuiebresPage';
 import { StockParadoPage } from '@/features/stock-parado/StockParadoPage';
+import { CargaPublica, LoginPublico, RegistroPublico } from '@/features/publico/carga';
 import { AppShell } from './AppShell';
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/registro', element: <RegistroPage /> },
+  {
+    path: '/login',
+    element: (
+      <CargaPublica>
+        <LoginPublico />
+      </CargaPublica>
+    ),
+  },
+  {
+    path: '/registro',
+    element: (
+      <CargaPublica>
+        <RegistroPublico />
+      </CargaPublica>
+    ),
+  },
   {
     element: <AuthGate />,
     children: [

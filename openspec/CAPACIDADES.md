@@ -32,6 +32,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `dead-stock`            | HU-19 | RF-20         | 2    | 23 · `dead-stock` (01/10/2026; modifica `financial-dashboard` y `subscription-plans`) |
 | (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2    | 24 · `web-redesign` (02/10/2026, skip_specs; paleta ámbar y navegación lateral) |
 | (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2    | 25 · `landing-comparison` (02/10/2026, skip_specs; "Antes y después" en la portada) |
+| (sin spec, web UI)      | —     | RNF-01         | 2    | 26 · `landing-motion` (02/10/2026, skip_specs; Motion en portada, login y registro) |
 
 ## Reglas de uso
 

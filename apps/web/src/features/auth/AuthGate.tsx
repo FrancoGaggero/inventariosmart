@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { LandingPage } from '@/features/landing/LandingPage';
+import { CargaPublica, LandingPublica } from '@/features/publico/carga';
 import { ErrorApi, mensajeDe } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useMe } from '@/lib/me';
@@ -17,7 +17,13 @@ export function AuthGate() {
   if (cargando) return <Pantalla>Cargando tu sesión…</Pantalla>;
   if (!user) {
     // La raíz sin sesión es la portada pública (design D8); el resto va al login.
-    if (location.pathname === '/') return <LandingPage />;
+    if (location.pathname === '/') {
+      return (
+        <CargaPublica>
+          <LandingPublica />
+        </CargaPublica>
+      );
+    }
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 

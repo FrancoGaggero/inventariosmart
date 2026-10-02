@@ -1,6 +1,5 @@
 import { ArrowLeftRight, Check, X } from 'lucide-react';
-import type { CSSProperties } from 'react';
-import { Entrada } from '@/ui/Entrada';
+import { Escalonado, Item, Revelar } from '@/features/publico/Revelar';
 
 // Sección "Antes y después" de la portada (landing-comparison): la planilla contra
 // InventarioSmart, con una animación propia en el centro. Sólo funcionalidades que existen.
@@ -20,9 +19,6 @@ export const CON_INVENTARIOSMART = [
   'Órdenes armadas con lo que hace falta, listas para mandar por correo o WhatsApp.',
   'Listas importadas desde Excel y el proveedor que más conviene para cada insumo.',
 ];
-
-/** Retraso de la entrada escalonada (como `ui/Entrada`). */
-const escalon = (i: number) => ({ '--i': i }) as CSSProperties;
 
 /** Alturas de las barras de stock (de 150 hacia arriba en el viewBox). */
 const BARRAS = [70, 60, 52, 44];
@@ -136,35 +132,31 @@ function Lista({
   titulo,
   items,
   positiva,
-  desde,
 }: {
   titulo: string;
   items: string[];
   positiva: boolean;
-  desde: number;
 }) {
   const Icono = positiva ? Check : X;
   return (
     <div>
       <h3 className="sr-only">{titulo}</h3>
-      <ul className="flex flex-col gap-3">
-        {items.map((texto, i) => (
-          <Entrada
-            as="li"
-            indice={desde + i}
-            key={texto}
-            className="card p-4 flex gap-3 items-start"
-          >
-            <Icono
-              className={`w-[18px] h-[18px] shrink-0 mt-0.5 ${positiva ? 'text-ok' : 'text-crit'}`}
-              aria-hidden
-            />
-            <span className={`text-sm leading-snug ${positiva ? 'text-t1' : 'text-t2'}`}>
-              {texto}
-            </span>
-          </Entrada>
+      <Escalonado como="ul" className="flex flex-col gap-3">
+        {items.map((texto) => (
+          <Item como="li" desde={positiva ? 'derecha' : 'izquierda'} key={texto}>
+            {/* El movimiento al pasar el mouse va en la tarjeta: al li lo maneja Motion. */}
+            <div className="card p-4 flex gap-3 items-start hover:-translate-y-1 hover:shadow-2">
+              <Icono
+                className={`w-[18px] h-[18px] shrink-0 mt-0.5 ${positiva ? 'text-ok' : 'text-crit'}`}
+                aria-hidden
+              />
+              <span className={`text-sm leading-snug ${positiva ? 'text-t1' : 'text-t2'}`}>
+                {texto}
+              </span>
+            </div>
+          </Item>
         ))}
-      </ul>
+      </Escalonado>
     </div>
   );
 }
@@ -177,15 +169,14 @@ export function FrenteAFrente() {
       aria-labelledby="diferencia-titulo"
       className="max-w-6xl mx-auto px-4 md:px-6 py-12 flex flex-col items-center gap-9 scroll-mt-14"
     >
-      <div className="flex flex-col items-center gap-5 text-center">
-        <p className="entra etiqueta etiqueta-acento !text-sm !px-4 !py-1.5" style={escalon(0)}>
+      <Revelar className="flex flex-col items-center gap-5 text-center">
+        <p className="etiqueta etiqueta-acento !text-sm !px-4 !py-1.5">
           <ArrowLeftRight className="w-4 h-4" aria-hidden />
           Antes y después
         </p>
         <h2
           id="diferencia-titulo"
-          className="entra font-extrabold tracking-tight text-[clamp(28px,4vw,48px)] leading-[1.15] m-0"
-          style={escalon(1)}
+          className="font-extrabold tracking-tight text-[clamp(28px,4vw,48px)] leading-[1.15] m-0"
         >
           Dejá de apagar incendios.
           <br />
@@ -193,16 +184,19 @@ export function FrenteAFrente() {
             Manejá tu comercio con datos.
           </span>
         </h2>
-      </div>
+      </Revelar>
 
       <div className="w-full flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-9 lg:items-center">
-        <Lista titulo="Con la planilla" items={CON_PLANILLA} positiva={false} desde={2} />
-        <div className="order-first lg:order-none self-center flex justify-center">
-          <div className="relative rounded-full overflow-hidden card-inversa shadow-3 size-[clamp(200px,22vw,320px)] grid place-items-center">
+        <Lista titulo="Con la planilla" items={CON_PLANILLA} positiva={false} />
+        <Revelar
+          desde="escala"
+          className="order-first lg:order-none self-center flex justify-center"
+        >
+          <div className="latido relative rounded-full overflow-hidden card-inversa shadow-3 size-[clamp(200px,22vw,320px)] grid place-items-center">
             <AnimacionReposicion />
           </div>
-        </div>
-        <Lista titulo="Con InventarioSmart" items={CON_INVENTARIOSMART} positiva desde={7} />
+        </Revelar>
+        <Lista titulo="Con InventarioSmart" items={CON_INVENTARIOSMART} positiva />
       </div>
     </section>
   );
