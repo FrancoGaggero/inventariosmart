@@ -22,6 +22,6 @@
 
 - [x] 4.1 Recorrido visual de las tres pantallas, el inicio con los bloques nuevos y "Más", en los dos temas, como dueño PRO, contador PRO y dueño FREE, con capturas de un test temporal que no se commitea (como en `mobile-redesign`). Listo cuando: no hay desbordes ni texto ilegible a 360 y 412 dp de ancho, y lo temporal quedó borrado
 - [x] 4.2 `docs/arquitectura.html` (la tabla web y mobile y la nota de la app), `apps/mobile/README.md` (estructura y la regla de copiar los textos de la web) y `openspec/CAPACIDADES.md` (fila 29). Listo cuando: los documentos reflejan D1 a D8
-- [ ] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.4 Celular: Franco instala el APK con la cuenta demo "Lubricentro carfax" (PREMIUM) y compara alertas, falta de stock, stock parado y el inicio contra la web. Listo cuando: Franco confirma que los números coinciden
+- [x] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.4 Celular: Franco instala el APK con la cuenta demo "Lubricentro carfax" (PREMIUM) y compara alertas, falta de stock, stock parado y el inicio contra la web. Listo cuando: Franco confirma que los números coinciden
 - [ ] 4.5 (manual, Franco) Anotar HU-06, HU-18 y HU-19 en mobile en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

@@ -128,6 +128,21 @@ void main() {
     expect(servidor.pedidosA('GET', '/dead-stock'), isEmpty);
   });
 
+  for (final (rol, plan, ve) in [('DUENIO', 'PRO', true), ('CONTADOR', 'PREMIUM', false), ('EMPLEADO', 'PREMIUM', false)]) {
+    testWidgets('CP-M.8g "Asistente con IA" para $rol $plan', (tester) async {
+      final servidor = servidorPro(rol: rol, plan: plan);
+      await levantar(tester, servidor, auth: authConSesion());
+      await tocar(tester, 'Más');
+      expect(find.text('Asistente con IA'), ve ? findsOneWidget : findsNothing);
+      if (!ve) {
+        await ir(tester, '/mas/asistente');
+        expect(find.text('¿Qué querés saber?'), findsNothing);
+        expect(find.textContaining('Disponible en el plan PREMIUM'), findsNothing);
+        expect(servidor.pedidos.where((p) => p.uri.path.contains('/assistant')), isEmpty);
+      }
+    });
+  }
+
   test('las secciones de "Más" nunca vienen vacías', () {
     for (final rol in roles) {
       final me = Me.fromJson(meJson(rol: rol, plan: 'PREMIUM'));

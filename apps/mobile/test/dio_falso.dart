@@ -32,6 +32,9 @@ class ServidorFalso implements HttpClientAdapter {
   /// true simula un corte de red en todos los pedidos siguientes.
   bool sinRed = false;
 
+  /// "MÉTODO /ruta" → espera antes de responder (p. ej. un Completer que completa el test).
+  final Map<String, Future<void> Function()> demoras = {};
+
   void responder(String metodo, String ruta, RespuestaFalsa respuesta) {
     rutas['$metodo $ruta'] = (_) => respuesta;
   }
@@ -54,6 +57,8 @@ class ServidorFalso implements HttpClientAdapter {
       throw DioException.connectionError(requestOptions: options, reason: 'sin red');
     }
     final clave = '${options.method} ${options.uri.path.replaceFirst('/api/v1', '')}';
+    final demora = demoras[clave];
+    if (demora != null) await demora();
     final manejador = rutas[clave];
     if (manejador == null) {
       return ResponseBody.fromString(

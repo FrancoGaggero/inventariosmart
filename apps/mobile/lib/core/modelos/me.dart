@@ -112,6 +112,12 @@ class Me {
   /// Falta de stock, stock parado y alertas predictivas son del plan PRO (CP-M.10g).
   bool get tienePro => planCumple(plan, 'PRO');
 
+  /// El asistente es del plan PREMIUM (RN-09).
+  bool get tienePremium => planCumple(plan, 'PREMIUM');
+
+  /// Sólo el DUENIO usa el asistente: la API responde 403 al resto (CP-08.5b, CP-M.8g).
+  bool get usaAsistente => esDuenio;
+
   factory Me.fromJson(Map<String, dynamic> json) => Me(
         usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
         comercio: Comercio.fromJson(json['comercio'] as Map<String, dynamic>),

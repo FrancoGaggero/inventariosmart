@@ -9,6 +9,10 @@ import 'config.dart';
 /// Segundos de espera antes de avisar que la API (Render Free) se está despertando.
 const kDemoraAviso = Duration(seconds: 5);
 
+/// Marca de un pedido que no enciende el aviso de "despertando": el chat del asistente tiene su
+/// propio indicador y sus respuestas tardan por diseño (design D4 de mobile-assistant).
+const sinAvisoDespertar = 'sinAvisoDespertar';
+
 /// true mientras una consulta lleva más de [kDemoraAviso] sin respuesta (CP-M.5b).
 class ApiDespertando extends Notifier<bool> {
   @override
@@ -35,11 +39,15 @@ final dioProvider = Provider<Dio>((ref) {
 
   var enCurso = 0;
   Timer? temporizador;
-  void termino() {
+  bool cuenta(RequestOptions o) => o.extra[sinAvisoDespertar] != true;
+  void termino(RequestOptions o) {
+    if (!cuenta(o)) return;
     enCurso -= 1;
     if (enCurso <= 0) {
       enCurso = 0;
       temporizador?.cancel();
+      // Sin esto, `??=` no volvía a crear el temporizador y el aviso salía una sola vez.
+      temporizador = null;
       ref.read(apiDespertandoProvider.notifier).marcar(false);
     }
   }
@@ -49,18 +57,20 @@ final dioProvider = Provider<Dio>((ref) {
       onRequest: (options, handler) async {
         final token = await ref.read(authRepositoryProvider).idToken();
         if (token != null) options.headers['Authorization'] = 'Bearer $token';
-        enCurso += 1;
-        temporizador ??= Timer(kDemoraAviso, () {
-          ref.read(apiDespertandoProvider.notifier).marcar(true);
-        });
+        if (cuenta(options)) {
+          enCurso += 1;
+          temporizador ??= Timer(kDemoraAviso, () {
+            ref.read(apiDespertandoProvider.notifier).marcar(true);
+          });
+        }
         handler.next(options);
       },
       onResponse: (response, handler) {
-        termino();
+        termino(response.requestOptions);
         handler.next(response);
       },
       onError: (error, handler) {
-        termino();
+        termino(error.requestOptions);
         handler.next(error);
       },
     ),

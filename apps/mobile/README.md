@@ -40,6 +40,7 @@ lib/
 │  ├─ inventario/             listado, filtros y alta rápida
 │  ├─ movimientos/            venta, ingreso y ajuste
 │  ├─ alertas/                alertas de reposición: filtro, atender, posponer y registrar ingreso
+│  ├─ asistente/              chat con el asistente (PREMIUM, sólo dueño) y conversaciones anteriores
 │  ├─ quiebres/               falta de stock por período
 │  ├─ stock_parado/           stock parado por período
 │  └─ mas/                    cuenta, tema, lo que se hace en la web y secciones por rol y plan
@@ -57,4 +58,4 @@ Si cambiás un color en la web, copialo en `lib/app/theme.dart`.
 
 ## Textos de análisis
 
-Las frases de alertas, falta de stock y stock parado (`lib/core/analisis_formato.dart`) son copia de `apps/web/src/lib/alertas.ts`, `quiebres-formato.ts` y `stock-parado-formato.ts`, y `test/core/analisis_formato_test.dart` repite los casos de los tests de la web. Si cambia una frase en la web, cambiala también acá.
+Las frases de alertas, falta de stock y stock parado (`lib/core/analisis_formato.dart`) son copia de `apps/web/src/lib/alertas.ts`, `quiebres-formato.ts` y `stock-parado-formato.ts`, y las del asistente (`lib/core/asistente_formato.dart`) de `asistente-formato.ts`. Los tests de `test/core/` repiten los casos de los tests de la web. Si cambia una frase en la web, cambiala también acá.

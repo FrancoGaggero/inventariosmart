@@ -2,6 +2,7 @@
 library;
 
 export 'analisis.dart';
+export 'asistente.dart';
 export 'dashboard.dart';
 export 'me.dart';
 export 'movimiento.dart';

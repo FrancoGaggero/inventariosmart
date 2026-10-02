@@ -170,6 +170,32 @@ void main() {
     expect(ResultadoStockParado.fromJson(stockParadoJson(productos: 0)).totales.porcentajeDelStock, isNull);
   });
 
+  test('asistente: respuesta con fuentes y acciones, y Me.tienePremium (D2)', () {
+    final r = RespuestaAsistente.fromJson(respuestaAsistenteJson(
+      mensaje: mensajeAsistenteJson(acciones: const [
+        {'tipo': 'ORDEN_BORRADOR', 'ordenId': 'o1', 'numero': 'OC-0007', 'proveedor': 'Distribuidora Norte'},
+        {'tipo': 'ALGO_NUEVO', 'ordenId': 'o2', 'numero': 'X', 'proveedor': 'Y'},
+      ]),
+    ));
+    expect(r.conversacionId, idConversacion);
+    expect(r.mensaje.esDelUsuario, isFalse);
+    expect(r.mensaje.fuentes.single.nombre, 'Alertas de reposición');
+    expect(r.mensaje.acciones.single.numero, 'OC-0007');
+
+    final lista = ListaPaginada.fromJson(conversacionesJson(siguienteCursor: 'c'), ConversacionResumen.fromJson);
+    expect(lista.items.single.titulo, '¿Qué productos tengo que reponer?');
+    expect(lista.hayMas, isTrue);
+
+    final detalle = ConversacionDetalle.fromJson(conversacionJson());
+    expect(detalle.mensajes.map((m) => m.rol), ['USUARIO', 'ASISTENTE']);
+    expect(detalle.mensajes.first.fuentes, isEmpty);
+
+    expect(Me.fromJson(meJson(plan: 'PRO')).tienePremium, isFalse);
+    expect(Me.fromJson(meJson(plan: 'PREMIUM')).tienePremium, isTrue);
+    expect(Me.fromJson(meJson(rol: 'CONTADOR', plan: 'PREMIUM')).usaAsistente, isFalse);
+    expect(Me.fromJson(meJson()).usaAsistente, isTrue);
+  });
+
   test('ListaPaginada.fromJson', () {
     final lista = ListaPaginada.fromJson(
       {

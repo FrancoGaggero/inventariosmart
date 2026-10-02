@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/theme.dart';
 import '../core/analisis_formato.dart';
 
-/// Lo que ofrece una función del plan PRO y que el plan se cambia en la web (design D6).
+/// Lo que ofrece una función de un plan superior y que el plan se cambia en la web.
 /// No hay botón "Ver planes": los planes se manejan desde la web (ADR 0024).
 class AvisoPlan extends StatelessWidget {
   const AvisoPlan(this.texto, {super.key});

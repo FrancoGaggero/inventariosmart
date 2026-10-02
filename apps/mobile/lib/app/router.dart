@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../core/auth/sesion.dart';
 import '../core/modelos/me.dart';
 import '../features/alertas/alertas_screen.dart';
+import '../features/asistente/asistente_screen.dart';
+import '../features/asistente/conversaciones_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/onboarding_screen.dart';
 import '../features/inicio/inicio_screen.dart';
@@ -30,6 +32,8 @@ abstract final class Rutas {
   static const alertas = '/mas/alertas';
   static const quiebres = '/mas/quiebres';
   static const stockParado = '/mas/stock-parado';
+  static const asistente = '/mas/asistente';
+  static const conversaciones = '/mas/asistente/conversaciones';
 }
 
 /// Primera pestaña permitida para el rol.
@@ -39,6 +43,8 @@ String rutaInicialDe(Me me) => me.vePanel ? Rutas.inicio : Rutas.inventario;
 bool rutaPermitida(Me me, String ruta) {
   // Alertas, falta de stock y stock parado: la API responde 403 al EMPLEADO (CP-M.8f). El plan lo
   // resuelve cada pantalla con su aviso (CP-M.10g).
+  // El asistente es sólo del DUENIO: el CONTADOR ve "Análisis" pero no entra acá (CP-M.8g).
+  if (ruta.startsWith(Rutas.asistente)) return me.usaAsistente;
   if (ruta.startsWith('${Rutas.mas}/')) return me.veAnalisis;
   if (ruta.startsWith(Rutas.inicio)) return me.vePanel;
   if (ruta.startsWith(Rutas.inventario)) return me.veInventario;
@@ -121,6 +127,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(path: 'alertas', builder: (_, _) => const AlertasScreen()),
                   GoRoute(path: 'quiebres', builder: (_, _) => const QuiebresScreen()),
                   GoRoute(path: 'stock-parado', builder: (_, _) => const StockParadoScreen()),
+                  GoRoute(
+                    path: 'asistente',
+                    builder: (_, _) => const AsistenteScreen(),
+                    routes: [GoRoute(path: 'conversaciones', builder: (_, _) => const ConversacionesScreen())],
+                  ),
                 ],
               ),
             ],

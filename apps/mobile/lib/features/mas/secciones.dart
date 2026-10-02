@@ -21,7 +21,7 @@ class SeccionMas {
 }
 
 /// Secciones de pantallas de "Más" según rol y plan, como `lib/navegacion.ts` en la web. Las
-/// siguientes changes (`mobile-assistant`, `mobile-orders`) suman las suyas. Nunca devuelve una
+/// siguientes changes (`mobile-orders`) suman las suyas. Nunca devuelve una
 /// sección vacía.
 List<SeccionMas> seccionesMas(Me me) {
   final analisis = [
@@ -50,6 +50,19 @@ List<SeccionMas> seccionesMas(Me me) {
   ];
   return [
     if (analisis.isNotEmpty) SeccionMas(titulo: 'Análisis', entradas: analisis),
+    // En cualquier plan: sin PREMIUM la pantalla explica el plan (CP-M.12j).
+    if (me.usaAsistente)
+      const SeccionMas(
+        titulo: 'Asistente',
+        entradas: [
+          EntradaMas(
+            etiqueta: 'Asistente con IA',
+            icono: Icons.auto_awesome_outlined,
+            ruta: Rutas.asistente,
+            detalle: 'Preguntale por tu negocio',
+          ),
+        ],
+      ),
   ];
 }
 

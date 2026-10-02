@@ -173,6 +173,51 @@ Map<String, dynamic> reposicionJson({int n = 3, int criticas = 1}) => {
       ],
     };
 
+const idConversacion = '9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a';
+const idConversacion2 = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+
+Map<String, dynamic> mensajeAsistenteJson({
+  String id = 'm-asis',
+  String rol = 'ASISTENTE',
+  String contenido = 'Tenés 2 productos para reponer:\n- Filtro de aceite: pedí 20\n- Lámpara H4: pedí 12',
+  List<Map<String, String>> fuentes = const [
+    {'herramienta': 'alertas_de_reposicion', 'nombre': 'Alertas de reposición'},
+  ],
+  List<Map<String, String>> acciones = const [],
+  String creadoEn = '2026-10-02T17:05:00.000Z',
+}) =>
+    {
+      'id': id,
+      'rol': rol,
+      'contenido': contenido,
+      'fuentes': fuentes,
+      'acciones': acciones,
+      'creadoEn': creadoEn,
+    };
+
+Map<String, dynamic> respuestaAsistenteJson({String conversacionId = idConversacion, Map<String, dynamic>? mensaje}) =>
+    {'conversacionId': conversacionId, 'mensaje': mensaje ?? mensajeAsistenteJson()};
+
+Map<String, dynamic> conversacionesJson({List<Map<String, dynamic>>? items, String? siguienteCursor}) => {
+      'items': items ??
+          [
+            {'id': idConversacion, 'titulo': '¿Qué productos tengo que reponer?', 'creadoEn': '2026-10-02T12:00:00.000Z', 'actualizadoEn': '2026-10-02T12:05:00.000Z'},
+          ],
+      'siguienteCursor': siguienteCursor,
+    };
+
+Map<String, dynamic> conversacionJson({String id = idConversacion, List<Map<String, dynamic>>? mensajes}) => {
+      'id': id,
+      'titulo': '¿Qué productos tengo que reponer?',
+      'creadoEn': '2026-10-02T12:00:00.000Z',
+      'actualizadoEn': '2026-10-02T12:05:00.000Z',
+      'mensajes': mensajes ??
+          [
+            mensajeAsistenteJson(id: 'm1', rol: 'USUARIO', contenido: '¿Qué productos tengo que reponer?', fuentes: const []),
+            mensajeAsistenteJson(id: 'm2'),
+          ],
+    };
+
 const idAlerta = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
 const idAlerta2 = '7b2c3d4e-5f6a-4b7c-9d8e-0f1a2b3c4d5e';
 
