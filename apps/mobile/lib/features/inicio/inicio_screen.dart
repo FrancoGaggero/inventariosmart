@@ -7,9 +7,12 @@ import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../core/api_client.dart';
 import '../../core/auth/sesion.dart';
+import '../../core/analisis_formato.dart';
 import '../../core/formato.dart';
 import '../../core/modelos/dashboard.dart';
+import '../../ui/analisis_ui.dart';
 import '../../ui/aviso.dart';
+import '../../ui/aviso_plan.dart';
 import '../../ui/estado_carga.dart';
 
 /// Mes elegido en el panel (YYYY-MM).
@@ -114,6 +117,30 @@ class _Panel extends StatelessWidget {
     return '$cuando vendiste ${formatoEntero(v.unidadesVendidas)} unidades por ${formatoPesos(v.ventasNetas)} netos.';
   }
 
+  /// Tarjetas de falta de stock y stock parado, sólo con monto mayor a cero (CP-M.11, CP-M.11b).
+  List<Widget> _analisis(BuildContext context, Tokens k) {
+    final q = d.quiebres;
+    final sp = d.stockParado;
+    final tarjetas = [
+      if (q != null && (num.tryParse(q.gananciaPerdida) ?? 0) > 0)
+        Indicador(
+          titulo: 'Perdiste por falta de stock',
+          valor: formatoPesosEntero(q.gananciaPerdida),
+          detalle: detallePanelQuiebres(q.productosAfectados),
+          onTap: () => context.go(Rutas.quiebres),
+        ),
+      if (sp != null && (num.tryParse(sp.capitalParado) ?? 0) > 0)
+        Indicador(
+          titulo: 'Plata parada en stock',
+          valor: formatoPesosEntero(sp.capitalParado),
+          detalle: detallePanelStockParado(sp.productos),
+          onTap: () => context.go(Rutas.stockParado),
+        ),
+    ];
+    if (tarjetas.isEmpty) return const [];
+    return [const SizedBox(height: 10), GrillaIndicadores(hijos: tarjetas)];
+  }
+
   @override
   Widget build(BuildContext context) {
     final k = context.tokens;
@@ -164,6 +191,10 @@ class _Panel extends StatelessWidget {
                   ),
           ],
         ),
+        ..._analisis(context, k),
+        const SizedBox(height: 20),
+        const _Titulo('Reposición'),
+        _Reposicion(reposicion: d.alertas.reposicion),
         const SizedBox(height: 20),
         const _Titulo('Más rentables del mes'),
         if (d.topRentables.isEmpty)
@@ -282,6 +313,63 @@ class _AlertaStock extends StatelessWidget {
         title: Text('$titulo: ${grupo.total}', style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(resto > 0 ? '$nombres y $resto más' : nombres, maxLines: 2, overflow: TextOverflow.ellipsis),
         trailing: TextButton(onPressed: onVer, child: const Text('Ver')),
+      ),
+    );
+  }
+}
+
+/// Bloque "Reposición" con las primeras alertas del panel (CP-M.11c, CP-M.11d).
+class _Reposicion extends StatelessWidget {
+  const _Reposicion({required this.reposicion});
+
+  final ReposicionPanel? reposicion;
+
+  @override
+  Widget build(BuildContext context) {
+    final k = context.tokens;
+    final r = reposicion;
+    if (r == null) {
+      return const AvisoPlan(
+        'Alertas predictivas de reposición: disponibles en el plan PRO. Calculan cuándo reponer según tus ventas y el lead time de cada proveedor.',
+      );
+    }
+    if (r.total == 0) {
+      return Text(
+        'Ningún producto se va a quedar sin stock antes de que llegue la reposición.',
+        style: TextStyle(color: k.t2),
+      );
+    }
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final a in r.items)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                leading: Icon(Icons.circle, size: 10, color: a.severidad == 'CRITICA' ? k.crit : k.warn),
+                title: Text(a.producto.nombre, maxLines: 1, overflow: TextOverflow.ellipsis),
+                subtitle: Text(
+                  '${formatearCobertura(a.diasCobertura)} de stock · pedir ${formatoEntero(a.cantidadSugerida)}',
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8, top: 4),
+              child: Text(totalReposicion(r.total, r.criticas), style: TextStyle(fontSize: 12, color: k.t2)),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                onPressed: () => context.go(Rutas.alertas),
+                child: const Text('Ver alertas'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

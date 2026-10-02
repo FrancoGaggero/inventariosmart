@@ -15,6 +15,24 @@ String formatoPesos(Object? monto) {
   return n < 0 ? '-\$ $texto' : '\$ $texto';
 }
 
+/// "4000.00" → "$ 4.000": estimaciones y montos grandes sin centavos, como `formatearPerdida`
+/// en la web. "—" si no es un número.
+String formatoPesosEntero(Object? monto) {
+  final n = _aNumero(monto);
+  if (n == null) return '—';
+  final texto = _entero.format(n.abs().round());
+  return n < 0 ? '-\$ $texto' : '\$ $texto';
+}
+
+/// ISO 8601 → "03/06/2026" en Buenos Aires (UTC−3 fijo, como [mesActual]).
+String formatoDia(String iso) {
+  final f = DateTime.tryParse(iso);
+  if (f == null) return iso;
+  final ba = f.toUtc().subtract(const Duration(hours: 3));
+  String dos(int v) => v.toString().padLeft(2, '0');
+  return '${dos(ba.day)}/${dos(ba.month)}/${ba.year}';
+}
+
 /// 1234 → "1.234".
 String formatoEntero(num n) => _entero.format(n);
 

@@ -164,18 +164,92 @@ class GrupoAlertas {
       );
 }
 
+/// Una de las cinco primeras alertas de reposición del panel (HU-06).
+class AlertaPanel {
+  const AlertaPanel({
+    required this.id,
+    required this.producto,
+    required this.severidad,
+    required this.stock,
+    required this.diasCobertura,
+    required this.cantidadSugerida,
+  });
+
+  final String id;
+  final ProductoRef producto;
+  final String severidad;
+  final int stock;
+  final int? diasCobertura;
+  final int cantidadSugerida;
+
+  factory AlertaPanel.fromJson(Map<String, dynamic> j) => AlertaPanel(
+        id: j['id'] as String,
+        producto: ProductoRef.fromJson(j['producto'] as Map<String, dynamic>),
+        severidad: j['severidad'] as String,
+        stock: j['stock'] as int,
+        diasCobertura: j['diasCobertura'] as int?,
+        cantidadSugerida: j['cantidadSugerida'] as int,
+      );
+}
+
+class ReposicionPanel {
+  const ReposicionPanel({required this.total, required this.criticas, required this.items});
+
+  final int total;
+  final int criticas;
+  final List<AlertaPanel> items;
+
+  factory ReposicionPanel.fromJson(Map<String, dynamic> j) => ReposicionPanel(
+        total: j['total'] as int,
+        criticas: j['criticas'] as int,
+        items: (j['items'] as List<dynamic>)
+            .map((e) => AlertaPanel.fromJson(e as Map<String, dynamic>))
+            .toList(growable: false),
+      );
+}
+
 class AlertasDashboard {
-  const AlertasDashboard({required this.sinStock, required this.stockBajo, required this.faltanGastos});
+  const AlertasDashboard({required this.sinStock, required this.stockBajo, required this.faltanGastos, this.reposicion});
 
   final GrupoAlertas sinStock;
   final GrupoAlertas stockBajo;
   final bool faltanGastos;
 
+  /// null por debajo de PRO (CP-06.6).
+  final ReposicionPanel? reposicion;
+
   factory AlertasDashboard.fromJson(Map<String, dynamic> j) => AlertasDashboard(
         sinStock: GrupoAlertas.fromJson(j['sinStock'] as Map<String, dynamic>),
         stockBajo: GrupoAlertas.fromJson(j['stockBajo'] as Map<String, dynamic>),
         faltanGastos: j['faltanGastos'] as bool,
+        reposicion: j['reposicion'] == null ? null : ReposicionPanel.fromJson(j['reposicion'] as Map<String, dynamic>),
       );
+}
+
+/// Pérdidas por falta de stock de los últimos 30 días (HU-18); null por debajo de PRO.
+class QuiebresPanel {
+  const QuiebresPanel({required this.gananciaPerdida, required this.ventaPerdida, required this.productosAfectados});
+
+  final String gananciaPerdida;
+  final String ventaPerdida;
+  final int productosAfectados;
+
+  factory QuiebresPanel.fromJson(Map<String, dynamic> j) => QuiebresPanel(
+        gananciaPerdida: j['gananciaPerdida'] as String,
+        ventaPerdida: j['ventaPerdida'] as String,
+        productosAfectados: j['productosAfectados'] as int,
+      );
+}
+
+/// Plata parada en productos sin ventas en 90 días (HU-19); null por debajo de PRO.
+class StockParadoPanel {
+  const StockParadoPanel({required this.capitalParado, required this.productos});
+
+  final String capitalParado;
+  final int productos;
+
+  factory StockParadoPanel.fromJson(Map<String, dynamic> j) =>
+      StockParadoPanel(capitalParado: j['capitalParado'] as String, productos: j['productos'] as int);
 }
 
 class Dashboard {
@@ -186,6 +260,8 @@ class Dashboard {
     required this.mesAnterior,
     required this.topRentables,
     required this.alertas,
+    this.quiebres,
+    this.stockParado,
   });
 
   final String periodo;
@@ -194,6 +270,8 @@ class Dashboard {
   final MesAnteriorDashboard mesAnterior;
   final List<TopRentable> topRentables;
   final AlertasDashboard alertas;
+  final QuiebresPanel? quiebres;
+  final StockParadoPanel? stockParado;
 
   factory Dashboard.fromJson(Map<String, dynamic> j) => Dashboard(
         periodo: j['periodo'] as String,
@@ -204,5 +282,8 @@ class Dashboard {
             .map((e) => TopRentable.fromJson(e as Map<String, dynamic>))
             .toList(growable: false),
         alertas: AlertasDashboard.fromJson(j['alertas'] as Map<String, dynamic>),
+        quiebres: j['quiebres'] == null ? null : QuiebresPanel.fromJson(j['quiebres'] as Map<String, dynamic>),
+        stockParado:
+            j['stockParado'] == null ? null : StockParadoPanel.fromJson(j['stockParado'] as Map<String, dynamic>),
       );
 }

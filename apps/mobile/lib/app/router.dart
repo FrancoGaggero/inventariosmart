@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/auth/sesion.dart';
 import '../core/modelos/me.dart';
+import '../features/alertas/alertas_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/onboarding_screen.dart';
 import '../features/inicio/inicio_screen.dart';
@@ -11,6 +12,8 @@ import '../features/inventario/inventario_screen.dart';
 import '../features/inventario/producto_nuevo_screen.dart';
 import '../features/mas/mas_screen.dart';
 import '../features/movimientos/movimiento_screen.dart';
+import '../features/quiebres/quiebres_screen.dart';
+import '../features/stock_parado/stock_parado_screen.dart';
 import 'cargando_screen.dart';
 import 'shell.dart';
 
@@ -24,6 +27,9 @@ abstract final class Rutas {
   static const productoNuevo = '/inventario/nuevo';
   static const movimientoNuevo = '/movimientos/nuevo';
   static const mas = '/mas';
+  static const alertas = '/mas/alertas';
+  static const quiebres = '/mas/quiebres';
+  static const stockParado = '/mas/stock-parado';
 }
 
 /// Primera pestaña permitida para el rol.
@@ -31,6 +37,9 @@ String rutaInicialDe(Me me) => me.vePanel ? Rutas.inicio : Rutas.inventario;
 
 /// true si la ruta está permitida para el rol (las pestañas ocultas no se alcanzan por URL).
 bool rutaPermitida(Me me, String ruta) {
+  // Alertas, falta de stock y stock parado: la API responde 403 al EMPLEADO (CP-M.8f). El plan lo
+  // resuelve cada pantalla con su aviso (CP-M.10g).
+  if (ruta.startsWith('${Rutas.mas}/')) return me.veAnalisis;
   if (ruta.startsWith(Rutas.inicio)) return me.vePanel;
   if (ruta.startsWith(Rutas.inventario)) return me.veInventario;
   if (ruta.startsWith(Rutas.movimientoNuevo)) return me.registraMovimientos;
@@ -96,11 +105,26 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Rutas.movimientoNuevo,
-                builder: (_, state) => MovimientoScreen(productoId: state.uri.queryParameters['productoId']),
+                builder: (_, state) => MovimientoScreen(
+                  productoId: state.uri.queryParameters['productoId'],
+                  tipoInicial: state.uri.queryParameters['tipo'],
+                ),
               ),
             ],
           ),
-          StatefulShellBranch(routes: [GoRoute(path: Rutas.mas, builder: (_, _) => const MasScreen())]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Rutas.mas,
+                builder: (_, _) => const MasScreen(),
+                routes: [
+                  GoRoute(path: 'alertas', builder: (_, _) => const AlertasScreen()),
+                  GoRoute(path: 'quiebres', builder: (_, _) => const QuiebresScreen()),
+                  GoRoute(path: 'stock-parado', builder: (_, _) => const StockParadoScreen()),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     ],

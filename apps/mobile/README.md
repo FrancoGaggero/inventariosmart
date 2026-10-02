@@ -33,14 +33,17 @@ lib/
 │  ├─ shell.dart              barra inferior: pestañas por rol y "Más" al final
 │  ├─ theme.dart              tokens de la paleta ámbar (claro y oscuro) y tema de Material 3
 │  └─ tema_provider.dart      tema elegido (Sistema, Claro u Oscuro), guardado en el dispositivo
-├─ core/                      cliente de la API, sesión, formato y modelos escritos a mano (ADR 0009)
+├─ core/                      cliente de la API, sesión, formato, textos de análisis y modelos escritos a mano (ADR 0009)
 ├─ features/
 │  ├─ auth/                   login, creación de cuenta y onboarding
-│  ├─ inicio/                 panel del mes
+│  ├─ inicio/                 panel del mes, análisis y reposición
 │  ├─ inventario/             listado, filtros y alta rápida
 │  ├─ movimientos/            venta, ingreso y ajuste
+│  ├─ alertas/                alertas de reposición: filtro, atender, posponer y registrar ingreso
+│  ├─ quiebres/               falta de stock por período
+│  ├─ stock_parado/           stock parado por período
 │  └─ mas/                    cuenta, tema, lo que se hace en la web y secciones por rol y plan
-└─ ui/                        aviso, estados de carga y logo
+└─ ui/                        aviso, aviso de plan, piezas de análisis, estados de carga y logo
 ```
 
 ## Colores
@@ -51,3 +54,7 @@ Los colores salen siempre del tema con `context.tokens` y nunca de una constante
 - `test/app/contraste_test.dart` exige contraste WCAG AA en los dos temas.
 
 Si cambiás un color en la web, copialo en `lib/app/theme.dart`.
+
+## Textos de análisis
+
+Las frases de alertas, falta de stock y stock parado (`lib/core/analisis_formato.dart`) son copia de `apps/web/src/lib/alertas.ts`, `quiebres-formato.ts` y `stock-parado-formato.ts`, y `test/core/analisis_formato_test.dart` repite los casos de los tests de la web. Si cambia una frase en la web, cambiala también acá.

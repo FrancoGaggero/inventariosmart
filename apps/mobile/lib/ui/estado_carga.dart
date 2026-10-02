@@ -43,11 +43,14 @@ class ErrorConReintento extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Aviso(
-        mensajeDe(error),
-        tono: TonoAviso.error,
-        accion: TextButton(onPressed: onReintentar, child: const Text('Reintentar')),
-      ),
+      // Un 402 no se arregla reintentando: el plan bajó con la app abierta (D6).
+      child: comoApiException(error).esPlanRequerido
+          ? Aviso(mensajeDe(error), tono: TonoAviso.warn)
+          : Aviso(
+              mensajeDe(error),
+              tono: TonoAviso.error,
+              accion: TextButton(onPressed: onReintentar, child: const Text('Reintentar')),
+            ),
     );
   }
 }

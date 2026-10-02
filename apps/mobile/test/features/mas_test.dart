@@ -10,8 +10,7 @@ import '../dio_falso.dart';
 import '../fixtures.dart';
 
 /// Brillo del tema que está aplicando la app.
-Brightness brilloAplicado(WidgetTester tester) =>
-    Theme.of(tester.element(find.byType(Scaffold).first)).brightness;
+Brightness brilloAplicado(WidgetTester tester) => Theme.of(tester.element(find.byType(Scaffold).first)).brightness;
 
 void main() {
   testWidgets('CP-M.8c la cuenta muestra comercio, email, rol y plan', (tester) async {
@@ -36,7 +35,11 @@ void main() {
 
   testWidgets('CP-M.8e la cuenta sale del /me de quien inició sesión', (tester) async {
     final servidor = ServidorFalso()
-      ..responder('GET', '/me', RespuestaFalsa.ok(meJson(rol: 'CONTADOR', plan: 'PREMIUM', nombreComercio: 'Kiosco Ana')))
+      ..responder(
+        'GET',
+        '/me',
+        RespuestaFalsa.ok(meJson(rol: 'CONTADOR', plan: 'PREMIUM', nombreComercio: 'Kiosco Ana')),
+      )
       ..responder('GET', '/dashboard', RespuestaFalsa.ok(dashboardJson()));
     await levantar(tester, servidor, auth: authConSesion());
     await tocar(tester, 'Más');
@@ -90,6 +93,39 @@ void main() {
     await tocar(tester, 'Sistema');
     expect(brilloAplicado(tester), Brightness.dark);
     expect(preferencias.getString('tema'), 'sistema');
+  });
+
+  for (final (rol, plan, entradas) in [
+    ('DUENIO', 'PRO', ['Alertas de reposición', 'Falta de stock', 'Stock parado']),
+    ('CONTADOR', 'PREMIUM', ['Alertas de reposición', 'Falta de stock', 'Stock parado']),
+    ('DUENIO', 'FREE', ['Alertas de reposición']),
+    ('EMPLEADO', 'PRO', <String>[]),
+  ]) {
+    testWidgets('CP-M.8f sección "Análisis" para $rol $plan', (tester) async {
+      await levantar(
+        tester,
+        servidorPro(rol: rol, plan: plan),
+        auth: authConSesion(),
+      );
+      await tocar(tester, 'Más');
+      expect(find.text('Análisis'), entradas.isEmpty ? findsNothing : findsOneWidget, reason: '$rol $plan');
+      for (final e in ['Alertas de reposición', 'Falta de stock', 'Stock parado']) {
+        expect(find.text(e), entradas.contains(e) ? findsOneWidget : findsNothing, reason: '$rol $plan: $e');
+      }
+    });
+  }
+
+  testWidgets('CP-M.8f el EMPLEADO que abre una pantalla de análisis vuelve a su inicio', (tester) async {
+    final servidor = servidorPro(rol: 'EMPLEADO');
+    await levantar(tester, servidor, auth: authConSesion());
+    for (final ruta in ['/mas/alertas', '/mas/quiebres', '/mas/stock-parado']) {
+      await ir(tester, ruta);
+      expect(find.text('Filtro de aceite'), findsOneWidget, reason: ruta);
+      expect(find.text('Alertas de reposición'), findsNothing, reason: ruta);
+    }
+    expect(servidor.pedidosA('GET', '/alerts'), isEmpty);
+    expect(servidor.pedidosA('GET', '/stockouts'), isEmpty);
+    expect(servidor.pedidosA('GET', '/dead-stock'), isEmpty);
   });
 
   test('las secciones de "Más" nunca vienen vacías', () {

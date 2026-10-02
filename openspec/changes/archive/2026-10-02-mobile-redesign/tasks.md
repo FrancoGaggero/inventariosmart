@@ -22,6 +22,6 @@
 
 - [x] 4.1 Recorrido visual de login, onboarding, inicio, inventario, movimiento y "Más", en los dos temas y con dueño, empleado y contador. Con el emulador si está disponible; si no, con capturas de un test de *golden* temporal que no se commitea. Listo cuando: hay capturas de cada pantalla en los dos temas, sin desbordes ni texto ilegible, y lo temporal quedó borrado
 - [x] 4.2 ADR 0024 (D9), nota en ADR 0022, `apps/mobile/README.md` con la estructura actual, `docs/arquitectura.html` (sección mobile) y `openspec/CAPACIDADES.md` (fila 28). Listo cuando: los documentos reflejan D1 a D9
-- [ ] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz por los documentos; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.4 Celular: Franco instala el APK de entrega y recorre la app con el tema del sistema en claro y en oscuro, y elige un tema desde "Más". Listo cuando: Franco confirma que la paleta, la barra inferior y "Más" se ven bien y que cerrar sesión funciona
+- [x] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz por los documentos; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.4 Celular: Franco instala el APK de entrega y recorre la app con el tema del sistema en claro y en oscuro, y elige un tema desde "Más". Listo cuando: Franco confirma que la paleta, la barra inferior y "Más" se ven bien y que cerrar sesión funciona
 - [ ] 4.5 (manual, Franco) Anotar el rediseño de la app en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

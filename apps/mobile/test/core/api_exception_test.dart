@@ -60,4 +60,20 @@ void main() {
     expect(mensajeFirebase('google-sin-configurar'), contains('Google no está disponible'));
     expect(mensajeFirebase('algo-raro'), 'No pudimos completar la operación.');
   });
+
+  test('distingue el 402 de plan del 403 de permiso (D6)', () {
+    final plan = ApiException.fromDio(
+      _conRespuesta(402, {
+        'code': 'PLAN_REQUERIDO',
+        'message': 'Esta función está disponible a partir del plan PRO.',
+        'details': {'planMinimo': 'PRO'},
+      }),
+    );
+    expect(plan.esPlanRequerido, isTrue);
+    expect(plan.esSinPermiso, isFalse);
+    expect(plan.message, 'Esta función está disponible a partir del plan PRO.');
+    final permiso = ApiException.fromDio(_conRespuesta(403, {'code': 'SIN_PERMISO', 'message': 'No.'}));
+    expect(permiso.esPlanRequerido, isFalse);
+    expect(ApiException.fromDio(_conRespuesta(402, 'texto')).esPlanRequerido, isTrue);
+  });
 }

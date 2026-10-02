@@ -262,6 +262,7 @@ ThemeData buildTheme(Brightness brillo) {
       backgroundColor: k.fill,
       selectedColor: k.brand.withValues(alpha: 0.18),
       side: BorderSide(color: k.line2),
+      checkmarkColor: k.t1,
       labelStyle: etiqueta.copyWith(color: k.t1),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(

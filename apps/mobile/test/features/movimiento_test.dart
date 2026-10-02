@@ -122,4 +122,21 @@ void main() {
     expect(jsonDecode(jsonEncode(post.data)), {'tipo': 'AJUSTE', 'productoId': idProducto, 'cantidad': -1, 'motivo': 'ROTURA'});
     expect(find.text('Ajuste registrado. Stock resultante: 9.'), findsOneWidget);
   });
+
+  testWidgets('CP-M.9c ?tipo=INGRESO precarga el tipo y el producto', (tester) async {
+    final servidor = servidorConVenta();
+    await levantar(tester, servidor, auth: authConSesion());
+    await ir(tester, '/movimientos/nuevo?productoId=$idProducto&tipo=INGRESO');
+
+    expect(find.text('FA-220 · Filtro de aceite'), findsOneWidget);
+    expect(find.text('Registrar ingreso'), findsOneWidget);
+    expect(find.text('Registrar venta'), findsNothing);
+  });
+
+  testWidgets('un tipo desconocido en el enlace deja la venta', (tester) async {
+    await levantar(tester, servidorConVenta(), auth: authConSesion());
+    await ir(tester, '/movimientos/nuevo?tipo=REGALO');
+
+    expect(find.text('Registrar venta'), findsOneWidget);
+  });
 }

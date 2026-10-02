@@ -15,10 +15,13 @@ import 'movimiento_provider.dart';
 
 /// Registrar venta, ingreso o ajuste desde el mostrador (CP-M.4).
 class MovimientoScreen extends ConsumerStatefulWidget {
-  const MovimientoScreen({super.key, this.productoId});
+  const MovimientoScreen({super.key, this.productoId, this.tipoInicial});
 
   /// Producto precargado desde "Vender" en el inventario (CP-M.4f).
   final String? productoId;
+
+  /// Tipo precargado, p. ej. INGRESO desde una alerta de reposición (CP-M.9c).
+  final String? tipoInicial;
 
   @override
   ConsumerState<MovimientoScreen> createState() => _MovimientoScreenState();
@@ -34,6 +37,23 @@ class _MovimientoScreenState extends ConsumerState<MovimientoScreen> {
     final estado = ref.read(movimientoProvider);
     _cantidad.text = estado.cantidad;
     _observacion.text = estado.observacion;
+    _aplicarTipoInicial();
+  }
+
+  @override
+  void didUpdateWidget(MovimientoScreen anterior) {
+    super.didUpdateWidget(anterior);
+    // La pestaña conserva la pantalla: un enlace nuevo con ?tipo= llega por acá.
+    if (widget.tipoInicial != anterior.tipoInicial || widget.productoId != anterior.productoId) _aplicarTipoInicial();
+  }
+
+  /// Se aplica una vez por enlace: después, el tipo lo elige quien registra.
+  void _aplicarTipoInicial() {
+    final tipo = widget.tipoInicial;
+    if (tipo == null || !tiposMovimiento.contains(tipo)) return;
+    Future.microtask(() {
+      if (mounted && ref.read(movimientoProvider).tipo != tipo) ref.read(movimientoProvider.notifier).cambiarTipo(tipo);
+    });
   }
 
   @override

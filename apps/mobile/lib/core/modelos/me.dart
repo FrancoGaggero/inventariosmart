@@ -15,6 +15,16 @@ const nombrePlan = <String, String>{
   'PREMIUM': 'Premium',
 };
 
+const _ordenPlanes = ['FREE', 'PRO', 'PREMIUM'];
+
+/// true si [plan] incluye las funciones de [minimo] (FREE < PRO < PREMIUM), como `planCumple`
+/// de `packages/shared`. Un plan desconocido no cumple nada.
+bool planCumple(String plan, String minimo) {
+  final p = _ordenPlanes.indexOf(plan);
+  final m = _ordenPlanes.indexOf(minimo);
+  return p >= 0 && m >= 0 && p >= m;
+}
+
 class Comercio {
   const Comercio({
     required this.id,
@@ -95,6 +105,12 @@ class Me {
   bool get vePanel => esDuenio || esContador;
   bool get veInventario => esDuenio || esEmpleado;
   bool get registraMovimientos => esDuenio || esEmpleado;
+
+  /// Alertas, falta de stock y stock parado: la API responde 403 al EMPLEADO (CP-M.8f).
+  bool get veAnalisis => esDuenio || esContador;
+
+  /// Falta de stock, stock parado y alertas predictivas son del plan PRO (CP-M.10g).
+  bool get tienePro => planCumple(plan, 'PRO');
 
   factory Me.fromJson(Map<String, dynamic> json) => Me(
         usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),

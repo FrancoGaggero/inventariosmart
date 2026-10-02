@@ -87,7 +87,14 @@ Map<String, dynamic> movimientoJson({
       'creadoEn': '2026-09-23T14:05:00.000Z',
     };
 
-Map<String, dynamic> dashboardJson({bool conGastos = true, String periodo = '2026-09'}) => {
+Map<String, dynamic> dashboardJson({
+  bool conGastos = true,
+  String periodo = '2026-09',
+  Map<String, dynamic>? reposicion,
+  Map<String, dynamic>? quiebres,
+  Map<String, dynamic>? stockParado,
+}) =>
+    {
       'periodo': periodo,
       'stock': {
         'productosActivos': 12,
@@ -143,5 +150,157 @@ Map<String, dynamic> dashboardJson({bool conGastos = true, String periodo = '202
           ],
         },
         'faltanGastos': !conGastos,
+        'reposicion': reposicion,
       },
+      'quiebres': quiebres,
+      'stockParado': stockParado,
+    };
+
+/// Bloque `alertas.reposicion` del panel con [n] productos, el primero crítico.
+Map<String, dynamic> reposicionJson({int n = 3, int criticas = 1}) => {
+      'total': n,
+      'criticas': criticas,
+      'items': [
+        for (var i = 0; i < n; i++)
+          {
+            'id': 'al-$i',
+            'producto': {'id': 'p$i', 'codigo': 'RP-$i', 'nombre': 'Repuesto $i'},
+            'severidad': i < criticas ? 'CRITICA' : 'PROXIMA',
+            'stock': i,
+            'diasCobertura': i == 0 ? 0 : i * 2,
+            'cantidadSugerida': 10 + i,
+          },
+      ],
+    };
+
+const idAlerta = '6a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d';
+const idAlerta2 = '7b2c3d4e-5f6a-4b7c-9d8e-0f1a2b3c4d5e';
+
+Map<String, dynamic> alertaJson({
+  String id = idAlerta,
+  String nombre = 'Filtro de aceite',
+  String codigo = 'FA-220',
+  String productoId = idProducto,
+  String estado = 'ACTIVA',
+  String severidad = 'CRITICA',
+  int? diasCobertura = 2,
+  bool conProveedor = true,
+  String? pospuestaHasta,
+}) =>
+    {
+      'id': id,
+      'producto': {
+        'id': productoId,
+        'codigo': codigo,
+        'nombre': nombre,
+        'stockActual': 3,
+        'stockSeguridad': 2,
+        'estadoStock': 'BAJO',
+      },
+      'proveedor': conProveedor ? {'id': 'pv1', 'nombre': 'Distribuidora Sur', 'leadTimeDias': 5} : null,
+      'estado': estado,
+      'severidad': severidad,
+      'stock': 3,
+      'puntoReposicion': 12,
+      'umbral': 16,
+      'leadTimeDias': 5,
+      'diasAnticipacion': 2,
+      'cantidadSugerida': 20,
+      'velocidadDiaria': '2.000',
+      'diasCobertura': diasCobertura,
+      'generadaEn': '2026-10-01T12:00:00.000Z',
+      'actualizadaEn': '2026-10-02T12:00:00.000Z',
+      'pospuestaHasta': pospuestaHasta,
+      'atendidaEn': null,
+      'resueltaEn': null,
+      'notificadaEn': null,
+      'ordenCompraId': null,
+    };
+
+Map<String, dynamic> resumenAlertasJson({int activas = 2, int criticas = 1, int pospuestas = 0}) => {
+      'activas': activas,
+      'criticas': criticas,
+      'pospuestas': pospuestas,
+      'calculadasEn': '2026-10-02T17:05:00.000Z',
+    };
+
+Map<String, dynamic> productoConQuiebresJson({
+  String id = idProducto,
+  String codigo = 'D-4000',
+  String nombre = 'Batería 12V 65Ah',
+  double diasSinStock = 5,
+  bool enCurso = true,
+  int quiebres = 1,
+  bool sinHistorial = false,
+}) =>
+    {
+      'producto': {'id': id, 'codigo': codigo, 'nombre': nombre},
+      'quiebres': quiebres,
+      'diasSinStock': diasSinStock,
+      'enCurso': enCurso,
+      'inicioUltimo': '2026-09-27T12:00:00.000Z',
+      'demandaDiaria': sinHistorial ? null : '2.0',
+      'unidadesPerdidas': sinHistorial ? null : '10.0',
+      'ventaPerdida': sinHistorial ? null : '10000.00',
+      'gananciaPerdida': sinHistorial ? null : '4000.00',
+      'motivo': sinHistorial ? 'SIN_HISTORIAL' : null,
+    };
+
+Map<String, dynamic> quiebresJson({
+  int dias = 30,
+  List<Map<String, dynamic>>? items,
+  String? siguienteCursor,
+  String gananciaPerdida = '4000.00',
+  int productosAfectados = 1,
+  int enCurso = 1,
+}) =>
+    {
+      'dias': dias,
+      'desde': '2026-09-02T12:00:00.000Z',
+      'hasta': '2026-10-02T12:00:00.000Z',
+      'totales': {
+        'gananciaPerdida': gananciaPerdida,
+        'ventaPerdida': '10000.00',
+        'unidadesPerdidas': '10.0',
+        'productosAfectados': productosAfectados,
+        'enCurso': enCurso,
+      },
+      'items': items ?? [productoConQuiebresJson()],
+      'siguienteCursor': siguienteCursor,
+    };
+
+Map<String, dynamic> productoParadoJson({
+  String id = idProducto2,
+  String codigo = 'S-PARADO',
+  String nombre = 'Kit de embrague',
+  String? ultimaVenta = '2026-06-04T15:00:00.000Z',
+  int diasSinVender = 120,
+}) =>
+    {
+      'producto': {'id': id, 'codigo': codigo, 'nombre': nombre},
+      'stock': 10,
+      'costoReposicion': '2100.00',
+      'capitalParado': '21000.00',
+      'ultimaVenta': ultimaVenta,
+      'diasSinVender': diasSinVender,
+    };
+
+Map<String, dynamic> stockParadoJson({
+  int dias = 90,
+  List<Map<String, dynamic>>? items,
+  String? siguienteCursor,
+  int productos = 1,
+}) =>
+    {
+      'dias': dias,
+      'desde': '2026-07-04T12:00:00.000Z',
+      'hasta': '2026-10-02T12:00:00.000Z',
+      'totales': {
+        'capitalParado': productos == 0 ? '0.00' : '21000.00',
+        'productos': productos,
+        'unidades': productos == 0 ? 0 : 10,
+        'porcentajeDelStock': productos == 0 ? null : '34.00',
+      },
+      'items': items ?? (productos == 0 ? <Map<String, dynamic>>[] : [productoParadoJson()]),
+      'siguienteCursor': siguienteCursor,
     };

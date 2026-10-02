@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:inventariosmart_mobile/app/tema_provider.dart';
 import 'package:inventariosmart_mobile/core/auth/auth_repository.dart';
@@ -69,3 +70,16 @@ Future<void> tocar(WidgetTester tester, String texto) async {
   await tester.tap(find.text(texto).first);
   await bombear(tester);
 }
+
+/// Navega como un enlace a [ruta] (con query), pasando por las redirecciones del router.
+Future<void> ir(WidgetTester tester, String ruta) async {
+  GoRouter.of(tester.element(find.byType(Scaffold).first)).go(ruta);
+  await bombear(tester);
+}
+
+/// Servidor PRO con las consultas de análisis (alertas, quiebres y stock parado).
+ServidorFalso servidorPro({String rol = 'DUENIO', String plan = 'PRO'}) => servidorBase(rol: rol, plan: plan)
+  ..responder('GET', '/alerts', RespuestaFalsa.ok({'items': [alertaJson()], 'siguienteCursor': null}))
+  ..responder('GET', '/alerts/summary', RespuestaFalsa.ok(resumenAlertasJson(activas: 1, criticas: 1)))
+  ..responder('GET', '/stockouts', RespuestaFalsa.ok(quiebresJson()))
+  ..responder('GET', '/dead-stock', RespuestaFalsa.ok(stockParadoJson()));

@@ -35,6 +35,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | (sin spec, web UI)      | —     | RNF-01         | 2    | 26 · `landing-motion` (02/10/2026, skip_specs; Motion en portada, login y registro) |
 | `ai-assistant`          | HU-08 | RF-10         | 3    | 27 · `assistant-stock-insights` (02/10/2026; ajuste: pérdidas por falta de stock y stock parado) |
 | `mobile-app`            | —     | RNF-01, RNF-08 | 2    | 28 · `mobile-redesign` (02/10/2026; paleta ámbar, tema claro y oscuro y pestaña "Más") |
+| `mobile-app`            | HU-06, HU-18, HU-19 | RF-06, RF-19, RF-20 | 2 | 29 · `mobile-stock-insights` (02/10/2026; alertas, falta de stock y stock parado en el celular) |
 
 ## Reglas de uso
 

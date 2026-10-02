@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/router.dart';
 import '../../core/modelos/me.dart';
 
 /// Una pantalla a la que se llega desde "Más".
@@ -19,10 +20,38 @@ class SeccionMas {
   final List<EntradaMas> entradas;
 }
 
-/// Secciones de pantallas de "Más" según rol y plan (design D4), como `lib/navegacion.ts` en la web.
-/// Hoy no hay ninguna: las suman `mobile-stock-insights`, `mobile-assistant` y `mobile-orders`.
-/// Nunca devuelve una sección vacía.
-List<SeccionMas> seccionesMas(Me me) => const <SeccionMas>[];
+/// Secciones de pantallas de "Más" según rol y plan, como `lib/navegacion.ts` en la web. Las
+/// siguientes changes (`mobile-assistant`, `mobile-orders`) suman las suyas. Nunca devuelve una
+/// sección vacía.
+List<SeccionMas> seccionesMas(Me me) {
+  final analisis = [
+    // Las alertas se ven en cualquier plan: en FREE la pantalla explica que son del PRO (CP-M.9f).
+    if (me.veAnalisis)
+      const EntradaMas(
+        etiqueta: 'Alertas de reposición',
+        icono: Icons.notifications_active_outlined,
+        ruta: Rutas.alertas,
+        detalle: 'Qué reponer antes de quedarte sin stock',
+      ),
+    if (me.veAnalisis && me.tienePro) ...const [
+      EntradaMas(
+        etiqueta: 'Falta de stock',
+        icono: Icons.trending_down,
+        ruta: Rutas.quiebres,
+        detalle: 'Cuánto dejaste de ganar sin stock',
+      ),
+      EntradaMas(
+        etiqueta: 'Stock parado',
+        icono: Icons.hourglass_bottom,
+        ruta: Rutas.stockParado,
+        detalle: 'Plata en productos que no se venden',
+      ),
+    ],
+  ];
+  return [
+    if (analisis.isNotEmpty) SeccionMas(titulo: 'Análisis', entradas: analisis),
+  ];
+}
 
 /// Lo que se maneja sólo desde la web (ADR 0024, CP-M.8d).
 const tareasDeLaWeb = [

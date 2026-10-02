@@ -90,6 +90,86 @@ void main() {
     expect(sinGastos.alertas.faltanGastos, isTrue);
   });
 
+  test('planCumple ordena FREE < PRO < PREMIUM y veAnalisis excluye al EMPLEADO (D2)', () {
+    expect(planCumple('FREE', 'PRO'), isFalse);
+    expect(planCumple('PRO', 'PRO'), isTrue);
+    expect(planCumple('PREMIUM', 'PRO'), isTrue);
+    expect(planCumple('PRO', 'PREMIUM'), isFalse);
+    expect(planCumple('FREE', 'FREE'), isTrue);
+    expect(planCumple('OTRO', 'FREE'), isFalse);
+    for (final (rol, ve) in [('DUENIO', true), ('CONTADOR', true), ('EMPLEADO', false)]) {
+      expect(Me.fromJson(meJson(rol: rol)).veAnalisis, ve, reason: rol);
+    }
+    expect(Me.fromJson(meJson(plan: 'FREE')).tienePro, isFalse);
+    expect(Me.fromJson(meJson(plan: 'PRO')).tienePro, isTrue);
+    expect(Me.fromJson(meJson(plan: 'PREMIUM')).tienePro, isTrue);
+  });
+
+  test('Dashboard.fromJson con los bloques de análisis y sin ellos (FREE)', () {
+    final pro = Dashboard.fromJson(dashboardJson(
+      reposicion: reposicionJson(),
+      quiebres: {'gananciaPerdida': '4000.00', 'ventaPerdida': '10000.00', 'productosAfectados': 1},
+      stockParado: {'capitalParado': '21000.00', 'productos': 1},
+    ));
+    expect(pro.alertas.reposicion!.total, 3);
+    expect(pro.alertas.reposicion!.criticas, 1);
+    expect(pro.alertas.reposicion!.items.first.severidad, 'CRITICA');
+    expect(pro.alertas.reposicion!.items.first.diasCobertura, 0);
+    expect(pro.quiebres!.gananciaPerdida, '4000.00');
+    expect(pro.stockParado!.capitalParado, '21000.00');
+
+    final free = Dashboard.fromJson(dashboardJson());
+    expect(free.alertas.reposicion, isNull);
+    expect(free.quiebres, isNull);
+    expect(free.stockParado, isNull);
+  });
+
+  test('Alerta y ResumenAlertas', () {
+    final a = Alerta.fromJson(alertaJson(conProveedor: false, estado: 'POSPUESTA', pospuestaHasta: '2026-10-09T12:00:00.000Z'));
+    expect(a.producto.codigo, 'FA-220');
+    expect(a.producto.stockSeguridad, 2);
+    expect(a.proveedor, isNull);
+    expect(a.abierta, isTrue);
+    expect(a.velocidadDiaria, '2.000');
+    expect(a.pospuestaHasta, isNotNull);
+    expect(Alerta.fromJson(alertaJson()).proveedor!.leadTimeDias, 5);
+    expect(Alerta.fromJson(alertaJson(estado: 'RESUELTA')).abierta, isFalse);
+    expect(Alerta.fromJson(alertaJson(diasCobertura: null)).diasCobertura, isNull);
+    final r = ResumenAlertas.fromJson(resumenAlertasJson());
+    expect((r.activas, r.criticas, r.pospuestas), (2, 1, 0));
+  });
+
+  test('ResultadoQuiebres con SIN_HISTORIAL y páginas', () {
+    final r = ResultadoQuiebres.fromJson(quiebresJson(
+      items: [productoConQuiebresJson(), productoConQuiebresJson(id: 'x', sinHistorial: true)],
+      siguienteCursor: 'c1',
+    ));
+    expect(r.dias, 30);
+    expect(r.totales.gananciaPerdida, '4000.00');
+    expect(r.items.first.diasSinStock, 5.0);
+    expect(r.items.last.motivo, 'SIN_HISTORIAL');
+    expect(r.items.last.gananciaPerdida, isNull);
+    expect(r.hayMas, isTrue);
+    final todo = r.conPagina(ResultadoQuiebres.fromJson(quiebresJson(items: [productoConQuiebresJson(id: 'y')])));
+    expect(todo.items.length, 3);
+    expect(todo.hayMas, isFalse);
+    expect(todo.totales.productosAfectados, 1);
+  });
+
+  test('ResultadoStockParado con ultimaVenta null y páginas', () {
+    final r = ResultadoStockParado.fromJson(stockParadoJson(
+      items: [productoParadoJson(), productoParadoJson(id: 'z', ultimaVenta: null)],
+      siguienteCursor: 'c2',
+    ));
+    expect(r.dias, 90);
+    expect(r.totales.porcentajeDelStock, '34.00');
+    expect(r.items.first.capitalParado, '21000.00');
+    expect(r.items.last.ultimaVenta, isNull);
+    expect(r.hayMas, isTrue);
+    expect(r.conPagina(ResultadoStockParado.fromJson(stockParadoJson())).items.length, 3);
+    expect(ResultadoStockParado.fromJson(stockParadoJson(productos: 0)).totales.porcentajeDelStock, isNull);
+  });
+
   test('ListaPaginada.fromJson', () {
     final lista = ListaPaginada.fromJson(
       {

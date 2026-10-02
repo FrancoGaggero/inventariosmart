@@ -104,6 +104,9 @@ class ApiException implements Exception {
   bool get esNoAutenticado => status == 401 || code == 'NO_AUTENTICADO';
   bool get esSinPermiso => status == 403 || code == 'SIN_PERMISO';
 
+  /// La función es de un plan superior (402 `PLAN_REQUERIDO`, D6).
+  bool get esPlanRequerido => status == 402 || code == 'PLAN_REQUERIDO';
+
   /// Mensaje del primer detalle de validación por campo, si la API lo mandó.
   String? detalleDe(String campo) {
     final d = details;
