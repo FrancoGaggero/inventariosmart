@@ -1,6 +1,6 @@
 # ADR 0012 · Sistema visual de la web: tokens de tema, modo claro por atributo y animaciones en CSS
 
-**Estado:** aceptada · 26/09/2026
+**Estado:** aceptada · 26/09/2026. Los valores de la paleta y la navegación (D1) los reemplaza ADR 0022 (02/10/2026); el mecanismo de tokens sigue vigente.
 
 ## Contexto
 

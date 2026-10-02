@@ -1,68 +1,90 @@
 @import 'tailwindcss';
 
-/* Tokens de marca (mismos que los wireframes v3). Los valores del tema oscuro son los de base;
-   el tema claro los redefine más abajo sobre :root[data-theme='light'] (design D2). */
+/* Paleta ámbar cálida (ADR 0022). Los nombres de los tokens son los de ADR 0012 y no cambian:
+   sólo sus valores. El tema oscuro es la base; el claro los redefine sobre
+   :root[data-theme='light']. lib/contraste.test.ts lee este archivo y exige WCAG AA. */
 @theme {
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Sólo de acento (.acento-serif): el nombre en el saludo y el título de la portada. */
+  --font-serif: 'Instrument Serif', Georgia, serif;
 
-  --color-bg: #080e1a;
-  --color-bg-2: #0d1525;
-  --color-navy: #0f1c30;
-  --color-navy-2: #152236;
-  --color-navy-3: #1c2e45;
-  --color-brand: #2563eb;
-  --color-brand-2: #3b82f6;
-  --color-brand-3: #60a5fa;
-  --color-ok: #10b981;
-  --color-warn: #f59e0b;
-  --color-crit: #ef4444;
-  --color-violet: #8b5cf6;
+  --color-bg: #14110d;
+  --color-bg-2: #1a1612;
+  --color-card: #1e1a15;
+  --color-card-2: #231e18;
+  --color-field: #110e0b;
+  --color-t1: #f3ece1;
+  --color-t2: #b8ac99;
+  --color-t3: #857a69;
+  --color-line: rgba(243, 236, 225, 0.08);
+  --color-line-2: rgba(243, 236, 225, 0.14);
+  --color-fill: rgba(243, 236, 225, 0.05);
+
+  /* Ámbar de marca. Encima siempre va texto oscuro: el blanco no llega a AA. */
+  --color-brand: #e0a54a;
+  --color-brand-2: #ebb866;
+  /* Ámbar para texto e íconos sobre las superficies. */
+  --color-brand-3: #f0c07a;
+  --color-on-brand: #1f1a14;
+  --color-glow: rgba(224, 165, 74, 0.35);
+
+  /* Estados. warn es terracota para no confundirse con el ámbar de marca. */
+  --color-ok: #5bb585;
+  --color-warn: #e5824a;
+  --color-crit: #e5574f;
+  /* Ciruela apagado: sólo la cuarta serie de los gráficos. */
+  --color-violet: #b39bd6;
+
   /* Verde de WhatsApp: igual en los dos temas, para que se reconozca de un vistazo. */
   --color-whatsapp: #25d366;
   --color-on-whatsapp: #062b14;
-  --color-t1: #f1f5f9;
-  --color-t2: #94a3b8;
-  --color-t3: #64748b;
 
-  /* Tokens semánticos: bordes, rellenos, campos, tarjetas y texto sobre el primario. */
-  --color-line: rgba(255, 255, 255, 0.09);
-  --color-line-2: rgba(255, 255, 255, 0.16);
-  --color-fill: rgba(255, 255, 255, 0.05);
-  --color-field: #070c16;
-  --color-card: rgba(255, 255, 255, 0.05);
-  --color-card-2: rgba(255, 255, 255, 0.02);
-  --color-on-brand: #ffffff;
-  --color-glow: rgba(37, 99, 235, 0.35);
+  /* Superficie invertida: la tarjeta destacada y los paneles de la portada y el login. */
+  --color-inverso: #f3ece1;
+  --color-on-inverso: #1f1a14;
+  /* Ámbar legible sobre la superficie invertida (oscuro sobre crema, brillante sobre tinta). */
+  --color-acento-inverso: #8a5a12;
 
-  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px -16px rgba(0, 0, 0, 0.6);
-  --shadow-card-hover:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 16px 32px -16px rgba(0, 0, 0, 0.7);
+  --radius-card: 1.25rem;
+
+  /* Elevaciones (Material 3): en oscuro se marcan con superficies más claras y sombras hondas. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px -12px rgba(0, 0, 0, 0.55);
+  --shadow-2: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 30px -14px rgba(0, 0, 0, 0.65);
+  --shadow-3: 0 4px 8px rgba(0, 0, 0, 0.4), 0 24px 48px -16px rgba(0, 0, 0, 0.7);
 }
 
 :root[data-theme='light'] {
-  --color-bg: #f4f6fb;
-  --color-bg-2: #ffffff;
-  --color-navy: #e9edf5;
-  --color-navy-2: #dfe5f0;
-  --color-navy-3: #d3dbe8;
-  --color-brand-3: #1d4ed8;
-  --color-ok: #059669;
-  --color-warn: #d97706;
-  --color-crit: #dc2626;
-  --color-violet: #7c3aed;
-  --color-t1: #0f172a;
-  --color-t2: #475569;
-  --color-t3: #94a3b8;
-  --color-line: rgba(15, 23, 42, 0.1);
-  --color-line-2: rgba(15, 23, 42, 0.18);
-  --color-fill: rgba(15, 23, 42, 0.045);
+  --color-bg: #f4efe6;
+  --color-bg-2: #fbf8f2;
+  --color-card: #fffcf7;
+  --color-card-2: #faf6ef;
   --color-field: #ffffff;
-  --color-card: #ffffff;
-  --color-card-2: #f8fafc;
-  --color-glow: rgba(37, 99, 235, 0.25);
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -18px rgba(15, 23, 42, 0.25);
-  --shadow-card-hover: 0 2px 4px rgba(15, 23, 42, 0.05), 0 16px 32px -18px rgba(15, 23, 42, 0.3);
+  --color-t1: #1f1a14;
+  --color-t2: #5c5244;
+  --color-t3: #8a7f6f;
+  --color-line: rgba(31, 26, 20, 0.09);
+  --color-line-2: rgba(31, 26, 20, 0.16);
+  --color-fill: rgba(31, 26, 20, 0.045);
+
+  --color-brand: #b87a22;
+  --color-brand-2: #a66c1a;
+  --color-brand-3: #8a5a12;
+  --color-on-brand: #1f1a14;
+  --color-glow: rgba(184, 122, 34, 0.28);
+
+  --color-ok: #2f7d55;
+  --color-warn: #b4561f;
+  --color-crit: #bf3a30;
+  --color-violet: #7a5c9e;
+
+  --color-inverso: #1f1a14;
+  --color-on-inverso: #f3ece1;
+  --color-acento-inverso: #e0a54a;
+
+  --shadow-1: 0 1px 2px rgba(60, 40, 15, 0.05), 0 8px 24px -18px rgba(60, 40, 15, 0.22);
+  --shadow-2: 0 2px 4px rgba(60, 40, 15, 0.06), 0 16px 32px -18px rgba(60, 40, 15, 0.28);
+  --shadow-3: 0 4px 10px rgba(60, 40, 15, 0.08), 0 28px 56px -20px rgba(60, 40, 15, 0.32);
   color-scheme: light;
 }
 
@@ -74,25 +96,19 @@ body,
 
 html,
 body {
-  /* Red de seguridad: ningún elemento puede hacer scrollear la página en horizontal (D1). */
+  /* Red de seguridad: ningún elemento puede hacer scrollear la página en horizontal. */
   overflow-x: clip;
 }
 
 body {
   margin: 0;
   background-color: var(--color-bg);
-  /* Fondo con dos gradientes radiales suaves y una capa de grano fija (D3). */
-  background-image:
-    radial-gradient(
-      60rem 30rem at -10% -10%,
-      color-mix(in srgb, var(--color-brand) 14%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      50rem 28rem at 110% 0%,
-      color-mix(in srgb, var(--color-violet) 12%, transparent),
-      transparent 60%
-    );
+  /* Fondo liso con un brillo ámbar muy tenue arriba a la izquierda y grano fijo. */
+  background-image: radial-gradient(
+    60rem 30rem at -10% -10%,
+    color-mix(in srgb, var(--color-brand) 8%, transparent),
+    transparent 60%
+  );
   background-attachment: fixed;
   color: var(--color-t1);
   font-family: var(--font-sans);
@@ -117,116 +133,134 @@ body::before {
   z-index: 1;
 }
 
+/* Foco visible en todo lo interactivo (WCAG 2.4.7): anillo ámbar con separación. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-3);
+  outline-offset: 2px;
+}
+
 /* Clases propias en la capa components: las utilidades de Tailwind (hidden, bg-*, p-*) las
-   pisan sin necesidad de !important (design D3). */
+   pisan sin necesidad de !important. */
 @layer components {
+  /* --- Capa de estado (Material 3) -------------------------------------------------
+     Un velo del color del texto encima del fondo: 8 % al pasar el mouse, 12 % con foco o al
+     apretar. Va como sombra interior para no ocupar los pseudo-elementos. */
+  .capa,
+  .btn,
+  .chip,
+  .nav-item {
+    --capa: 0%;
+    box-shadow:
+      inset 0 0 0 100vmax color-mix(in srgb, currentColor var(--capa), transparent),
+      var(--sombra, 0 0 #0000);
+  }
+  .capa:hover,
+  .btn:hover:not(:disabled),
+  .chip:hover,
+  .nav-item:hover {
+    --capa: 8%;
+  }
+  .capa:focus-visible,
+  .capa:active,
+  .btn:focus-visible,
+  .btn:active:not(:disabled),
+  .chip:focus-visible,
+  .chip:active,
+  .nav-item:focus-visible,
+  .nav-item:active {
+    --capa: 12%;
+  }
+
   /* --- Tarjetas ------------------------------------------------------------------- */
 
   .card {
     position: relative;
-    background: linear-gradient(180deg, var(--color-card), var(--color-card-2));
+    background: var(--color-card);
     border: 1px solid var(--color-line);
-    border-radius: 16px;
-    box-shadow: var(--shadow-card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-1);
     transition:
       transform 0.2s,
       box-shadow 0.2s,
-      border-color 0.2s;
-  }
-  .card::after {
-    /* Borde degradado que asoma al pasar el mouse. */
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--color-brand) 60%, transparent),
-      transparent 55%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.25s;
-    pointer-events: none;
+      background-color 0.2s;
   }
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-2);
+    background: var(--color-card-2);
   }
-  .card-hover:hover::after {
-    opacity: 1;
+  /* Tarjeta destacada: superficie invertida (oscura en claro, crema en oscuro). */
+  .card-inversa {
+    background: var(--color-inverso);
+    color: var(--color-on-inverso);
+    border-color: transparent;
+  }
+  .card-inversa.card-hover:hover {
+    background: var(--color-inverso);
   }
 
-  /* --- Botones y chips ------------------------------------------------------------ */
+  /* --- Botones (lleno, tonal, con borde y de texto) ------------------------------- */
 
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
-    border-radius: 11px;
-    padding: 0.85rem 1.1rem;
+    border-radius: 12px;
+    padding: 0.8rem 1.1rem;
+    min-height: 2.75rem;
     font-weight: 700;
     font-size: 0.92rem;
     cursor: pointer;
     transition:
+      box-shadow 0.15s,
       background-color 0.15s,
       border-color 0.15s,
-      box-shadow 0.15s,
       transform 0.1s;
     border: 1px solid transparent;
   }
-  .btn:active {
+  .btn:active:not(:disabled) {
     transform: scale(0.98);
   }
   .btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
-  .btn:focus-visible {
-    outline: 2px solid var(--color-brand-3);
-    outline-offset: 2px;
-  }
   .btn-primary {
-    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-2));
+    background: var(--color-brand);
     color: var(--color-on-brand);
-    box-shadow: 0 8px 20px -10px var(--color-glow);
+    --sombra: 0 8px 20px -12px var(--color-glow);
   }
-  .btn-primary:hover {
-    box-shadow: 0 10px 24px -8px var(--color-glow);
-    filter: brightness(1.06);
+  .btn-primary:hover:not(:disabled) {
+    --sombra: 0 10px 24px -10px var(--color-glow);
   }
-  .btn-whatsapp {
-    background: var(--color-whatsapp);
-    color: var(--color-on-whatsapp);
-    box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--color-whatsapp) 60%, transparent);
-  }
-  .btn-whatsapp:hover {
-    filter: brightness(1.06);
+  .btn-tonal {
+    background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+    color: var(--color-brand-3);
   }
   .btn-ghost {
     background: transparent;
     border-color: var(--color-line-2);
     color: var(--color-t1);
   }
-  .btn-ghost:hover {
-    border-color: var(--color-brand-2);
-    background: var(--color-fill);
+  .btn-texto {
+    background: transparent;
+    color: var(--color-brand-3);
+    padding-inline: 0.75rem;
   }
+  .btn-whatsapp {
+    background: var(--color-whatsapp);
+    color: var(--color-on-whatsapp);
+    --sombra: 0 8px 20px -10px color-mix(in srgb, var(--color-whatsapp) 60%, transparent);
+  }
+
+  /* --- Chips y etiquetas ---------------------------------------------------------- */
 
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.45rem 0.8rem;
+    padding: 0.45rem 0.85rem;
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -238,24 +272,45 @@ body::before {
       color 0.15s,
       border-color 0.15s,
       background-color 0.15s,
+      box-shadow 0.15s,
       transform 0.1s;
   }
   .chip:hover {
     color: var(--color-t1);
-    border-color: var(--color-brand-2);
   }
   .chip:active {
     transform: scale(0.97);
-  }
-  .chip:focus-visible {
-    outline: 2px solid var(--color-brand-3);
-    outline-offset: 2px;
   }
   .chip-activo {
     background: color-mix(in srgb, var(--color-brand) 16%, transparent);
     border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
     color: var(--color-brand-3);
   }
+  .chip-activo:hover {
+    color: var(--color-brand-3);
+  }
+
+  /* Píldora informativa (no clickeable): estados y contadores. */
+  .etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--color-fill);
+    border: 1px solid var(--color-line);
+    color: var(--color-t2);
+  }
+  .etiqueta-acento {
+    background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+    border-color: color-mix(in srgb, var(--color-brand) 30%, transparent);
+    color: var(--color-brand-3);
+  }
+
+  /* --- Campos --------------------------------------------------------------------- */
 
   .campo {
     width: 100%;
@@ -271,11 +326,55 @@ body::before {
       box-shadow 0.15s;
   }
   .campo:focus {
-    border-color: var(--color-brand-2);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 15%, transparent);
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand) 18%, transparent);
+  }
+  .campo:focus-visible {
+    outline: none;
   }
   .campo::placeholder {
     color: var(--color-t3);
+  }
+  .campo[aria-invalid='true'] {
+    border-color: color-mix(in srgb, var(--color-crit) 60%, transparent);
+  }
+
+  /* --- Navegación ----------------------------------------------------------------- */
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-t2);
+    transition:
+      color 0.15s,
+      background-color 0.15s,
+      box-shadow 0.15s;
+  }
+  .nav-item:hover {
+    color: var(--color-t1);
+  }
+  .nav-item[aria-current='page'] {
+    background: color-mix(in srgb, var(--color-brand) 16%, transparent);
+    color: var(--color-brand-3);
+  }
+
+  /* --- Tipografía de acento ------------------------------------------------------- */
+
+  .acento-serif {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--color-brand-3);
+  }
+  .card-inversa .acento-serif {
+    color: var(--color-acento-inverso);
   }
 }
 
@@ -294,6 +393,18 @@ body::before {
 .entra {
   animation: entrar 0.36s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+@keyframes deslizar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.desliza {
+  animation: deslizar 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 @keyframes pulso {
@@ -344,26 +455,6 @@ body::before {
     animation: brillo 1.4s linear infinite;
   }
 
-  .subrayado-activo {
-    position: relative;
-  }
-  .subrayado-activo::after {
-    content: '';
-    position: absolute;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: -0.35rem;
-    height: 2px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--color-brand-2), var(--color-violet));
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.25s;
-  }
-  .subrayado-activo[aria-current='page']::after {
-    transform: scaleX(1);
-  }
-
   .thead-fija th {
     position: sticky;
     top: 0;
@@ -380,12 +471,9 @@ body::before {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .entra {
-    animation: none;
-  }
-  .pulso {
-    animation: none;
-  }
+  .entra,
+  .desliza,
+  .pulso,
   .trazo {
     animation: none;
   }

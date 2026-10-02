@@ -1,0 +1,42 @@
+import {
+  Archive,
+  ArrowLeftRight,
+  BadgeCheck,
+  BellRing,
+  FileBarChart,
+  Home,
+  LineChart,
+  type LucideIcon,
+  Package,
+  PackageX,
+  Receipt,
+  Settings,
+  ShoppingCart,
+  Sparkles,
+  Tags,
+  TrendingUp,
+  Truck,
+  Users,
+} from 'lucide-react';
+import type { IconoNav } from '@/lib/navegacion';
+
+/** Ícono de cada ítem de la navegación (lib/navegacion.ts es puro y sólo guarda la clave). */
+export const ICONO_NAV: Record<IconoNav, LucideIcon> = {
+  inicio: Home,
+  movimientos: ArrowLeftRight,
+  inventario: Package,
+  rentabilidad: TrendingUp,
+  gastos: Receipt,
+  alertas: BellRing,
+  quiebres: PackageX,
+  stockParado: Archive,
+  inflacion: LineChart,
+  reportes: FileBarChart,
+  ordenes: ShoppingCart,
+  proveedores: Truck,
+  remarcaciones: Tags,
+  asistente: Sparkles,
+  usuarios: Users,
+  comercio: Settings,
+  plan: BadgeCheck,
+};

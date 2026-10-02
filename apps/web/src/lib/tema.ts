@@ -4,6 +4,9 @@ export type Tema = 'dark' | 'light';
 
 const CLAVE = 'tema';
 
+/** Color de la barra del navegador en el celular: el fondo de cada tema (index.css). */
+export const COLOR_BARRA: Record<Tema, string> = { dark: '#14110d', light: '#f4efe6' };
+
 function guardado(): Tema | null {
   try {
     const v = localStorage.getItem(CLAVE);
@@ -23,12 +26,19 @@ export function leerTema(): Tema {
   return 'dark';
 }
 
-/** Aplica el tema al documento (atributo `data-theme` y `color-scheme`). */
+/** Aplica el tema al documento (atributo `data-theme`, `color-scheme` y `theme-color`). */
 export function aplicarTema(tema: Tema): void {
   const raiz = document.documentElement;
   if (tema === 'light') raiz.setAttribute('data-theme', 'light');
   else raiz.removeAttribute('data-theme');
   raiz.style.colorScheme = tema;
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.content = COLOR_BARRA[tema];
 }
 
 export function guardarTema(tema: Tema): void {

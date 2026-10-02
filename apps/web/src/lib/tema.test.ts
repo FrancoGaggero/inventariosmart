@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { aplicarTema, guardarTema, leerTema } from './tema';
+import { COLOR_BARRA, aplicarTema, guardarTema, leerTema } from './tema';
 
 function sistemaPrefiere(claro: boolean) {
   Object.defineProperty(window, 'matchMedia', {
@@ -47,5 +47,15 @@ describe('tema (design D2)', () => {
     aplicarTema('dark');
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
     expect(document.documentElement.style.colorScheme).toBe('dark');
+  });
+
+  it('aplicarTema pinta la barra del navegador con el fondo del tema', () => {
+    const barra = () =>
+      document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content;
+    aplicarTema('light');
+    expect(barra()).toBe(COLOR_BARRA.light);
+    aplicarTema('dark');
+    expect(barra()).toBe(COLOR_BARRA.dark);
+    expect(document.querySelectorAll('meta[name="theme-color"]')).toHaveLength(1);
   });
 });

@@ -30,6 +30,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `ai-assistant`          | HU-08 | RF-10         | 3    | 21 · `assistant-top-sellers` (01/10/2026; ajuste: consulta de más vendidos) |
 | `stockout-losses`       | HU-18 | RF-19         | 2    | 22 · `stockout-losses` (01/10/2026; modifica `financial-dashboard` y `subscription-plans`) |
 | `dead-stock`            | HU-19 | RF-20         | 2    | 23 · `dead-stock` (01/10/2026; modifica `financial-dashboard` y `subscription-plans`) |
+| (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2    | 24 · `web-redesign` (02/10/2026, skip_specs; paleta ámbar y navegación lateral) |
 
 ## Reglas de uso
 

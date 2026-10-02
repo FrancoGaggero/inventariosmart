@@ -1,8 +1,9 @@
-import { BarChart3, BellRing, LogIn, ShoppingCart, TrendingUp } from 'lucide-react';
+import { BellRing, LogIn, ShoppingCart, TrendingUp } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useAuth } from '@/lib/auth';
 import { GraficaBarras } from '@/ui/GraficaBarras';
+import { Logo } from '@/ui/Logo';
 
 const MENSAJES: Record<string, string> = {
   'auth/invalid-credential': 'El email o la contraseña no son correctos.',
@@ -62,15 +63,11 @@ export function LoginPage() {
     <main className="min-h-full grid lg:grid-cols-2">
       <section className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm entra">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-violet grid place-items-center shadow-[0_8px_20px_-8px_var(--color-glow)]">
-              <BarChart3 className="w-5 h-5 text-on-brand" aria-hidden />
-            </div>
-            <span className="font-extrabold text-lg">InventarioSmart</span>
-          </div>
+          <Logo grande className="mb-8" />
 
           <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
-            Tu stock y tus <span className="text-brand-3">números reales</span>, en un solo lugar.
+            Tu stock y tus <span className="acento-serif text-[1.15em]">números reales</span>, en un
+            solo lugar.
           </h1>
           <p className="text-t2 text-sm mb-6">Entrá a tu panel.</p>
 
@@ -137,20 +134,21 @@ export function LoginPage() {
       </section>
 
       <aside
-        className="hidden lg:flex flex-col justify-between p-10 m-4 rounded-3xl text-white bg-gradient-to-br from-brand via-brand-2 to-violet shadow-[0_30px_60px_-30px_var(--color-glow)] entra"
+        className="hidden lg:flex flex-col justify-between p-10 m-4 card card-inversa !rounded-3xl shadow-3 entra"
         style={{ ['--i' as string]: 2 }}
         aria-label="Qué hace InventarioSmart"
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-acento-inverso">
             Para PyMEs argentinas
           </p>
           <h2 className="text-3xl font-extrabold leading-tight mt-3 max-w-md">
-            Sabé qué te deja plata y qué se te va a acabar, antes de que pase.
+            Sabé qué te deja plata y qué se te va a acabar,{' '}
+            <span className="acento-serif">antes de que pase</span>.
           </h2>
         </div>
         <div className="my-8">
-          <GraficaBarras />
+          <GraficaBarras className="text-acento-inverso" />
         </div>
         <ul className="space-y-3">
           {BENEFICIOS.map((b, i) => (
@@ -159,12 +157,12 @@ export function LoginPage() {
               className="flex items-start gap-3 entra"
               style={{ ['--i' as string]: 4 + i }}
             >
-              <span className="w-9 h-9 rounded-xl bg-white/15 grid place-items-center shrink-0">
+              <span className="w-9 h-9 rounded-xl bg-brand text-on-brand grid place-items-center shrink-0">
                 <b.Icono className="w-4 h-4" aria-hidden />
               </span>
               <span>
                 <span className="block font-bold">{b.titulo}</span>
-                <span className="block text-sm text-white/80">{b.texto}</span>
+                <span className="block text-sm opacity-70">{b.texto}</span>
               </span>
             </li>
           ))}

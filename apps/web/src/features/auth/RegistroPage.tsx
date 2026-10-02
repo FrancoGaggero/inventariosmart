@@ -1,11 +1,12 @@
 import { OnboardingSchema } from '@inventariosmart/shared';
-import { BarChart3, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
 import { mensajeFirebase, useAuth } from '@/lib/auth';
 import { useInvalidarMe } from '@/lib/me';
 import { Campo } from '@/ui/Campo';
+import { Logo } from '@/ui/Logo';
 
 /** Registro con email: crea la cuenta en Firebase y confirma el nombre del comercio (CP-11.2c). */
 export function RegistroPage() {
@@ -66,12 +67,7 @@ export function RegistroPage() {
   return (
     <main className="min-h-full flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-violet grid place-items-center">
-            <BarChart3 className="w-5 h-5 text-on-brand" aria-hidden />
-          </div>
-          <span className="font-extrabold text-lg">InventarioSmart</span>
-        </div>
+        <Logo grande className="mb-8" />
 
         <h1 className="text-2xl font-extrabold tracking-tight leading-tight mb-1">
           Empezá <span className="text-brand-3">gratis</span> y en minutos.

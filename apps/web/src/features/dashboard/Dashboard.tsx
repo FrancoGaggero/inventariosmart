@@ -128,6 +128,7 @@ function Kpi({
   claseValor = '',
   detalle,
   extra,
+  inversa = false,
 }: {
   indice: number;
   titulo: string;
@@ -138,17 +139,25 @@ function Kpi({
   claseValor?: string;
   detalle: string;
   extra?: React.ReactNode;
+  /** Tarjeta destacada (superficie invertida, web-redesign D5). */
+  inversa?: boolean;
 }) {
+  // En la superficie invertida t2 y t3 pierden contraste: el texto secundario usa opacidad.
+  const secundario = inversa ? 'opacity-70' : 'text-t2';
+  const terciario = inversa ? 'opacity-60' : 'text-t3';
   return (
-    <Entrada indice={indice} className="card card-hover p-4 flex gap-3 min-w-0 overflow-hidden">
+    <Entrada
+      indice={indice}
+      className={`card card-hover p-4 flex gap-3 min-w-0 overflow-hidden ${inversa ? 'card-inversa' : ''}`}
+    >
       <span
-        className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${TONO[tono]}`}
+        className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${inversa ? 'bg-brand text-on-brand' : TONO[tono]}`}
         aria-hidden
       >
         <Icono className="w-5 h-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <dt className="text-t2 text-xs font-semibold uppercase tracking-wider">{titulo}</dt>
+        <dt className={`${secundario} text-xs font-semibold uppercase tracking-wider`}>{titulo}</dt>
         {cargando ? (
           <>
             <Skeleton variante="numero" className="mt-1.5" />
@@ -161,7 +170,7 @@ function Kpi({
             >
               <MontoAnimado valor={valor} />
             </dd>
-            <dd className="text-xs text-t3 mt-1 truncate">{detalle}</dd>
+            <dd className={`text-xs ${terciario} mt-1 truncate`}>{detalle}</dd>
           </>
         )}
       </div>
@@ -183,7 +192,7 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
     <section className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold capitalize">{formatearMes(periodo)}</h2>
+          <h2 className="text-lg font-bold first-letter:uppercase">{formatearMes(periodo)}</h2>
           <p className="text-t2 text-sm">
             {d ? fraseDelMes(d) : panel.isError ? mensajeDe(panel.error) : 'Cargando el panel…'}
           </p>
@@ -191,10 +200,11 @@ export function Dashboard({ puedeOperar }: { puedeOperar: boolean }) {
         <SelectorMes valor={periodo} onChange={setPeriodo} />
       </div>
 
-      <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-sm">
         <Kpi
           indice={0}
           titulo="Stock valorizado"
+          inversa
           Icono={Boxes}
           tono="brand"
           cargando={cargando}

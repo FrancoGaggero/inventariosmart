@@ -106,11 +106,13 @@ pnpm dev
   `apps/web/public/plantillas/lista-de-precios.csv` (columnas `codigo;costo`, costo neto sin IVA).
   Convención de listados: paginación por cursor, respuesta `{ items, siguienteCursor }`; `siguienteCursor` null en la última página.
 - Web: http://localhost:5173
-  Tema claro u oscuro con el conmutador de la cabecera (se guarda en el navegador; por defecto sigue al sistema).
-  Por debajo de 1024 px la navegación va en un panel lateral (botón de menú). Tests de la web:
-  `pnpm --filter @inventariosmart/web test` (Vitest + jsdom; `pnpm test` en la raíz los incluye). Convención de
-  estilos: tokens (`border-line`, `bg-fill`, `bg-field`, `.campo`, `.chip`) y nunca colores fijos, para que los dos
-  temas queden completos (ADR 0012).
+  Paleta ámbar cálida, en tema claro u oscuro, con el conmutador al pie de la barra lateral (se guarda en el
+  navegador; por defecto sigue al sistema). Navegación en una barra lateral desde 768 px, que se colapsa a un riel de
+  íconos, y en el celular una barra inferior con "Más" (ADR 0022). Tests de la web:
+  `pnpm --filter @inventariosmart/web test` (Vitest + jsdom; `pnpm test` en la raíz los incluye), incluido el de
+  contraste WCAG AA de la paleta. Convención de estilos: tokens (`border-line`, `bg-fill`, `bg-field`, `.campo`,
+  `.chip`, `.card-inversa`, `.etiqueta`) y nunca colores fijos, para que los dos temas queden completos
+  (ADR 0012 y 0022).
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 
   App Android (`mobile-mvp`): login (email/contraseña y Google), panel resumido del mes, inventario de mostrador con alta

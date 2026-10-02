@@ -46,7 +46,7 @@ export function Confirmar({
     <div className="fixed inset-0 z-40 grid place-items-center p-4">
       <button
         type="button"
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-[color-mix(in_srgb,var(--color-bg)_70%,transparent)] backdrop-blur-[2px]"
         aria-label="Cerrar"
         onClick={onCancelar}
       />

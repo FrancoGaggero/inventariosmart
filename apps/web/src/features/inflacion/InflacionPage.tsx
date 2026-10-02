@@ -121,24 +121,25 @@ export function InflacionPage() {
   const cargando = tienePlan && (indicadores.isPending || comparacion.isPending);
 
   const aNumeros = (serie: (string | null)[]) => serie.map((v) => (v === null ? null : Number(v)));
+  // Los datos del comercio van en color y las referencias oficiales en gris (web-redesign D7).
   const series: SerieGrafico[] = c
     ? [
         {
           id: 'misPrecios',
           nombre: 'Mis precios',
-          color: 'var(--color-brand-3)',
+          color: 'var(--color-brand)',
           valores: aNumeros(c.series.misPrecios),
         },
         {
           id: 'misCostos',
           nombre: 'Mis costos',
-          color: 'var(--color-warn)',
+          color: 'var(--color-violet)',
           valores: aNumeros(c.series.misCostos),
         },
         {
           id: 'ipc',
           nombre: 'Inflación (IPC)',
-          color: 'var(--color-violet)',
+          color: 'var(--color-t2)',
           valores: aNumeros(c.series.ipc),
         },
         {

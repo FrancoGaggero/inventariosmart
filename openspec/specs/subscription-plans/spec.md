@@ -19,7 +19,7 @@ El sistema SHALL devolver en `GET /api/v1/plan`, a cualquier usuario activo del 
 #### Scenario: CP-14.2 Plan vigente, funcionalidades y uso
 - **GIVEN** un comercio PRO con 12 productos activos y 3 usuarios activos
 - **WHEN** el DUENIO consulta `GET /api/v1/plan`
-- **THEN** obtiene `plan: "PRO"`; las alertas de reposición, las pérdidas por falta de stock, las órdenes de compra, los reportes semanales, los precios frente a la inflación y la remarcación figuran como incluidas; el comparador de proveedores y el asistente con IA figuran como no incluidas con `planMinimo: "PREMIUM"`; los límites son sin tope; y el uso es de 12 productos y 3 usuarios
+- **THEN** obtiene `plan: "PRO"`; las alertas de reposición, las pérdidas por falta de stock, el stock parado, las órdenes de compra, los reportes semanales, los precios frente a la inflación y la remarcación figuran como incluidas; el comparador de proveedores y el asistente con IA figuran como no incluidas con `planMinimo: "PREMIUM"`; los límites son sin tope; y el uso es de 12 productos y 3 usuarios
 
 #### Scenario: CP-14.2b Plan FREE con sus límites
 - **GIVEN** un comercio FREE con 50 productos activos y 1 usuario

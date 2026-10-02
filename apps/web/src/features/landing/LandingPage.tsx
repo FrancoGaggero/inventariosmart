@@ -18,6 +18,7 @@ import {
 import { Link } from 'react-router';
 import { Entrada } from '@/ui/Entrada';
 import { GraficaBarras } from '@/ui/GraficaBarras';
+import { Logo } from '@/ui/Logo';
 
 interface Servicio {
   Icono: LucideIcon;
@@ -110,11 +111,8 @@ export function LandingPage() {
     <div className="min-h-full flex flex-col">
       <header className="sticky top-0 z-20 border-b border-line bg-bg-2/80 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 md:px-6 h-14 flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2 font-extrabold">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-violet grid place-items-center shadow-[0_6px_16px_-8px_var(--color-glow)]">
-              <BarChart3 className="w-4 h-4 text-on-brand" aria-hidden />
-            </span>
-            InventarioSmart
+          <Link to="/" className="rounded-lg">
+            <Logo />
           </Link>
           <nav className="hidden md:flex items-center gap-1 ml-4 text-sm" aria-label="Secciones">
             <a
@@ -150,7 +148,8 @@ export function LandingPage() {
               Para PyMEs argentinas
             </p>
             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]">
-              Tu stock y tus <span className="text-brand-3">números reales</span>, en un solo lugar.
+              Tu stock y tus <span className="acento-serif text-[1.1em]">números reales</span>, en
+              un solo lugar.
             </h1>
             <p className="text-t2 text-lg max-w-xl">
               Inventario, rentabilidad y reposición inteligente para el comercio que hoy lleva todo
@@ -172,23 +171,23 @@ export function LandingPage() {
           </Entrada>
           <Entrada
             indice={2}
-            className="rounded-2xl border border-white/15 p-6 sm:p-8 bg-gradient-to-br from-brand via-brand-2 to-violet text-white shadow-[0_30px_60px_-30px_var(--color-glow)] overflow-hidden"
+            className="card card-inversa !rounded-3xl p-6 sm:p-8 shadow-3 overflow-hidden"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-acento-inverso">
               Septiembre · panel del mes
             </p>
             <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-xl bg-white/15 p-3">
-                <div className="text-white/80 text-xs">Ventas netas</div>
+              <div className="rounded-xl bg-brand text-on-brand p-3">
+                <div className="opacity-75 text-xs">Ventas netas</div>
                 <div className="text-xl font-extrabold tabular-nums">$ 1.451.652</div>
               </div>
-              <div className="rounded-xl bg-white/15 p-3">
-                <div className="text-white/80 text-xs">Margen bruto</div>
+              <div className="rounded-xl border border-[color-mix(in_srgb,var(--color-on-inverso)_18%,transparent)] p-3">
+                <div className="opacity-70 text-xs">Margen bruto</div>
                 <div className="text-xl font-extrabold tabular-nums">38,4 %</div>
               </div>
             </div>
             <div className="mt-6">
-              <GraficaBarras className="max-w-none" />
+              <GraficaBarras className="max-w-none text-acento-inverso" />
             </div>
             <ul className="mt-4 space-y-2 text-sm">
               <li className="flex items-center gap-2">
@@ -234,7 +233,7 @@ export function LandingPage() {
           <ol className="grid gap-4 md:grid-cols-3">
             {PASOS.map((p, i) => (
               <Entrada as="li" indice={i} key={p.titulo} className="card p-5 flex gap-4">
-                <span className="w-9 h-9 rounded-full bg-gradient-to-br from-brand to-violet text-white grid place-items-center font-extrabold shrink-0">
+                <span className="w-9 h-9 rounded-full bg-brand text-on-brand grid place-items-center font-extrabold shrink-0">
                   {i + 1}
                 </span>
                 <div>

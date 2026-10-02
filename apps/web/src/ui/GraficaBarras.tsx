@@ -1,12 +1,15 @@
-/** Gráfica decorativa de barras que suben con una línea de tendencia (login y landing). */
+/**
+ * Gráfica decorativa de barras que suben con una línea de tendencia (login y landing). Toma el
+ * color del texto (`currentColor`): sin colores fijos (web-redesign D6).
+ */
 export function GraficaBarras({ className = '' }: { className?: string }) {
   const barras = [38, 52, 46, 64, 58, 76, 70, 88];
   return (
     <svg viewBox="0 0 240 110" className={`w-full max-w-xs ${className}`} aria-hidden>
       <defs>
         <linearGradient id="g-barra" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.35" />
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.3" />
         </linearGradient>
       </defs>
       {barras.map((h, i) => (
@@ -25,7 +28,7 @@ export function GraficaBarras({ className = '' }: { className?: string }) {
       <path
         d="M20 72 L48 60 L76 66 L104 44 L132 50 L160 30 L188 36 L216 14"
         fill="none"
-        stroke="#ffffff"
+        stroke="currentColor"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"

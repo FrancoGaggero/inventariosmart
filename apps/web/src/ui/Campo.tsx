@@ -11,7 +11,7 @@ interface CampoProps extends Omit<
   error?: string;
 }
 
-/** Campo de formulario con etiqueta, ayuda y error, con el estilo de los wireframes. */
+/** Campo de formulario con etiqueta, ayuda y error. El estilo es el de `.campo` (index.css). */
 export function Campo({ label, value, onChange, ayuda, error, className, ...rest }: CampoProps) {
   return (
     <label className={`block ${className ?? ''}`}>
@@ -21,9 +21,7 @@ export function Campo({ label, value, onChange, ayuda, error, className, ...rest
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}
-        className={`w-full rounded-xl bg-field border px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-brand/15 ${
-          error ? 'border-crit/60 focus:border-crit' : 'border-line focus:border-brand-2'
-        }`}
+        className="campo"
       />
       {error ? (
         <span className="block text-xs text-crit mt-1.5">{error}</span>
