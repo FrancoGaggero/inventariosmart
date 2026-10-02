@@ -26,10 +26,11 @@ describe('campo de la consulta', () => {
     expect(excedeElLargo('a'.repeat(1001))).toBe(true);
   });
 
-  it('ofrece cuatro preguntas para empezar', () => {
+  it('ofrece cinco preguntas para empezar', () => {
     expect(PREGUNTAS_SUGERIDAS).toHaveLength(5);
     expect(PREGUNTAS_SUGERIDAS).toContain('¿Qué fue lo que más vendí este mes?');
     expect(PREGUNTAS_SUGERIDAS).toContain('¿Qué productos tengo que reponer?');
+    expect(PREGUNTAS_SUGERIDAS).toContain('¿Tengo plata parada en productos que no se venden?');
   });
 });
 

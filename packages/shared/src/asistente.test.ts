@@ -149,8 +149,10 @@ describe('mensaje al asistente (CP-08.1b)', () => {
 });
 
 describe('herramientas del asistente', () => {
-  it('son once, cada una con su nombre legible', () => {
-    expect(NOMBRES_HERRAMIENTA).toHaveLength(11);
+  it('son trece, cada una con su nombre legible', () => {
+    expect(NOMBRES_HERRAMIENTA).toHaveLength(13);
+    expect(HERRAMIENTAS_ASISTENTE.perdidas_por_falta_de_stock).toBe('Pérdidas por falta de stock');
+    expect(HERRAMIENTAS_ASISTENTE.stock_parado).toBe('Stock parado');
     expect(HERRAMIENTAS_ASISTENTE.productos_mas_vendidos).toBe('Productos más vendidos');
     expect(HERRAMIENTAS_ASISTENTE.productos_mas_rentables).toBe('Productos más rentables');
     expect(HERRAMIENTAS_ASISTENTE.preparar_orden).toBe('Orden en borrador');

@@ -25,5 +25,5 @@
 - [x] 4.1 Recorrido visual en el arnés: panel, Inventario, Alertas, Falta de stock, Plan, portada y login; dueño, contador y empleado; 360, 768, 1024 y 1280 px; dos temas. Listo cuando: no hay desborde horizontal en ningún caso, hay capturas de cada pantalla y los tres archivos del arnés quedan borrados
 - [x] 4.2 ADR 0022, `docs/arquitectura.html` (la sección de la web) y `openspec/CAPACIDADES.md` (fila 24, `skip_specs`). Listo cuando: los documentos reflejan D1 a D8
 - [x] 4.3 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test` (la web también sin `.env`, como en CI); push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.4 Producción: Franco recorre https://inventariosmart0.vercel.app en la compu y en el celular, en los dos temas. Listo cuando: Franco confirma que la barra lateral, la barra inferior y la paleta se ven bien
+- [x] 4.4 Producción: Franco recorre https://inventariosmart0.vercel.app en la compu y en el celular, en los dos temas. Listo cuando: Franco confirma que la barra lateral, la barra inferior y la paleta se ven bien
 - [ ] 4.5 (manual, Franco) Anotar el rediseño en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

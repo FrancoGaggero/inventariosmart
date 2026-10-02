@@ -12,4 +12,4 @@
 
 - [x] 3.1 `docs/arquitectura.html` (portada) y `openspec/CAPACIDADES.md` (fila 25, `skip_specs`). Listo cuando: los documentos mencionan la sección
 - [x] 3.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test`, más el test de contraste; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 3.3 Producción: Franco abre https://inventariosmart0.vercel.app sin sesión y baja hasta la sección en la compu y en el celular. Listo cuando: Franco confirma que se ve bien
+- [x] 3.3 Producción: Franco abre https://inventariosmart0.vercel.app sin sesión y baja hasta la sección en la compu y en el celular. Listo cuando: Franco confirma que se ve bien

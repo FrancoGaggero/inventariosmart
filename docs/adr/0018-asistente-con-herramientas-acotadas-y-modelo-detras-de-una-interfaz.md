@@ -43,3 +43,4 @@ HU-08 (RF-10) pide que el dueño pregunte por su negocio en lenguaje natural y r
 ## Notas posteriores
 
 - **01/10/2026** (change `assistant-top-sellers`): se suma la undécima consulta, `productos_mas_vendidos`, que ordena las ventas del período por unidades o por facturación neta de IVA. Antes, una pregunta por "lo más vendido" se respondía con la consulta de rentables. Confirma la consecuencia de arriba: una pregunta nueva pidió una herramienta nueva, sin cambiar la arquitectura.
+- **02/10/2026** (change `assistant-stock-insights`): se suman `perdidas_por_falta_de_stock` y `stock_parado`, que reutilizan los servicios de quiebres (ADR 0020) y de stock parado (ADR 0021) con un período cerrado (30/60/90 y 30/60/90/180 días) y hasta 10 productos. Las cifras son las mismas que muestran esas páginas; las pérdidas viajan con una aclaración de que son estimaciones. Quedan trece consultas, todas de lectura salvo `preparar_orden`.

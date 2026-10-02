@@ -8,9 +8,13 @@ import {
   ModeloFalso,
   type PedidoModelo,
 } from '../src/assistant/modelo';
+import { RELOJ } from '../src/common/reloj';
 import { type AppDePrueba, comoPropietaria, crearAppDePrueba, persona } from './helpers';
 
 const DIA = 24 * 60 * 60 * 1000;
+/** Hora fija para los cálculos de stock: un quiebre en curso cambia de cifra con cada segundo. */
+const AHORA = new Date();
+const haceDias = (n: number) => new Date(AHORA.getTime() - n * DIA);
 /** Día de Buenos Aires (−03:00) de hace `n` días, como AAAA-MM-DD. */
 const dia = (n = 0) =>
   new Date(Date.now() - n * DIA - 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -79,6 +83,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
   const duenioB = persona('duenio-b');
   const duenioC = persona('duenio-c');
   const duenioV = persona('duenio-ventas');
+  const duenioS = persona('duenio-stock');
   const duenioPro = persona('duenio-pro');
   const duenioFree = persona('duenio-free');
   const empleada = persona('empleada');
@@ -122,7 +127,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       .expect(201);
 
   beforeAll(async () => {
-    t = await crearAppDePrueba();
+    t = await crearAppDePrueba([], (m) => m.overrideProvider(RELOJ).useValue(() => AHORA));
     modelo = t.app.get(MODELO_ASISTENTE);
     mailer = t.app.get(Mailer);
     for (const [clave, p] of [
@@ -130,6 +135,7 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       ['b', duenioB],
       ['c', duenioC],
       ['v', duenioV],
+      ['s', duenioS],
       ['pro', duenioPro],
       ['free', duenioFree],
     ] as const) {
@@ -140,7 +146,9 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
     await t.prisma.comoSistema(async (tx) => {
       await tx.comercio.updateMany({
         where: {
-          id: { in: [comercio['a']!, comercio['b']!, comercio['c']!, comercio['v']!] },
+          id: {
+            in: [comercio['a']!, comercio['b']!, comercio['c']!, comercio['v']!, comercio['s']!],
+          },
         },
         data: { plan: 'PREMIUM' },
       });
@@ -560,6 +568,174 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
     }, 120_000);
   });
 
+  describe('consultas sobre el stock', () => {
+    const s: Record<string, string> = {};
+    let usuarioS: string;
+
+    /** Producto con su historia: [días atrás, tipo, stock que deja], cargada directo en la base. */
+    async function armar(
+      codigo: string,
+      d: {
+        alta: number;
+        costo: number;
+        precio: number;
+        pasos: [number, 'INGRESO' | 'VENTA', number][];
+      },
+    ) {
+      const id = randomUUID();
+      let stock = 0;
+      const movimientos = d.pasos.map(([dias, tipo, resultante], i) => {
+        const efecto = resultante - stock;
+        stock = resultante;
+        return {
+          comercioId: comercio['s']!,
+          productoId: id,
+          usuarioId: usuarioS,
+          tipo,
+          cantidad: Math.abs(efecto),
+          efectoStock: efecto,
+          stockResultante: resultante,
+          precioUnitario: tipo === 'VENTA' ? d.precio : null,
+          motivo: i === 0 ? ('STOCK_INICIAL' as const) : null,
+          fecha: haceDias(dias),
+          creadoEn: haceDias(dias),
+        };
+      });
+      await t.prisma.comoSistema(async (tx) => {
+        await tx.producto.create({
+          data: {
+            id,
+            comercioId: comercio['s']!,
+            codigo,
+            codigoNormalizado: codigo,
+            nombre: `Producto ${codigo}`,
+            precioVenta: d.precio,
+            alicuotaIva: 21,
+            costoReposicion: d.costo,
+            stockActual: stock,
+            stockSeguridad: 1,
+            creadoEn: haceDias(d.alta),
+          },
+        });
+        await tx.movimiento.createMany({ data: movimientos });
+      });
+      s[codigo] = id;
+    }
+
+    beforeAll(async () => {
+      usuarioS = (await t.http().get('/api/v1/me').set(auth(duenioS)).expect(200)).body.usuario.id;
+      // Vendió 60 en 30 días con stock y lleva 5 sin stock: 10 unidades × 400 de margen = 4.000.
+      await armar('D-4000', {
+        alta: 40,
+        costo: 600,
+        precio: 1210,
+        pasos: [
+          [35, 'INGRESO', 60],
+          [5, 'VENTA', 0],
+        ],
+      });
+      // 10 unidades a 2.100 sin vender hace 120 días: 21.000 parados.
+      await armar('S-PARADO', {
+        alta: 200,
+        costo: 2100,
+        precio: 4000,
+        pasos: [
+          [200, 'INGRESO', 11],
+          [120, 'VENTA', 10],
+        ],
+      });
+    }, 120_000);
+
+    const consultar = async (herramienta: string, entrada: object, quien = duenioS) => {
+      modelo.reiniciar();
+      modelo.guion = [[pedir(herramienta, entrada)], decir('Listo.')];
+      const r = await enviar({ mensaje: 'Contame' }, quien).expect(201);
+      const [resultado] = resultados(modelo.pedidos[1] as PedidoModelo);
+      return { r, resultado: resultado! };
+    };
+
+    it('CP-08.8 cuánto perdí por quedarme sin stock: las cifras de la página Falta de stock', async () => {
+      modelo.guion = [
+        [pedir('perdidas_por_falta_de_stock', {})],
+        (p) => {
+          const datos = resultados(p)[0]!.datos as unknown as {
+            productos: { codigo: string; gananciaPerdida: string }[];
+          };
+          const top = datos.productos[0]!;
+          return decir(
+            `Estimamos que dejaste de ganar unos $ ${top.gananciaPerdida} con ${top.codigo}.`,
+          );
+        },
+      ];
+      const r = await enviar(
+        { mensaje: '¿Cuánto perdí este mes por quedarme sin stock?' },
+        duenioS,
+      ).expect(201);
+      expect(r.body.mensaje).toMatchObject({
+        contenido: 'Estimamos que dejaste de ganar unos $ 4000.00 con D-4000.',
+        fuentes: [
+          { herramienta: 'perdidas_por_falta_de_stock', nombre: 'Pérdidas por falta de stock' },
+        ],
+      });
+      const datos = resultados(modelo.pedidos[1] as PedidoModelo)[0]!.datos as unknown as {
+        totales: unknown;
+        productos: { id: string; gananciaPerdida: string; diasSinStock: number }[];
+      };
+      const pagina = await t.http().get('/api/v1/stockouts?dias=30').set(auth(duenioS)).expect(200);
+      expect(datos.totales).toEqual(pagina.body.totales);
+      expect(datos.productos.map((x) => [x.id, x.gananciaPerdida, x.diasSinStock])).toEqual(
+        pagina.body.items.map(
+          (x: { producto: { id: string }; gananciaPerdida: string; diasSinStock: number }) => [
+            x.producto.id,
+            x.gananciaPerdida,
+            x.diasSinStock,
+          ],
+        ),
+      );
+    }, 120_000);
+
+    it('CP-08.8b qué productos no se venden: las cifras de la página Stock parado', async () => {
+      const { r, resultado } = await consultar('stock_parado', {});
+      expect(r.body.mensaje.fuentes).toEqual([
+        { herramienta: 'stock_parado', nombre: 'Stock parado' },
+      ]);
+      const datos = resultado.datos as unknown as {
+        totales: unknown;
+        productos: { codigo: string; capitalParado: string; diasSinVender: number }[];
+      };
+      expect(datos.productos).toEqual([
+        expect.objectContaining({
+          codigo: 'S-PARADO',
+          capitalParado: '21000.00',
+          diasSinVender: 120,
+        }),
+      ]);
+      const pagina = await t
+        .http()
+        .get('/api/v1/dead-stock?dias=90')
+        .set(auth(duenioS))
+        .expect(200);
+      expect(datos.totales).toEqual(pagina.body.totales);
+    }, 120_000);
+
+    it('CP-08.8c un período inválido vuelve como error y cada comercio ve sólo lo suyo', async () => {
+      for (const [herramienta, dias] of [
+        ['perdidas_por_falta_de_stock', 45],
+        ['stock_parado', 365],
+      ] as const) {
+        const { resultado } = await consultar(herramienta, { dias });
+        expect(resultado.error).toBe(true);
+        expect(resultado.datos.error).toMatch(/no son válidos/);
+      }
+      const propios = new Set(Object.values(s));
+      for (const herramienta of ['perdidas_por_falta_de_stock', 'stock_parado']) {
+        const { resultado } = await consultar(herramienta, { dias: 90 }, duenioA);
+        const productos = (resultado.datos as unknown as { productos: { id: string }[] }).productos;
+        expect(productos.some((x) => propios.has(x.id))).toBe(false);
+      }
+    }, 120_000);
+  });
+
   describe('sólo consulta', () => {
     it('CP-08.2c no hay ninguna consulta que modifique datos', async () => {
       modelo.guion = [
@@ -572,7 +748,9 @@ describe('ai-assistant: asistente conversacional (e2e)', () => {
       expect(
         modelo.pedidos[0]!.herramientas.map((h) => h.nombre).filter(
           (n) =>
-            !/^(buscar|resumen|productos|alertas|gastos|precios|indicadores|comparar)_/.test(n),
+            !/^(buscar|resumen|productos|alertas|gastos|precios|indicadores|comparar|perdidas|stock)_/.test(
+              n,
+            ),
         ),
       ).toEqual(['preparar_orden']);
       const producto = await t

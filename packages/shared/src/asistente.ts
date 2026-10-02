@@ -26,6 +26,8 @@ export const HERRAMIENTAS_ASISTENTE = {
   productos_mas_vendidos: 'Productos más vendidos',
   buscar_productos: 'Productos',
   alertas_de_reposicion: 'Alertas de reposición',
+  perdidas_por_falta_de_stock: 'Pérdidas por falta de stock',
+  stock_parado: 'Stock parado',
   gastos_del_periodo: 'Gastos',
   precios_frente_a_inflacion: 'Precios e inflación',
   indicadores_economicos: 'Indicadores oficiales',

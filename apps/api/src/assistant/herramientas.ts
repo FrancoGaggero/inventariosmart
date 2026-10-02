@@ -20,6 +20,8 @@ import { ProductsService } from '../products/products.service';
 import { ProfitabilityService } from '../profitability/profitability.service';
 import { PurchaseOrdersService } from '../purchase-orders/purchase-orders.service';
 import { SupplierComparisonService } from '../supplier-comparison/supplier-comparison.service';
+import { DeadStockService } from '../dead-stock/dead-stock.service';
+import { StockoutsService } from '../stockouts/stockouts.service';
 import { SuppliersService } from '../suppliers/suppliers.service';
 import type { DefinicionHerramienta } from './modelo';
 
@@ -103,6 +105,18 @@ const ENTRADAS = {
       ),
   }),
   alertas_de_reposicion: z.object({}),
+  perdidas_por_falta_de_stock: z.object({
+    dias: z
+      .literal([30, 60, 90])
+      .default(30)
+      .describe('Período en días: 30, 60 o 90. Sin indicarlo, los últimos 30.'),
+  }),
+  stock_parado: z.object({
+    dias: z
+      .literal([30, 60, 90, 180])
+      .default(90)
+      .describe('Días sin ventas: 30, 60, 90 o 180. Sin indicarlo, 90.'),
+  }),
   gastos_del_periodo: z.object({
     mes: MesSchema.describe('Mes en formato AAAA-MM.'),
   }),
@@ -145,6 +159,10 @@ const DESCRIPCIONES: Record<HerramientaAsistente, string> = {
     'Busca productos activos por código o nombre, o por estado de stock. Devuelve precio de venta (con IVA), costo de reposición (sin IVA), stock y proveedor principal. Trae como máximo 10.',
   alertas_de_reposicion:
     'Alertas de reposición activas: productos que hay que reponer, con su stock, días de cobertura, cantidad sugerida y proveedor.',
+  perdidas_por_falta_de_stock:
+    'Lo que el comercio dejó de vender y de ganar por quedarse sin stock en el período (estimación con la demanda de los días con stock). Trae los totales y hasta 10 productos por ganancia perdida, con días sin stock y si siguen sin stock. No es para productos que no se venden.',
+  stock_parado:
+    'Productos con stock que no se vendieron en el período y la plata inmovilizada en ellos (stock × costo vigente, sin IVA). Trae los totales y hasta 10 productos por capital parado, con la última venta. Sirve para "qué no se vende" o "plata parada". No es para faltantes.',
   gastos_del_periodo:
     'Gastos operativos de un mes: fijos, variables, total y gasto por unidad vendida.',
   precios_frente_a_inflacion:
@@ -186,6 +204,8 @@ export class HerramientasAsistente {
     private readonly suppliers: SuppliersService,
     private readonly comparador: SupplierComparisonService,
     private readonly orders: PurchaseOrdersService,
+    private readonly stockouts: StockoutsService,
+    private readonly deadStock: DeadStockService,
   ) {}
 
   /** Definiciones para el modelo: fijas, en el mismo orden siempre. */
@@ -336,6 +356,57 @@ export class HerramientasAsistente {
               proveedor: a.proveedor?.nombre ?? null,
             })),
             hayMas: lista.siguienteCursor !== null,
+          },
+        };
+      }
+      case 'perdidas_por_falta_de_stock': {
+        const { dias } = entrada as z.infer<typeof ENTRADAS.perdidas_por_falta_de_stock>;
+        const r = await this.stockouts.listar({ dias, limit: ASISTENTE_MAX_FILAS });
+        return {
+          resultado: {
+            dias: r.dias,
+            desde: r.desde,
+            hasta: r.hasta,
+            aclaracion:
+              'La ganancia y la venta perdidas son estimaciones con lo que vendía cada producto en los días con stock de los últimos 90 días. Los productos con motivo SIN_HISTORIAL no tienen cifra.',
+            totales: r.totales,
+            productos: r.items.map((p) => ({
+              id: p.producto.id,
+              codigo: p.producto.codigo,
+              nombre: p.producto.nombre,
+              quiebres: p.quiebres,
+              diasSinStock: p.diasSinStock,
+              sigueSinStock: p.enCurso,
+              demandaDiaria: p.demandaDiaria,
+              unidadesPerdidas: p.unidadesPerdidas,
+              ventaPerdida: p.ventaPerdida,
+              gananciaPerdida: p.gananciaPerdida,
+              motivo: p.motivo,
+            })),
+            hayMas: r.siguienteCursor !== null,
+          },
+        };
+      }
+      case 'stock_parado': {
+        const { dias } = entrada as z.infer<typeof ENTRADAS.stock_parado>;
+        const r = await this.deadStock.listar({ dias, limit: ASISTENTE_MAX_FILAS });
+        return {
+          resultado: {
+            dias: r.dias,
+            desde: r.desde,
+            hasta: r.hasta,
+            totales: r.totales,
+            productos: r.items.map((p) => ({
+              id: p.producto.id,
+              codigo: p.producto.codigo,
+              nombre: p.producto.nombre,
+              stock: p.stock,
+              costoReposicion: p.costoReposicion,
+              capitalParado: p.capitalParado,
+              ultimaVenta: p.ultimaVenta,
+              diasSinVender: p.diasSinVender,
+            })),
+            hayMas: r.siguienteCursor !== null,
           },
         };
       }

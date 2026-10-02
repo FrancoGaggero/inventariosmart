@@ -20,5 +20,5 @@
 
 - [x] 4.1 `apps/web/scripts/verificar-chunks.mjs`, con el tamaño de los chunks antes y después (D1). Listo cuando: el script pasa (motion no está en `index-*.js`) y los tamaños quedan anotados en el design
 - [x] 4.2 ADR 0023, `docs/arquitectura.html` y `openspec/CAPACIDADES.md` (fila 26); nota en el design de `landing-comparison` sobre los hovers. Listo cuando: los documentos reflejan D1 a D7
-- [ ] 4.3 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test` (la web también sin `.env`); push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.4 Producción: Franco abre https://inventariosmart0.vercel.app sin sesión, el login y el registro, en la compu y en el celular. Listo cuando: Franco confirma que el movimiento le gusta y va fluido
+- [x] 4.3 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test` (la web también sin `.env`); push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.4 Producción: Franco abre https://inventariosmart0.vercel.app sin sesión, el login y el registro, en la compu y en el celular. Listo cuando: Franco confirma que el movimiento le gusta y va fluido

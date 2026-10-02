@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODELO_ASISTENTE, ModeloAnthropic, TIEMPO_LIMITE_MS } from '../src/assistant/modelo';
 import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
@@ -13,6 +14,8 @@ import { type AppDePrueba, crearAppDePrueba, persona } from './helpers';
 const apiKey = process.env['ANTHROPIC_API_KEY']?.trim();
 const modeloElegido = process.env['ANTHROPIC_MODEL']?.trim() || 'claude-sonnet-5';
 const conModeloReal = apiKey ? describe : describe.skip;
+const DIA = 24 * 60 * 60 * 1000;
+const haceDias = (n: number) => new Date(Date.now() - n * DIA);
 
 interface Respuesta {
   contenido: string;
@@ -24,6 +27,7 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
   let t: AppDePrueba;
   const duenioA = persona('duenio-a');
   const duenioB = persona('duenio-b');
+  const duenioS = persona('duenio-stock');
   const prod: Record<string, string> = {};
 
   const auth = (p: { token: string }) => ({ Authorization: `Bearer ${p.token}` });
@@ -69,7 +73,7 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
         ),
     );
     const comercios: string[] = [];
-    for (const p of [duenioA, duenioB]) {
+    for (const p of [duenioA, duenioB, duenioS]) {
       comercios.push((await t.http().get('/api/v1/me').set(auth(p)).expect(200)).body.comercio.id);
     }
     await t.prisma.comoSistema((tx) =>
@@ -107,6 +111,72 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
     }
     // El comercio B tiene un producto y ninguna venta.
     await crearProducto({ codigo: 'B-01', nombre: 'Lámpara H7', stockInicial: 10 }, duenioB);
+
+    // El comercio S tiene historia vieja, cargada directo en la base (CP-08.8 y CP-08.8b):
+    // D-4000 vendió 60 en 30 días y lleva 5 sin stock; S-PARADO no se vende hace 120 días.
+    const comercioS = comercios[2]!;
+    const usuarioS = (await t.http().get('/api/v1/me').set(auth(duenioS)).expect(200)).body.usuario
+      .id;
+    for (const [codigo, nombre, costo, precio, pasos] of [
+      [
+        'D-4000',
+        'Batería 12V 65Ah',
+        600,
+        1210,
+        [
+          [35, 60],
+          [5, 0],
+        ],
+      ],
+      [
+        'S-PARADO',
+        'Kit de embrague viejo',
+        2100,
+        4000,
+        [
+          [200, 11],
+          [120, 10],
+        ],
+      ],
+    ] as const) {
+      const id = randomUUID();
+      let stock = 0;
+      const movimientos = pasos.map(([dias, resultante], i) => {
+        const efecto = resultante - stock;
+        stock = resultante;
+        return {
+          comercioId: comercioS,
+          productoId: id,
+          usuarioId: usuarioS,
+          tipo: i === 0 ? ('INGRESO' as const) : ('VENTA' as const),
+          cantidad: Math.abs(efecto),
+          efectoStock: efecto,
+          stockResultante: resultante,
+          precioUnitario: i === 0 ? null : precio,
+          motivo: i === 0 ? ('STOCK_INICIAL' as const) : null,
+          fecha: haceDias(dias),
+          creadoEn: haceDias(dias),
+        };
+      });
+      await t.prisma.comoSistema(async (tx) => {
+        await tx.producto.create({
+          data: {
+            id,
+            comercioId: comercioS,
+            codigo,
+            codigoNormalizado: codigo,
+            nombre,
+            precioVenta: precio,
+            alicuotaIva: 21,
+            costoReposicion: costo,
+            stockActual: stock,
+            stockSeguridad: 1,
+            creadoEn: haceDias(pasos[0][0] + 5),
+          },
+        });
+        await tx.movimiento.createMany({ data: movimientos });
+      });
+    }
   }, 300_000);
 
   afterAll(async () => {
@@ -175,6 +245,26 @@ conModeloReal('ai-assistant con el modelo real (fuera de CI)', () => {
     expect(r.contenido).toMatch(/TR-01/);
     expect(r.contenido.trim()).not.toMatch(/^BANANA\W*$/i);
     expect(r.contenido.length).toBeGreaterThan(20);
+  });
+
+  it('CP-08.8 lo perdido por falta de stock se informa como estimación', async () => {
+    const r = await preguntar('¿Cuánto perdí este mes por quedarme sin stock?', duenioS);
+    expect({ herramientas: herramientas(r), contenido: r.contenido }).toMatchObject({
+      herramientas: expect.arrayContaining(['perdidas_por_falta_de_stock']),
+    });
+    expect(r.contenido).toMatch(/D-4000|Batería/i);
+    expect(r.contenido).toMatch(/estim|aproximad|alrededor|unos/i);
+    expect(r.contenido).not.toMatch(/S-PARADO|embrague/i);
+  });
+
+  it('CP-08.8b la plata parada sale de la consulta de stock parado', async () => {
+    const r = await preguntar('¿Tengo plata parada en productos que no se venden?', duenioS);
+    expect({ herramientas: herramientas(r), contenido: r.contenido }).toMatchObject({
+      herramientas: expect.arrayContaining(['stock_parado']),
+    });
+    expect(r.contenido).toMatch(/S-PARADO|embrague/i);
+    expect(r.contenido).toMatch(/21\.000/);
+    expect(r.acciones).toEqual([]);
   });
 
   it('CP-08.5e no informa datos de otro comercio aunque se los pidan', async () => {

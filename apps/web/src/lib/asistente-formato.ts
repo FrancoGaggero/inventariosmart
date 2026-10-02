@@ -8,7 +8,7 @@ export const PREGUNTAS_SUGERIDAS = [
   '¿Qué fue lo que más vendí este mes?',
   '¿Cuál fue mi producto más rentable del mes?',
   '¿Cómo vienen mis precios frente a la inflación?',
-  '¿Cuánto gasté este mes?',
+  '¿Tengo plata parada en productos que no se venden?',
 ] as const;
 
 export const AVISO_IA =

@@ -16,6 +16,8 @@ function armar() {
     suppliers: { listar: jest.fn() },
     comparador: { producto: jest.fn() },
     orders: { crear: jest.fn() },
+    stockouts: { listar: jest.fn() },
+    deadStock: { listar: jest.fn() },
   };
   const herramientas = new HerramientasAsistente(
     servicios.profitability as never,
@@ -27,6 +29,8 @@ function armar() {
     servicios.suppliers as never,
     servicios.comparador as never,
     servicios.orders as never,
+    servicios.stockouts as never,
+    servicios.deadStock as never,
   );
   return { herramientas, servicios };
 }
@@ -34,7 +38,7 @@ function armar() {
 const leer = (contenido: string) => JSON.parse(contenido) as Record<string, unknown>;
 
 describe('herramientas del asistente (design D2)', () => {
-  it('define las once consultas con su esquema de entrada', () => {
+  it('define las trece consultas con su esquema de entrada', () => {
     const { herramientas } = armar();
     const definiciones = herramientas.definiciones();
     expect(definiciones.map((d) => d.nombre)).toEqual(NOMBRES_HERRAMIENTA);
@@ -140,6 +144,98 @@ describe('herramientas del asistente (design D2)', () => {
         },
       ],
     });
+  });
+
+  it('CP-08.8c las consultas de stock rechazan períodos inválidos sin calcular nada', async () => {
+    const { herramientas, servicios } = armar();
+    for (const [nombre, dias] of [
+      ['perdidas_por_falta_de_stock', 45],
+      ['perdidas_por_falta_de_stock', 180],
+      ['stock_parado', 365],
+      ['stock_parado', '90'],
+    ] as const) {
+      const r = await herramientas.ejecutar(nombre, { dias });
+      expect(r.error).toBe(true);
+      expect(leer(r.contenido)['error']).toMatch(/no son válidos/);
+    }
+    expect(servicios.stockouts.listar).not.toHaveBeenCalled();
+    expect(servicios.deadStock.listar).not.toHaveBeenCalled();
+  });
+
+  it('las pérdidas por falta de stock piden 10 productos y devuelven totales y la aclaración', async () => {
+    const { herramientas, servicios } = armar();
+    servicios.stockouts.listar.mockResolvedValue({
+      dias: 30,
+      desde: '2026-09-02T00:00:00.000Z',
+      hasta: '2026-10-02T00:00:00.000Z',
+      totales: {
+        gananciaPerdida: '4000.00',
+        ventaPerdida: '10000.00',
+        unidadesPerdidas: '10.0',
+        productosAfectados: 1,
+        enCurso: 1,
+      },
+      items: [
+        {
+          producto: { id: UUID, codigo: 'D-4000', nombre: 'Producto D' },
+          quiebres: 1,
+          diasSinStock: 5,
+          enCurso: true,
+          inicioUltimo: '2026-09-27T00:00:00.000Z',
+          demandaDiaria: '2.0',
+          unidadesPerdidas: '10.0',
+          ventaPerdida: '10000.00',
+          gananciaPerdida: '4000.00',
+          motivo: null,
+        },
+      ],
+      siguienteCursor: null,
+    });
+    const r = await herramientas.ejecutar('perdidas_por_falta_de_stock', {});
+    expect(r.error).toBe(false);
+    expect(servicios.stockouts.listar).toHaveBeenCalledWith({ dias: 30, limit: 10 });
+    expect(leer(r.contenido)).toMatchObject({
+      dias: 30,
+      aclaracion: expect.stringMatching(/estimaciones/),
+      totales: { gananciaPerdida: '4000.00', productosAfectados: 1 },
+      productos: [{ codigo: 'D-4000', sigueSinStock: true, gananciaPerdida: '4000.00' }],
+      hayMas: false,
+    });
+  });
+
+  it('el stock parado pide 10 productos con 90 días por defecto', async () => {
+    const { herramientas, servicios } = armar();
+    servicios.deadStock.listar.mockResolvedValue({
+      dias: 90,
+      desde: '2026-07-04T00:00:00.000Z',
+      hasta: '2026-10-02T00:00:00.000Z',
+      totales: {
+        capitalParado: '21000.00',
+        productos: 1,
+        unidades: 10,
+        porcentajeDelStock: '21.00',
+      },
+      items: [
+        {
+          producto: { id: UUID, codigo: 'S-PARADO', nombre: 'Producto S' },
+          stock: 10,
+          costoReposicion: '2100.00',
+          capitalParado: '21000.00',
+          ultimaVenta: '2026-06-04T00:00:00.000Z',
+          diasSinVender: 120,
+        },
+      ],
+      siguienteCursor: 'x',
+    });
+    const r = await herramientas.ejecutar('stock_parado', {});
+    expect(servicios.deadStock.listar).toHaveBeenCalledWith({ dias: 90, limit: 10 });
+    expect(leer(r.contenido)).toMatchObject({
+      totales: { capitalParado: '21000.00' },
+      productos: [{ codigo: 'S-PARADO', capitalParado: '21000.00', diasSinVender: 120 }],
+      hayMas: true,
+    });
+    await herramientas.ejecutar('stock_parado', { dias: 180 });
+    expect(servicios.deadStock.listar).toHaveBeenLastCalledWith({ dias: 180, limit: 10 });
   });
 
   it('una consulta que no existe o con datos inválidos vuelve como error, sin llamar al servicio', async () => {
