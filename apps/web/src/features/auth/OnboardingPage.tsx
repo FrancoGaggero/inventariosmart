@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import { api, desenvolver, mensajeDe } from '@/lib/api';
 import { useInvalidarMe, useMe } from '@/lib/me';
 import { Campo } from '@/ui/Campo';
+import { ImagenAnimada } from '@/ui/ImagenAnimada';
 
 /**
  * Onboarding guiado (HU-11, HU-05): quien entró con Google elige el nombre de su comercio y
@@ -86,9 +87,18 @@ export function OnboardingPage() {
   return (
     <main className="min-h-full flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <div className="w-12 h-12 rounded-2xl bg-brand/15 grid place-items-center mb-5">
-          <Store className="w-6 h-6 text-brand-3" aria-hidden />
-        </div>
+        {/* Bienvenida animada con Remotion (ADR 0025); el ícono queda como respaldo. */}
+        <ImagenAnimada
+          nombre="bienvenida"
+          ancho={180}
+          alto={120}
+          className="block -ml-2 mb-4"
+          respaldo={
+            <div className="w-12 h-12 rounded-2xl bg-brand/15 grid place-items-center mb-5">
+              <Store className="w-6 h-6 text-brand-3" aria-hidden />
+            </div>
+          }
+        />
         <p className="text-xs font-bold tracking-widest text-brand-3 mb-2">PRIMER PASO</p>
         <h1 className="text-2xl font-extrabold tracking-tight mb-1">¿Cómo se llama tu comercio?</h1>
         <p className="text-t2 text-sm mb-6">

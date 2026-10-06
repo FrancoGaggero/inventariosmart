@@ -10,6 +10,10 @@ export default tseslint.config(
       '**/build/**',
       '**/coverage/**',
       'apps/mobile/**',
+      // Taller de animaciones (ADR 0025): Remotion trae su propio lint (npm run lint) y lo generado no se lintea.
+      'herramientas/visuales/remotion/**',
+      'herramientas/visuales/out/**',
+      'herramientas/visuales/hyperframes/vendor/**',
       'packages/api-client/src/generated/**',
       '**/*.config.js',
       '**/*.config.cjs',

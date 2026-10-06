@@ -1,0 +1,72 @@
+{
+  "vacio-cajas-claro": {
+    "framework": "hyperframes",
+    "webp": 116626,
+    "png": 4939
+  },
+  "vacio-cajas-oscuro": {
+    "framework": "hyperframes",
+    "webp": 115454,
+    "png": 4934
+  },
+  "vacio-campana-claro": {
+    "framework": "hyperframes",
+    "webp": 124262,
+    "png": 5766
+  },
+  "vacio-campana-oscuro": {
+    "framework": "hyperframes",
+    "webp": 122922,
+    "png": 5709
+  },
+  "vacio-carrito-claro": {
+    "framework": "hyperframes",
+    "webp": 107362,
+    "png": 5323
+  },
+  "vacio-carrito-oscuro": {
+    "framework": "hyperframes",
+    "webp": 105930,
+    "png": 5410
+  },
+  "vacio-camion-claro": {
+    "framework": "hyperframes",
+    "webp": 108716,
+    "png": 5102
+  },
+  "vacio-camion-oscuro": {
+    "framework": "hyperframes",
+    "webp": 108016,
+    "png": 5112
+  },
+  "vacio-recibo-claro": {
+    "framework": "hyperframes",
+    "webp": 29966,
+    "png": 2699
+  },
+  "vacio-recibo-oscuro": {
+    "framework": "hyperframes",
+    "webp": 29504,
+    "png": 2703
+  },
+  "vacio-flechas-claro": {
+    "framework": "hyperframes",
+    "webp": 97450,
+    "png": 3525
+  },
+  "vacio-flechas-oscuro": {
+    "framework": "hyperframes",
+    "webp": 97622,
+    "png": 3515
+  },
+  "bienvenida-claro": {
+    "framework": "remotion",
+    "webp": 137094,
+    "png": 7890
+  },
+  "bienvenida-oscuro": {
+    "framework": "remotion",
+    "webp": 127282,
+    "png": 7848
+  }
+}

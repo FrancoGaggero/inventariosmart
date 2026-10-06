@@ -11,3 +11,6 @@ apps/mobile/build/
 apps/mobile/.dart_tool/
 # Cliente Prisma generado (prisma generate)
 apps/api/src/generated/
+
+# Taller de animaciones (ADR 0025): renders intermedios.
+herramientas/visuales/out/

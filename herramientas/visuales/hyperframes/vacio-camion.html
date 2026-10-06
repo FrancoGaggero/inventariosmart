@@ -1,0 +1,76 @@
+<!doctype html>
+<html
+  lang="es"
+  data-composition-variables='[
+    {"id":"trazo","type":"color","label":"Trazo","default":"#f0c07a"},
+    {"id":"suave","type":"color","label":"Relleno suave","default":"rgba(224,165,74,0.18)"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=240, height=176" />
+    <title>Estado vacío: camión</title>
+    <script src="vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="comun.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="vacio-camion"
+      data-start="0"
+      data-width="240"
+      data-height="176"
+      data-duration="3"
+    >
+      <section id="vacio-camion-escena" class="clip" data-start="0" data-duration="3">
+        <!-- Mismos trazos que EstadoVacio.tsx ('camion'). Va en marcha: ruedas y líneas de velocidad; la caja queda quieta para que el loop pese poco. -->
+        <svg viewBox="-8 0 136 88" fill="none" aria-hidden="true">
+          <ellipse class="s" cx="60" cy="80" rx="44" ry="5" />
+          <g id="velocidad">
+            <path class="t" d="M-2 40h10M-6 50h12" />
+          </g>
+          <g id="caja-camion">
+            <rect class="s t" x="16" y="30" width="56" height="32" rx="4" />
+            <path class="s t" d="M72 40h18l12 12v10H72V40Z" />
+            <path class="t" d="M26 44h30" />
+          </g>
+          <g id="rueda-a">
+            <circle class="s t" cx="34" cy="66" r="6" />
+            <path class="t" d="M34 61v10" />
+          </g>
+          <g id="rueda-b">
+            <circle class="s t" cx="86" cy="66" r="6" />
+            <path class="t" d="M86 61v10" />
+          </g>
+        </svg>
+      </section>
+    </div>
+    <script>
+      // Las ruedas dan vueltas completas (360°) para que el loop no salte.
+      const tl = gsap.timeline({ paused: true });
+      tl.set('#rueda-a', { svgOrigin: '34 66' })
+        .set('#rueda-b', { svgOrigin: '86 66' })
+        .fromTo(
+          '#rueda-a, #rueda-b',
+          { rotation: 0 },
+          { rotation: 720, duration: 3, ease: 'none' },
+          0,
+        )
+        .fromTo(
+          '#velocidad',
+          { x: 4, opacity: 0 },
+          { x: -4, opacity: 1, duration: 0.75, ease: 'none' },
+          0,
+        )
+        .to('#velocidad', { x: -12, opacity: 0, duration: 0.75, ease: 'none' }, 0.75)
+        .fromTo(
+          '#velocidad',
+          { x: 4, opacity: 0 },
+          { x: -4, opacity: 1, duration: 0.75, ease: 'none', immediateRender: false },
+          1.5,
+        )
+        .to('#velocidad', { x: -12, opacity: 0, duration: 0.75, ease: 'none' }, 2.25);
+      window.__timelines['vacio-camion'] = tl;
+    </script>
+  </body>
+</html>

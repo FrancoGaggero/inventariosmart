@@ -83,6 +83,7 @@ class _Contenido extends ConsumerWidget {
           const Vacio(
             titulo: 'No tenés stock parado en este período.',
             texto: 'Los productos dados de alta hace menos tiempo que el período elegido todavía no cuentan.',
+            ilustracion: 'recibo',
           )
         else ...[
           for (final p in r.items) ...[_Fila(p: p), const SizedBox(height: 10)],

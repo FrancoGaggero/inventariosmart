@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
+import 'imagen_animada.dart';
 
 /// Piezas comunes de las pantallas de análisis (design D7).
 
@@ -117,20 +118,33 @@ class Pildora extends StatelessWidget {
 
 /// Estado vacío con título y explicación.
 class Vacio extends StatelessWidget {
-  const Vacio({super.key, required this.titulo, required this.texto, this.icono = Icons.check_circle_outline});
+  const Vacio({
+    super.key,
+    required this.titulo,
+    required this.texto,
+    this.icono = Icons.check_circle_outline,
+    this.ilustracion,
+  });
 
   final String titulo;
   final String texto;
   final IconData icono;
 
+  /// Una de las ilustraciones de la web (`cajas`, `campana`, `carrito`, `camion`, `recibo`,
+  /// `flechas`), animada (ADR 0025). Sin ilustración, o si no carga, se ve el ícono.
+  final String? ilustracion;
+
   @override
   Widget build(BuildContext context) {
     final k = context.tokens;
+    final iconoFijo = Icon(icono, size: 40, color: k.t3);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
       child: Column(
         children: [
-          Icon(icono, size: 40, color: k.t3),
+          ilustracion == null
+              ? iconoFijo
+              : ImagenAnimada(nombre: 'vacio-$ilustracion', ancho: 120, alto: 88, respaldo: iconoFijo),
           const SizedBox(height: 10),
           Text(titulo, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, color: k.t1)),
           const SizedBox(height: 6),

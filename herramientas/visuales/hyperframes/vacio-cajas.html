@@ -1,0 +1,71 @@
+<!doctype html>
+<html
+  lang="es"
+  data-composition-variables='[
+    {"id":"trazo","type":"color","label":"Trazo","default":"#f0c07a"},
+    {"id":"suave","type":"color","label":"Relleno suave","default":"rgba(224,165,74,0.18)"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=240, height=176" />
+    <title>Estado vacío: cajas</title>
+    <script src="vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="comun.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="vacio-cajas"
+      data-start="0"
+      data-width="240"
+      data-height="176"
+      data-duration="3"
+    >
+      <section id="vacio-cajas-escena" class="clip" data-start="0" data-duration="3">
+        <!-- Mismos trazos que apps/web/src/ui/EstadoVacio.tsx ('cajas'), con margen para el rebote. -->
+        <svg viewBox="0 -10 120 98" fill="none" aria-hidden="true">
+          <ellipse id="sombra" class="s" cx="60" cy="78" rx="44" ry="6" />
+          <g id="izq">
+            <rect class="s t" x="22" y="40" width="34" height="30" rx="4" />
+            <path class="t guion" d="M22 50h34" />
+          </g>
+          <g id="der">
+            <rect class="s t" x="62" y="40" width="34" height="30" rx="4" />
+            <path class="t guion" d="M62 50h34" />
+          </g>
+          <g id="arriba">
+            <rect class="s t" x="42" y="12" width="34" height="28" rx="4" />
+            <path class="t guion" d="M42 22h34" />
+          </g>
+        </svg>
+      </section>
+    </div>
+    <script>
+      // Loop de 3 s: la caja de arriba cae, rebota y vuelve a subir; termina igual que empieza.
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo('#arriba', { y: -12 }, { y: 0, duration: 0.8, ease: 'bounce.out' }, 0.2)
+        .fromTo(
+          '#sombra',
+          { scaleX: 0.86, transformOrigin: '50% 50%' },
+          { scaleX: 1, duration: 0.8, ease: 'bounce.out' },
+          0.2,
+        )
+        .fromTo(
+          '#izq',
+          { y: 0 },
+          { y: 1.5, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut' },
+          0.62,
+        )
+        .fromTo(
+          '#der',
+          { y: 0 },
+          { y: 1.5, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut' },
+          0.68,
+        )
+        .to('#arriba', { y: -12, duration: 0.7, ease: 'power2.inOut' }, 2.2)
+        .to('#sombra', { scaleX: 0.86, duration: 0.7, ease: 'power2.inOut' }, 2.2);
+      window.__timelines['vacio-cajas'] = tl;
+    </script>
+  </body>
+</html>

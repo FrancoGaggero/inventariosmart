@@ -94,6 +94,7 @@ class _Lista extends ConsumerWidget {
       return Vacio(
         titulo: activas ? 'No hay productos por reponer.' : 'No hay alertas en este estado.',
         texto: explicacionAlertas,
+        ilustracion: 'campana',
       );
     }
     return Column(

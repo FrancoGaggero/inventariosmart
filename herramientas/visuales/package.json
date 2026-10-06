@@ -1,0 +1,13 @@
+{
+  "name": "inventariosmart-visuales",
+  "private": true,
+  "description": "Taller de animaciones de la app (ADR 0025). Fuera del workspace pnpm.",
+  "type": "module",
+  "scripts": {
+    "exportar": "node exportar.mjs"
+  },
+  "devDependencies": {
+    "gsap": "3.14.2",
+    "hyperframes": "0.8.137"
+  }
+}

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
+import '../../ui/imagen_animada.dart';
 import '../../ui/logo.dart';
 import '../../core/api_client.dart';
 import '../../core/auth/sesion.dart';
@@ -62,7 +63,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Align(alignment: Alignment.centerLeft, child: Logo(icono: Icons.storefront_outlined)),
+                  // Bienvenida animada con Remotion (ADR 0025); el logo queda como respaldo.
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: ImagenAnimada(
+                      nombre: 'bienvenida',
+                      ancho: 180,
+                      alto: 120,
+                      respaldo: Logo(icono: Icons.storefront_outlined),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'PRIMER PASO',

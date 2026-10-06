@@ -1,0 +1,47 @@
+/* Base común de los estados vacíos (ADR 0025). Los colores llegan como variables de la
+   composición (--trazo y --suave), una por tema; ver exportar.mjs. */
+html,
+body {
+  margin: 0;
+  background: transparent;
+}
+
+#root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.clip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+svg {
+  display: block;
+  width: 240px;
+  height: 176px;
+  overflow: visible;
+}
+
+.t {
+  stroke: var(--trazo);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.s {
+  fill: var(--suave);
+}
+
+.guion {
+  stroke-dasharray: 4 4;
+}
+
+.punto {
+  fill: var(--trazo);
+}

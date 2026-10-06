@@ -1,0 +1,66 @@
+<!doctype html>
+<html
+  lang="es"
+  data-composition-variables='[
+    {"id":"trazo","type":"color","label":"Trazo","default":"#f0c07a"},
+    {"id":"suave","type":"color","label":"Relleno suave","default":"rgba(224,165,74,0.18)"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=240, height=176" />
+    <title>Estado vacío: carrito</title>
+    <script src="vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="comun.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="vacio-carrito"
+      data-start="0"
+      data-width="240"
+      data-height="176"
+      data-duration="3"
+    >
+      <section id="vacio-carrito-escena" class="clip" data-start="0" data-duration="3">
+        <!-- Mismos trazos que EstadoVacio.tsx ('carrito'). Avanza, frena y vuelve; las ruedas giran. Las pausas quietas mantienen el peso bajo el tope. -->
+        <svg viewBox="-6 0 132 88" fill="none" aria-hidden="true">
+          <ellipse class="s" cx="60" cy="80" rx="42" ry="5" />
+          <g id="carrito">
+            <path class="s t" d="M20 20h12l10 36h42l8-24H36" />
+            <path id="lineas" class="t" d="M52 40h24M56 48h16" />
+            <g id="rueda-a">
+              <circle class="s t" cx="48" cy="68" r="5" />
+              <path class="t" d="M48 64v8" />
+            </g>
+            <g id="rueda-b">
+              <circle class="s t" cx="78" cy="68" r="5" />
+              <path class="t" d="M78 64v8" />
+            </g>
+          </g>
+        </svg>
+      </section>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.set('#carrito', { x: 0, rotation: 0, svgOrigin: '60 70' })
+        .set('#rueda-a', { svgOrigin: '48 68' })
+        .set('#rueda-b', { svgOrigin: '78 68' })
+        .to('#carrito', { x: 6, duration: 0.7, ease: 'power2.inOut' }, 0.2)
+        .fromTo(
+          '#rueda-a, #rueda-b',
+          { rotation: 0 },
+          { rotation: 120, duration: 0.7, ease: 'power2.inOut' },
+          0.2,
+        )
+        .to(
+          '#carrito',
+          { rotation: -2, duration: 0.15, yoyo: true, repeat: 1, ease: 'sine.inOut' },
+          0.9,
+        )
+        .to('#carrito', { x: 0, duration: 0.7, ease: 'power2.inOut' }, 1.7)
+        .to('#rueda-a, #rueda-b', { rotation: 0, duration: 0.7, ease: 'power2.inOut' }, 1.7);
+      window.__timelines['vacio-carrito'] = tl;
+    </script>
+  </body>
+</html>

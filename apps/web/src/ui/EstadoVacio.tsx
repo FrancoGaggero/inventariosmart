@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ImagenAnimada } from './ImagenAnimada';
 
 export type Ilustracion = 'cajas' | 'campana' | 'carrito' | 'camion' | 'recibo' | 'flechas';
 
@@ -160,12 +161,15 @@ export function EstadoVacio({
   titulo,
   texto,
   accion,
+  animada = true,
   className = '',
 }: {
   ilustracion: Ilustracion;
   titulo: string;
   texto?: ReactNode;
   accion?: ReactNode;
+  /** false muestra el SVG fijo de siempre. */
+  animada?: boolean;
   className?: string;
 }) {
   return (
@@ -173,7 +177,17 @@ export function EstadoVacio({
       role="status"
       className={`entra flex flex-col items-center text-center px-6 py-10 ${className}`}
     >
-      <Dibujo tipo={ilustracion} />
+      {animada ? (
+        // Animación de HyperFrames (ADR 0025); el SVG queda como respaldo.
+        <ImagenAnimada
+          nombre={`vacio-${ilustracion}`}
+          ancho={120}
+          alto={88}
+          respaldo={<Dibujo tipo={ilustracion} />}
+        />
+      ) : (
+        <Dibujo tipo={ilustracion} />
+      )}
       <p className="font-bold mt-3">{titulo}</p>
       {texto && <p className="text-sm text-t2 mt-1 max-w-md">{texto}</p>}
       {accion && <div className="mt-4 flex flex-wrap gap-2 justify-center">{accion}</div>}

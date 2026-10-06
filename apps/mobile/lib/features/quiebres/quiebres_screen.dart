@@ -83,6 +83,7 @@ class _Contenido extends ConsumerWidget {
           const Vacio(
             titulo: 'No te quedaste sin stock en este período.',
             texto: 'Las alertas de reposición te avisan antes de que un producto se agote.',
+            ilustracion: 'cajas',
           )
         else ...[
           for (final p in r.items) ...[_Fila(p: p), const SizedBox(height: 10)],

@@ -44,7 +44,9 @@ lib/
 │  ├─ quiebres/               falta de stock por período
 │  ├─ stock_parado/           stock parado por período
 │  └─ mas/                    cuenta, tema, lo que se hace en la web y secciones por rol y plan
-└─ ui/                        aviso, aviso de plan, piezas de análisis, estados de carga y logo
+└─ ui/                        aviso, aviso de plan, piezas de análisis, imagen animada, estados de carga y logo
+
+assets/animaciones/          WebP animados por tema y PNG fijos, generados en herramientas/visuales (ADR 0025)
 ```
 
 ## Colores

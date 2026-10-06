@@ -30,6 +30,7 @@ class ConversacionesScreen extends ConsumerWidget {
                     titulo: 'Todavía no hay conversaciones.',
                     texto: 'Las consultas que le hagas al asistente quedan acá para seguirlas después.',
                     icono: Icons.forum_outlined,
+                    ilustracion: 'flechas',
                   ),
                 for (final c in value.datos.items) ...[
                   Card(

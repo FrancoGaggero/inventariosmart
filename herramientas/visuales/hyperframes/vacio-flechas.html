@@ -1,0 +1,50 @@
+<!doctype html>
+<html
+  lang="es"
+  data-composition-variables='[
+    {"id":"trazo","type":"color","label":"Trazo","default":"#f0c07a"},
+    {"id":"suave","type":"color","label":"Relleno suave","default":"rgba(224,165,74,0.18)"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=240, height=176" />
+    <title>Estado vacío: flechas</title>
+    <script src="vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="comun.css" />
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="vacio-flechas"
+      data-start="0"
+      data-width="240"
+      data-height="176"
+      data-duration="3"
+    >
+      <section id="vacio-flechas-escena" class="clip" data-start="0" data-duration="3">
+        <!-- Mismos trazos que EstadoVacio.tsx ('flechas'). Ida y vuelta, con el círculo que respira. -->
+        <svg viewBox="-6 0 132 88" fill="none" aria-hidden="true">
+          <ellipse class="s" cx="60" cy="80" rx="40" ry="5" />
+          <circle id="circulo" class="s" cx="60" cy="44" r="18" />
+          <path id="ida" class="t" d="M28 34h56l-10-10" style="stroke-width: 2.5" />
+          <path id="vuelta" class="t" d="M92 54H36l10 10" style="stroke-width: 2.5" />
+        </svg>
+      </section>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo('#ida', { x: 0 }, { x: 6, duration: 0.7, ease: 'power2.inOut' }, 0.2)
+        .to('#ida', { x: 0, duration: 0.7, ease: 'power2.inOut' }, 0.9)
+        .fromTo('#vuelta', { x: 0 }, { x: -6, duration: 0.7, ease: 'power2.inOut' }, 1.4)
+        .to('#vuelta', { x: 0, duration: 0.7, ease: 'power2.inOut' }, 2.1)
+        .fromTo(
+          '#circulo',
+          { scale: 1, svgOrigin: '60 44' },
+          { scale: 1.12, duration: 1.4, yoyo: true, repeat: 1, ease: 'sine.inOut' },
+          0.1,
+        );
+      window.__timelines['vacio-flechas'] = tl;
+    </script>
+  </body>
+</html>

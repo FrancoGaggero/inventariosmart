@@ -12,3 +12,8 @@ docs/arquitectura.html
 openspec
 .claude
 CHANGELOG.md
+# Taller de animaciones (ADR 0025): lo generado y las copias de terceros.
+herramientas/visuales/out
+herramientas/visuales/hyperframes/vendor
+herramientas/visuales/remotion/package-lock.json
+herramientas/visuales/package-lock.json
