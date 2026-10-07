@@ -136,6 +136,12 @@ void main() {
     expect(find.text('Orden OC-0007 para Distribuidora Norte'), findsOneWidget);
     expect(find.textContaining('Todavía no se envió'), findsOneWidget);
     expect(find.text('Consulté: Orden en borrador.'), findsOneWidget);
+
+    // Tocar la tarjeta abre el detalle de esa orden (mobile-orders).
+    servidor.responder('GET', '/purchase-orders/o1', RespuestaFalsa.ok(ordenJson(id: 'o1')));
+    await tocar(tester, 'Orden OC-0007 para Distribuidora Norte');
+    expect(servidor.pedidosA('GET', '/purchase-orders/o1'), hasLength(1));
+    expect(find.textContaining('Borrador creado el'), findsOneWidget);
   });
 
   testWidgets('CP-M.12f historial: abrir una conversación y seguirla', (tester) async {

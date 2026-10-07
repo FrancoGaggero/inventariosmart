@@ -55,3 +55,7 @@ Franco preguntó si la app debía tener todo lo que tiene la web. Copiar todo du
 - Los widget tests que buscaban el menú "Cuenta" ahora cierran sesión desde "Más".
 - El borde de los campos usa `t3` y no `line2`, que no llega a 3:1.
 - La app suma la dependencia `shared_preferences`.
+
+## Notas posteriores
+
+- **06/10/2026** (change `mobile-orders`): las órdenes llegan al celular con su listado, el detalle, la edición de cantidades del borrador, la confirmación por canal, "Abrir WhatsApp" y "Ya la envié". Por decisión de Franco, **editar un producto puntual queda en la web**, igual que agregar productos o cambiar el proveedor de un borrador. La app suma `url_launcher`.

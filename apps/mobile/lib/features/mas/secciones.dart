@@ -21,8 +21,7 @@ class SeccionMas {
 }
 
 /// Secciones de pantallas de "Más" según rol y plan, como `lib/navegacion.ts` en la web. Las
-/// siguientes changes (`mobile-orders`) suman las suyas. Nunca devuelve una
-/// sección vacía.
+/// pantallas nuevas se suman acá. Nunca devuelve una sección vacía.
 List<SeccionMas> seccionesMas(Me me) {
   final analisis = [
     // Las alertas se ven en cualquier plan: en FREE la pantalla explica que son del PRO (CP-M.9f).
@@ -50,6 +49,19 @@ List<SeccionMas> seccionesMas(Me me) {
   ];
   return [
     if (analisis.isNotEmpty) SeccionMas(titulo: 'Análisis', entradas: analisis),
+    // En cualquier plan: sin PRO la pantalla explica el plan (CP-M.13k).
+    if (me.veOrdenes)
+      const SeccionMas(
+        titulo: 'Compras',
+        entradas: [
+          EntradaMas(
+            etiqueta: 'Órdenes de compra',
+            icono: Icons.receipt_long_outlined,
+            ruta: Rutas.ordenes,
+            detalle: 'Confirmalas y envialas por WhatsApp',
+          ),
+        ],
+      ),
     // En cualquier plan: sin PREMIUM la pantalla explica el plan (CP-M.12j).
     if (me.usaAsistente)
       const SeccionMas(

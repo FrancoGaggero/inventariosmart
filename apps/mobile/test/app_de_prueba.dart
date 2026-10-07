@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,10 +13,17 @@ import 'dio_falso.dart';
 import 'fixtures.dart';
 
 /// La app completa (router incluido) sobre el servidor falso y sin reintentos automáticos.
-Widget appDePrueba(ServidorFalso servidor, {AuthRepository? auth, SharedPreferences? preferencias}) => ProviderScope(
+Widget appDePrueba(
+  ServidorFalso servidor, {
+  AuthRepository? auth,
+  SharedPreferences? preferencias,
+  List<Override> extra = const [],
+}) =>
+    ProviderScope(
       overrides: [
         ...overridesDe(servidor, auth: auth),
         if (preferencias != null) preferenciasProvider.overrideWithValue(preferencias),
+        ...extra,
       ],
       retry: (_, _) => null,
       child: const InventarioSmartApp(),
@@ -38,11 +46,17 @@ ServidorFalso servidorBase({String rol = 'DUENIO', bool onboardingPendiente = fa
 AuthRepositoryFalso authConSesion() => AuthRepositoryFalso(inicial: AuthRepositoryFalso.usuaria);
 
 /// Levanta la app en una pantalla alta (800×2000 lógicos) para que las listas entren completas.
-Future<void> levantar(WidgetTester tester, ServidorFalso servidor, {AuthRepository? auth, SharedPreferences? preferencias}) async {
+Future<void> levantar(
+  WidgetTester tester,
+  ServidorFalso servidor, {
+  AuthRepository? auth,
+  SharedPreferences? preferencias,
+  List<Override> extra = const [],
+}) async {
   tester.view.physicalSize = const Size(800, 2000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(appDePrueba(servidor, auth: auth, preferencias: preferencias));
+  await tester.pumpWidget(appDePrueba(servidor, auth: auth, preferencias: preferencias, extra: extra));
   await bombear(tester);
 }
 

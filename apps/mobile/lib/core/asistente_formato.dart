@@ -24,9 +24,8 @@ const avisoPlanAsistente =
     'Disponible en el plan PREMIUM: preguntale al asistente por tus ventas, tu stock, tus márgenes y tus '
     'proveedores, y pedile que te prepare un pedido.';
 
-/// Texto de la tarjeta de una orden en borrador. En la app todavía no hay pantalla de órdenes:
-/// se confirma desde la web (RN-06).
-const borradorSinEnviar = 'Borrador. Todavía no se envió: revisala y confirmala desde Órdenes en la web.';
+/// Texto de la tarjeta de una orden en borrador: lleva al detalle, donde el dueño la confirma (RN-06).
+const borradorSinEnviar = 'Borrador. Todavía no se envió: tocá para revisarla y confirmarla.';
 
 final _entero = NumberFormat.decimalPattern('es_AR');
 

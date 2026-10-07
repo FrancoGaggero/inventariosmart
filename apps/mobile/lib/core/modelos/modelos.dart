@@ -5,5 +5,6 @@ export 'analisis.dart';
 export 'asistente.dart';
 export 'dashboard.dart';
 export 'me.dart';
+export 'ordenes.dart';
 export 'movimiento.dart';
 export 'producto.dart';

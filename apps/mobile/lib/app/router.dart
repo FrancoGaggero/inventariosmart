@@ -14,6 +14,8 @@ import '../features/inventario/inventario_screen.dart';
 import '../features/inventario/producto_nuevo_screen.dart';
 import '../features/mas/mas_screen.dart';
 import '../features/movimientos/movimiento_screen.dart';
+import '../features/ordenes/orden_screen.dart';
+import '../features/ordenes/ordenes_screen.dart';
 import '../features/quiebres/quiebres_screen.dart';
 import '../features/stock_parado/stock_parado_screen.dart';
 import 'cargando_screen.dart';
@@ -34,6 +36,7 @@ abstract final class Rutas {
   static const stockParado = '/mas/stock-parado';
   static const asistente = '/mas/asistente';
   static const conversaciones = '/mas/asistente/conversaciones';
+  static const ordenes = '/mas/ordenes';
 }
 
 /// Primera pestaña permitida para el rol.
@@ -127,6 +130,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(path: 'alertas', builder: (_, _) => const AlertasScreen()),
                   GoRoute(path: 'quiebres', builder: (_, _) => const QuiebresScreen()),
                   GoRoute(path: 'stock-parado', builder: (_, _) => const StockParadoScreen()),
+                  GoRoute(
+                    path: 'ordenes',
+                    builder: (_, _) => const OrdenesScreen(),
+                    routes: [GoRoute(path: ':id', builder: (_, state) => OrdenScreen(id: state.pathParameters['id']!))],
+                  ),
                   GoRoute(
                     path: 'asistente',
                     builder: (_, _) => const AsistenteScreen(),

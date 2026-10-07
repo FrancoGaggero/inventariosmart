@@ -39,6 +39,7 @@ lib/
 │  ├─ inicio/                 panel del mes, análisis y reposición
 │  ├─ inventario/             listado, filtros y alta rápida
 │  ├─ movimientos/            venta, ingreso y ajuste
+│  ├─ ordenes/                órdenes de compra: listado, detalle, borrador, confirmar y WhatsApp
 │  ├─ alertas/                alertas de reposición: filtro, atender, posponer y registrar ingreso
 │  ├─ asistente/              chat con el asistente (PREMIUM, sólo dueño) y conversaciones anteriores
 │  ├─ quiebres/               falta de stock por período

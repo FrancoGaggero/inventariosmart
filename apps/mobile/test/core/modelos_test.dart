@@ -196,6 +196,32 @@ void main() {
     expect(Me.fromJson(meJson()).usaAsistente, isTrue);
   });
 
+  test('órdenes: resumen, detalle con costo a confirmar y whatsappUrl (D2 de mobile-orders)', () {
+    final r = OrdenResumen.fromJson(ordenResumenJson(estado: 'ENVIADA', canal: 'WHATSAPP'));
+    expect(r.numero, 'OC-0007');
+    expect(r.proveedor.nombre, 'Distribuidora Norte');
+    expect(r.fecha, '2026-10-06T14:00:00.000Z');
+    expect(OrdenResumen.fromJson(ordenResumenJson()).fecha, '2026-10-06T12:00:00.000Z');
+
+    final o = OrdenCompra.fromJson(ordenJson(costoAConfirmar: true));
+    expect(o.esBorrador, isTrue);
+    expect(o.items.length, 2);
+    expect(o.items.last.costoUnitarioNeto, isNull);
+    expect(o.items.first.alertaId, idAlerta);
+    expect(o.whatsappUrl, isNull);
+    expect(o.proveedor.whatsapp, '5491123456789');
+
+    final c = OrdenCompra.fromJson(ordenJson(estado: 'CONFIRMADA', canal: 'WHATSAPP', conWhatsappUrl: true));
+    expect(c.esConfirmada, isTrue);
+    expect(c.whatsappUrl, startsWith('https://wa.me/5491123456789'));
+    expect(c.confirmadaPor, 'Ana');
+
+    expect(Me.fromJson(meJson(rol: 'CONTADOR')).veOrdenes, isTrue);
+    expect(Me.fromJson(meJson(rol: 'CONTADOR')).operaOrdenes, isFalse);
+    expect(Me.fromJson(meJson(rol: 'EMPLEADO')).veOrdenes, isFalse);
+    expect(Me.fromJson(meJson()).operaOrdenes, isTrue);
+  });
+
   test('ListaPaginada.fromJson', () {
     final lista = ListaPaginada.fromJson(
       {

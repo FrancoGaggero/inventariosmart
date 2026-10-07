@@ -248,7 +248,7 @@ class _Burbuja extends StatelessWidget {
   }
 }
 
-/// Orden que el asistente dejó en BORRADOR (CP-M.12e). Sin enlace hasta `mobile-orders`.
+/// Orden que el asistente dejó en BORRADOR (CP-M.12e): lleva al detalle para revisarla y confirmarla.
 class _TarjetaOrden extends StatelessWidget {
   const _TarjetaOrden({required this.accion});
 
@@ -259,31 +259,42 @@ class _TarjetaOrden extends StatelessWidget {
     final k = context.tokens;
     return Container(
       margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: k.card2,
         border: Border.all(color: k.brand.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.receipt_long_outlined, color: k.brand3, size: 22),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Column(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => context.push('${Rutas.ordenes}/${accion.ordenId}'),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Orden ${accion.numero} para ${accion.proveedor}',
-                  style: TextStyle(fontWeight: FontWeight.w700, color: k.t1),
+                Icon(Icons.receipt_long_outlined, color: k.brand3, size: 22),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Orden ${accion.numero} para ${accion.proveedor}',
+                        style: TextStyle(fontWeight: FontWeight.w700, color: k.t1),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(borradorSinEnviar, style: TextStyle(fontSize: 12, color: k.t2, height: 1.35)),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 2),
-                Text(borradorSinEnviar, style: TextStyle(fontSize: 12, color: k.t2, height: 1.35)),
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right, color: k.t3),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

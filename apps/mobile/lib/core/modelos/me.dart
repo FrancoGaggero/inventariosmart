@@ -118,6 +118,12 @@ class Me {
   /// Sólo el DUENIO usa el asistente: la API responde 403 al resto (CP-08.5b, CP-M.8g).
   bool get usaAsistente => esDuenio;
 
+  /// Órdenes de compra: DUENIO y CONTADOR (CP-07.6b); el plan lo resuelve la pantalla (CP-M.13k).
+  bool get veOrdenes => esDuenio || esContador;
+
+  /// Sólo el DUENIO edita, confirma, envía y cancela (RN-06).
+  bool get operaOrdenes => esDuenio;
+
   factory Me.fromJson(Map<String, dynamic> json) => Me(
         usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
         comercio: Comercio.fromJson(json['comercio'] as Map<String, dynamic>),

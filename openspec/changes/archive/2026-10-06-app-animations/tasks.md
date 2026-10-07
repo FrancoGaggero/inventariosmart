@@ -19,6 +19,6 @@
 ## 4. Verificación y cierre
 
 - [x] 4.1 ADR 0025, `docs/arquitectura.html`, `apps/mobile/README.md`, el README del taller y `openspec/CAPACIDADES.md` (fila 31) (D7). Listo cuando: los documentos reflejan D1 a D7
-- [ ] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test` (web sin `.env`); `pnpm --filter @inventariosmart/web build`; `flutter analyze --fatal-infos` y `flutter test`; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
-- [ ] 4.3 Producción: Franco revisa los estados vacíos y el onboarding en la web y en el APK, en los dos temas y con movimiento reducido. Listo cuando: Franco confirma que se ven bien y que con movimiento reducido quedan quietas
+- [x] 4.2 `pnpm lint`, `pnpm format:check`, `pnpm typecheck` y `pnpm test` (web sin `.env`); `pnpm --filter @inventariosmart/web build`; `flutter analyze --fatal-infos` y `flutter test`; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 Producción: Franco revisa los estados vacíos y el onboarding en la web y en el APK, en los dos temas y con movimiento reducido. Listo cuando: Franco confirma que se ven bien y que con movimiento reducido quedan quietas
 - [ ] 4.4 (manual, Franco) Anotar la change en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

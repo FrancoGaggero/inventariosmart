@@ -143,6 +143,21 @@ void main() {
     });
   }
 
+  for (final (rol, plan, ve) in [('DUENIO', 'FREE', true), ('CONTADOR', 'PRO', true), ('EMPLEADO', 'PRO', false)]) {
+    testWidgets('CP-M.8h "Órdenes de compra" para $rol $plan', (tester) async {
+      final servidor = servidorPro(rol: rol, plan: plan);
+      await levantar(tester, servidor, auth: authConSesion());
+      await tocar(tester, 'Más');
+      expect(find.text('Compras'), ve ? findsOneWidget : findsNothing);
+      expect(find.text('Órdenes de compra'), ve ? findsOneWidget : findsNothing);
+      if (!ve) {
+        await ir(tester, '/mas/ordenes');
+        expect(find.text('Filtro de aceite'), findsOneWidget);
+        expect(servidor.pedidos.where((p) => p.uri.path.contains('/purchase-orders')), isEmpty);
+      }
+    });
+  }
+
   test('las secciones de "Más" nunca vienen vacías', () {
     for (final rol in roles) {
       final me = Me.fromJson(meJson(rol: rol, plan: 'PREMIUM'));

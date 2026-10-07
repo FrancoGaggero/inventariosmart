@@ -173,6 +173,94 @@ Map<String, dynamic> reposicionJson({int n = 3, int criticas = 1}) => {
       ],
     };
 
+const idOrden = '2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e';
+const idOrden2 = '3c4d5e6f-7a8b-4c9d-8e0f-2a3b4c5d6e7f';
+
+Map<String, dynamic> ordenResumenJson({
+  String id = idOrden,
+  String numero = 'OC-0007',
+  String estado = 'BORRADOR',
+  String proveedor = 'Distribuidora Norte',
+  String? canal,
+  String? motivoNoEnvio,
+}) =>
+    {
+      'id': id,
+      'numero': numero,
+      'estado': estado,
+      'proveedor': {'id': 'pv1', 'nombre': proveedor},
+      'cantidadItems': 2,
+      'totalNeto': '128000.00',
+      'motivoNoEnvio': motivoNoEnvio,
+      'canal': canal,
+      'confirmadaEn': estado == 'BORRADOR' ? null : '2026-10-06T13:00:00.000Z',
+      'enviadaEn': estado == 'ENVIADA' ? '2026-10-06T14:00:00.000Z' : null,
+      'creadoEn': '2026-10-06T12:00:00.000Z',
+    };
+
+Map<String, dynamic> ordenJson({
+  String id = idOrden,
+  String estado = 'BORRADOR',
+  String? canal,
+  String? motivoNoEnvio,
+  bool conWhatsappUrl = false,
+  bool proveedorConEmail = true,
+  bool proveedorConWhatsapp = true,
+  String? canalProveedor = 'WHATSAPP',
+  String? enviadaA,
+  bool costoAConfirmar = false,
+}) =>
+    {
+      'id': id,
+      'numero': 'OC-0007',
+      'estado': estado,
+      'proveedor': {
+        'id': 'pv1',
+        'nombre': 'Distribuidora Norte',
+        'contacto': 'Marta',
+        'email': proveedorConEmail ? 'compras@norte.com' : null,
+        'telefono': proveedorConWhatsapp ? '011 15-2345-6789' : null,
+        'whatsapp': proveedorConWhatsapp ? '5491123456789' : null,
+        'canal': canalProveedor,
+        'leadTimeDias': 5,
+        'confiabilidad': 90,
+      },
+      'items': [
+        {
+          'id': 'it1',
+          'producto': {'id': idProducto, 'codigo': 'FA-220', 'nombre': 'Filtro de aceite', 'stockActual': 3},
+          'alertaId': idAlerta,
+          'cantidad': 20,
+          'costoUnitarioNeto': '2400.00',
+          'subtotal': '48000.00',
+        },
+        {
+          'id': 'it2',
+          'producto': {'id': idProducto2, 'codigo': 'AM-1L', 'nombre': 'Aceite mineral 1 L', 'stockActual': 1},
+          'alertaId': null,
+          'cantidad': 10,
+          'costoUnitarioNeto': costoAConfirmar ? null : '8000.00',
+          'subtotal': costoAConfirmar ? null : '80000.00',
+        },
+      ],
+      'totalNeto': costoAConfirmar ? '48000.00' : '128000.00',
+      'asunto': 'Orden de compra OC-0007 · Repuestos Carlos',
+      'texto': 'Hola Marta, te paso el pedido:\n- Filtro de aceite FA-220: 20\n- Aceite mineral 1 L: 10',
+      'textoEditado': false,
+      'notas': null,
+      'motivoNoEnvio': motivoNoEnvio,
+      'canal': canal,
+      'whatsappUrl': conWhatsappUrl ? 'https://wa.me/5491123456789?text=Orden%20de%20compra%20OC-0007' : null,
+      'creadaPor': {'id': 'u1', 'nombre': 'Ana'},
+      'confirmadaPor': estado == 'BORRADOR' || estado == 'CANCELADA' ? null : {'id': 'u1', 'nombre': 'Ana'},
+      'confirmadaEn': estado == 'BORRADOR' || estado == 'CANCELADA' ? null : '2026-10-06T13:00:00.000Z',
+      'enviadaEn': estado == 'ENVIADA' ? '2026-10-06T14:00:00.000Z' : null,
+      'enviadaA': enviadaA,
+      'canceladaEn': estado == 'CANCELADA' ? '2026-10-06T13:30:00.000Z' : null,
+      'creadoEn': '2026-10-06T12:00:00.000Z',
+      'actualizadoEn': '2026-10-06T12:00:00.000Z',
+    };
+
 const idConversacion = '9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a';
 const idConversacion2 = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
 
