@@ -1,6 +1,6 @@
 # InventarioSmart · app Android (Flutter)
 
-Paquete `com.inventariosmart.app`. Es la herramienta de mostrador: login, inicio con el panel del mes, inventario, registrar movimiento y "Más" (cuenta, tema y cierre de sesión). Lo de gestión queda en la web (ADR 0024).
+Paquete `com.inventariosmart.app`. Es la herramienta de mostrador: login, inicio con el panel del mes, inventario, registrar movimiento y "Más", con la cuenta, el tema, las secciones Análisis (alertas, falta de stock y stock parado), Compras (órdenes de compra y WhatsApp) y Asistente según rol y plan, y el cierre de sesión. Lo de gestión queda en la web (ADR 0024).
 
 ## Requisitos
 

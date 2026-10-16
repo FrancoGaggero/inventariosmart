@@ -19,6 +19,6 @@
 
 - [x] 4.1 Recorrido visual del listado, un borrador en edición, una confirmada por WhatsApp, una enviada y la vista del contador, en los dos temas a 360 y 412 dp, con capturas de un test temporal que no se commitea. Listo cuando: no hay desbordes y lo temporal quedó borrado
 - [x] 4.2 Nota en ADR 0024 (editar un producto queda en la web), `docs/arquitectura.html`, `apps/mobile/README.md` y `openspec/CAPACIDADES.md` (fila 32). Listo cuando: los documentos reflejan D1 a D7
-- [ ] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 4.3 `flutter analyze --fatal-infos` y `flutter test` en `apps/mobile`, y `pnpm format:check` en la raíz; push y CI en verde. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 4.4 Celular: Franco crea un borrador con el asistente o en la web, lo abre desde la tarjeta del asistente, cambia una cantidad, confirma por WhatsApp, abre WhatsApp y marca "Ya la envié", y comprueba en la web que quedó igual. Listo cuando: Franco confirma que el mensaje llegó a WhatsApp con el texto de la orden
 - [ ] 4.5 (manual, Franco) Anotar HU-07 y HU-16 en mobile en Trello y en el backlog. Listo cuando: Trello y backlog lo reflejan

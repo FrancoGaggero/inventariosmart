@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Especificación de casos de uso - InventarioSmart</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.4; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px 0; }
+  th, td { vertical-align: top; text-align: left; padding: 5px; }
+  th { background: #eeeeee; }
+  td.etiqueta { width: 24%; font-weight: bold; background: #f6f6f6; }
+  p.alt { margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<h1>Especificación de casos de uso</h1>
+<p><b>Proyecto:</b> InventarioSmart. Plataforma integral de gestión de inventario e inteligencia financiera para PyMEs</p>
+<p><b>Institución:</b> Escuela Da Vinci. Carrera Analista de Sistemas. Seminario de Sistemas. Trabajo final de carrera</p>
+<p><b>Alumno:</b> Franco Gaggero (proyecto individual)</p>
+<p><b>Entregable:</b> tareas 3.2 (diagrama de casos de uso) y 3.3 (especificación de casos de uso) del diagrama de Gantt</p>
+<p><b>Versión:</b> 1.0</p>
+<p><b>Fecha:</b> 09/10/2026</p>
+
+<table border="1">
+<tr><th>Versión</th><th>Fecha</th><th>Autor</th><th>Descripción de los cambios</th></tr>
+<tr><td>1.0</td><td>09/10/2026</td><td>Franco Gaggero</td><td>Versión inicial: actores, resumen de casos de uso, especificación de CU-01 a CU-19 y relaciones de inclusión y extensión.</td></tr>
+</table>
+
+<h2>1. Introducción y convenciones</h2>
+<p>El presente documento especifica los casos de uso de InventarioSmart a partir de las historias de usuario de la Propuesta de Proyecto v2.0 (HU-01 a HU-14) y de las cinco historias incorporadas posteriormente al backlog: HU-15 «Mis precios frente a la inflación», HU-16 «Enviar la orden por WhatsApp», HU-17 «Remarcación asistida», HU-18 «Cuánto pierdo por quedarme sin stock» y HU-19 «Plata parada en stock». Constituye, junto con el diagrama de casos de uso, la entrada de las etapas de diseño y de pruebas.</p>
+<p>Cada flujo describe el comportamiento observable del sistema tal como quedó especificado y verificado en las especificaciones funcionales vigentes del proyecto. Cuando una especificación precisa o modifica un criterio de la Propuesta, prevalece la especificación; las diferencias relevantes se resumen en la sección 7.</p>
+<h3>1.1. Convenciones</h3>
+<ul>
+<li><b>Numeración:</b> cada caso de uso lleva el mismo número que la historia de usuario que lo origina (CU-xx corresponde a HU-xx), de modo que la trazabilidad con la matriz de la Propuesta (sección 5.3) es directa. HU-11 se divide en dos sub-casos: CU-11a (registro e inicio de sesión) y CU-11b (gestión de usuarios y datos del comercio).</li>
+<li><b>Casos de prueba:</b> se identifican como CP-xx.y, donde xx es el número de la historia e y el criterio de aceptación; las letras finales (por ejemplo, CP-01.5b) son variantes del mismo criterio. Los identificadores CP-M.x corresponden a los casos de prueba de la aplicación Android. El detalle de cada caso de prueba se encuentra en el documento de casos de prueba.</li>
+<li><b>Flujos alternativos:</b> se numeran con el paso del flujo principal en el que se originan seguido de una letra (3a, 5a). Los identificados con «E» son excepciones que pueden ocurrir en cualquier paso.</li>
+<li><b>Respuestas del sistema:</b> los rechazos se describen en lenguaje de usuario; entre paréntesis se indica el código HTTP con el que responde la API: 400 (datos inválidos), 401 (sesión no válida), 402 (funcionalidad no incluida en el plan), 403 (rol sin permiso), 404 (dato inexistente o perteneciente a otro comercio), 409 (conflicto con el estado actual), 429 (límite de uso alcanzado) y 503 (servicio externo no disponible).</li>
+<li><b>Textos de interfaz:</b> los nombres de pantallas, botones y mensajes se citan entre comillas tal como aparecen en la aplicación.</li>
+<li><b>Precondición común:</b> salvo CU-11a y los procesos programados del actor Sistema, todo caso de uso requiere un usuario autenticado y activo (CU-11a). Todo dato consultado o modificado pertenece exclusivamente al comercio del usuario (RN-10, RNF-10): un identificador de otro comercio se trata como inexistente.</li>
+<li><b>Plataforma:</b> «Web» indica que el caso se resuelve sólo en la aplicación web; «Android» sólo en la aplicación móvil; «Ambas» en las dos. El alcance del celular sigue el criterio de la decisión de arquitectura 0024: el celular se destina a las tareas de mostrador y la web a la gestión. Los casos CP-M.5 a CP-M.8h (conexión, errores, apariencia y pestaña «Más») son transversales a todos los casos de uso disponibles en Android.</li>
+</ul>
+
+<h2>2. Actores</h2>
+<table border="1">
+<tr><th>Actor</th><th>Tipo</th><th>Descripción y alcance</th></tr>
+<tr><td>Dueño / Administrador</td><td>Primario</td><td>Propietario del comercio. Acceso total a inventario, movimientos, proveedores, gastos, rentabilidad, panel, análisis, órdenes, reportes, remarcación, asistente, usuarios, datos del comercio y plan. Es el único rol que confirma órdenes de compra (RN-06), aplica remarcaciones, cambia el plan y administra usuarios.</td></tr>
+<tr><td>Empleado / Operador</td><td>Primario</td><td>Personal del comercio. Consulta el catálogo y registra ventas, ingresos y ajustes de stock. No accede a costos, márgenes, gastos, panel financiero, análisis, órdenes, proveedores ni configuración; las respuestas que incluyen costos o márgenes se le entregan sin esos datos.</td></tr>
+<tr><td>Contador / Asesor externo</td><td>Primario</td><td>Acceso de sólo lectura al panel, la rentabilidad, los gastos, el historial de movimientos, las alertas, las órdenes, los reportes, los precios frente a la inflación, la vista previa y los lotes de remarcación, la falta de stock y el stock parado. No accede al catálogo, a los proveedores, al comparador ni al asistente, y no puede crear, modificar ni eliminar datos.</td></tr>
+<tr><td>Sistema (procesos programados)</td><td>Secundario (no humano)</td><td>Ejecuta los procesos automáticos en horario de Buenos Aires: recálculo diario de alertas de reposición a las 07:00 (CU-06), actualización diaria de indicadores económicos a las 09:00 (CU-15) y generación y envío del reporte semanal los lunes a las 08:00 (CU-09). Cada proceso tiene además un disparador bajo demanda, de modo que el dato está al día aunque el servidor haya estado inactivo a la hora programada.</td></tr>
+<tr><td>Proveedor</td><td>Externo</td><td>Destinatario de las órdenes de compra. Las recibe por correo electrónico (CU-07) o por WhatsApp, en un mensaje que el Dueño envía desde su propio teléfono (CU-16). No opera dentro de la plataforma ni posee credenciales.</td></tr>
+<tr><td>Servicio de IA (Anthropic)</td><td>Externo</td><td>Modelo de lenguaje de terceros, consumido mediante API, que interpreta las consultas del asistente y redacta sus respuestas a partir de las consultas predefinidas que el sistema ejecuta sobre los datos del comercio (CU-08). No accede a la base de datos.</td></tr>
+<tr><td>Fuentes oficiales INDEC y BCRA</td><td>Externo</td><td>APIs públicas que proveen el índice de precios al consumidor (INDEC), la inflación mensual e interanual y el tipo de cambio minorista (BCRA) utilizados en CU-15.</td></tr>
+<tr><td>Servicio de correo (Resend)</td><td>Externo</td><td>Servicio de correo transaccional que entrega las alertas de reposición a los dueños (CU-06), las órdenes de compra a los proveedores (CU-07) y los reportes semanales (CU-09).</td></tr>
+<tr><td>Firebase Authentication</td><td>Externo</td><td>Proveedor de identidad que registra y autentica a las personas con email y contraseña o con su cuenta de Google y emite la credencial que el sistema verifica en cada solicitud (CU-11a).</td></tr>
+</table>
+
+<h2>3. Resumen de casos de uso</h2>
+<table border="1">
+<tr><th>CU</th><th>Nombre</th><th>Actor principal</th><th>HU</th><th>RF</th><th>Plan mínimo</th><th>Plataforma</th></tr>
+<tr><td>CU-01</td><td>Administrar productos</td><td>Dueño</td><td>HU-01</td><td>RF-01, RF-02</td><td>Free</td><td>Ambas</td></tr>
+<tr><td>CU-02</td><td>Administrar proveedores y listas de precios</td><td>Dueño</td><td>HU-02</td><td>RF-03</td><td>Free</td><td>Web</td></tr>
+<tr><td>CU-03</td><td>Consultar rentabilidad</td><td>Dueño</td><td>HU-03</td><td>RF-04</td><td>Free</td><td>Web</td></tr>
+<tr><td>CU-04</td><td>Visualizar dashboard</td><td>Dueño</td><td>HU-04</td><td>RF-05</td><td>Free</td><td>Ambas</td></tr>
+<tr><td>CU-05</td><td>Importar inventario</td><td>Dueño</td><td>HU-05</td><td>RF-08</td><td>Free</td><td>Web</td></tr>
+<tr><td>CU-06</td><td>Generar alerta de reposición</td><td>Sistema</td><td>HU-06</td><td>RF-06</td><td>Pro</td><td>Ambas</td></tr>
+<tr><td>CU-07</td><td>Generar orden de compra</td><td>Dueño</td><td>HU-07</td><td>RF-07</td><td>Pro</td><td>Ambas</td></tr>
+<tr><td>CU-08</td><td>Consultar al asistente</td><td>Dueño</td><td>HU-08</td><td>RF-10</td><td>Premium</td><td>Ambas</td></tr>
+<tr><td>CU-09</td><td>Emitir reporte semanal</td><td>Sistema</td><td>HU-09</td><td>RF-09</td><td>Pro</td><td>Web</td></tr>
+<tr><td>CU-10</td><td>Registrar movimiento de stock</td><td>Empleado / Dueño</td><td>HU-10</td><td>RF-13, RF-02</td><td>Free</td><td>Ambas</td></tr>
+<tr><td>CU-11a</td><td>Registrarse e iniciar sesión</td><td>Cualquier usuario</td><td>HU-11</td><td>RF-11</td><td>Free</td><td>Ambas</td></tr>
+<tr><td>CU-11b</td><td>Gestionar usuarios y datos del comercio</td><td>Dueño</td><td>HU-11</td><td>RF-11, RF-15</td><td>Free (invitar usuarios: Pro)</td><td>Web</td></tr>
+<tr><td>CU-12</td><td>Comparar proveedores</td><td>Dueño</td><td>HU-12</td><td>RF-12</td><td>Premium</td><td>Web</td></tr>
+<tr><td>CU-13</td><td>Administrar gastos</td><td>Dueño</td><td>HU-13</td><td>RF-14</td><td>Free</td><td>Web</td></tr>
+<tr><td>CU-14</td><td>Gestionar plan</td><td>Dueño</td><td>HU-14</td><td>RF-15</td><td>Free</td><td>Web</td></tr>
+<tr><td>CU-15</td><td>Comparar precios con la inflación</td><td>Dueño</td><td>HU-15</td><td>RF-16</td><td>Pro (indicadores: Free)</td><td>Web</td></tr>
+<tr><td>CU-16</td><td>Enviar la orden por WhatsApp</td><td>Dueño</td><td>HU-16</td><td>RF-17</td><td>Pro</td><td>Ambas</td></tr>
+<tr><td>CU-17</td><td>Remarcar precios en lote</td><td>Dueño</td><td>HU-17</td><td>RF-18</td><td>Pro</td><td>Web</td></tr>
+<tr><td>CU-18</td><td>Consultar pérdidas por falta de stock</td><td>Dueño</td><td>HU-18</td><td>RF-19</td><td>Pro</td><td>Ambas</td></tr>
+<tr><td>CU-19</td><td>Consultar stock parado</td><td>Dueño</td><td>HU-19</td><td>RF-20</td><td>Pro</td><td>Ambas</td></tr>
+</table>
+<p>El catálogo de planes vigente es el siguiente. Free: inventario y movimientos, panel y rentabilidad (margen bruto y neto), gastos operativos, proveedores y listas de precios, e importación desde Excel, con un límite de 50 productos activos y 1 usuario. Pro: suma, sin límites de productos ni de usuarios, alertas de reposición, pérdidas por falta de stock, stock parado, órdenes de compra, reportes semanales, precios frente a la inflación y remarcación asistida. Premium: suma el comparador de proveedores y el asistente con IA.</p>
+
+<h2>4. Diagrama de casos de uso</h2>
+<p><img src="https://raw.githubusercontent.com/FrancoGaggero/inventariosmart/main/docs/diagramas/casos-de-uso.png" alt="Diagrama de casos de uso de InventarioSmart" width="640"></p>
+<p><i>Figura 1. Diagrama de casos de uso. Versión ampliable: <a href="https://github.com/FrancoGaggero/inventariosmart/blob/main/docs/diagramas/casos-de-uso.svg">casos-de-uso.svg</a>.</i></p>
+<p>El diagrama se genera con herramientas/diagramas/casos_de_uso.py en el repositorio. Presenta los actores primarios a la izquierda, los actores externos y el actor Sistema a la derecha, los casos de uso dentro del límite del sistema «InventarioSmart» y las relaciones de inclusión y extensión de la sección 6. Por legibilidad, el Contador se vincula sólo con los casos que consulta, y los tres casos incluidos se dibujan como casos auxiliares sin número propio.</p>
+
+<h2>5. Especificación de los casos de uso</h2>
+
+<!-- ============================ CU-01 ============================ -->
+<h3>CU-01 Administrar productos</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-01 Administrar productos</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-01 Gestión de inventario. RF-01, RF-02.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Empleado / Operador (consulta del catálogo).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free, con un máximo de 50 productos activos; sin límite desde Pro. Dueño: alta, consulta, modificación, baja y reactivación. Empleado: sólo consulta, sin costos ni márgenes. Contador: sin acceso al catálogo.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En la web, la administración completa. En Android, la consulta del catálogo con búsqueda, filtro por estado y carga por páginas, y el alta rápida para el Dueño; la edición y la baja se realizan desde la web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño o Empleado y onboarding del comercio completo.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Inventario» y selecciona «Nuevo producto», o selecciona un producto existente para modificarlo o darlo de baja.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Inventario».</li>
+<li>El sistema lista los productos activos del comercio en orden alfabético, con código, nombre, stock actual, precio de venta, costo de reposición y estado de stock («OK», «Bajo» o «Sin stock», calculado con el stock de seguridad), paginados.</li>
+<li>El Dueño selecciona «Nuevo producto».</li>
+<li>El sistema presenta el formulario: código, nombre, categoría, precio de venta con IVA incluido, alícuota de IVA (por defecto, la del comercio), costo de reposición sin IVA, stock inicial y stock de seguridad.</li>
+<li>El Dueño completa los datos y confirma.</li>
+<li>El sistema valida cada campo, verifica que el código no exista en el comercio sin distinguir mayúsculas, incluidos los productos dados de baja (RN-05), y verifica el límite de productos del plan.</li>
+<li>El sistema registra el producto como activo, registra su precio en el historial de precios y, si el stock inicial es mayor a cero, registra en la misma operación un ingreso con motivo «stock inicial» (CU-10).</li>
+<li>El sistema informa «Producto creado» y muestra el producto en el listado con su estado de stock.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Búsqueda y filtros.</b> El usuario escribe parte del código o del nombre, o elige un estado de stock; el sistema lista sólo los productos que coinciden. Al elegir los productos dados de baja, el sistema lista los inactivos.</p>
+<p class="alt"><b>2b. Consulta del Empleado.</b> El sistema muestra el listado con precio de venta y stock, sin costos ni márgenes, y sin las opciones de alta, modificación ni baja.</p>
+<p class="alt"><b>3a. Modificar un producto.</b> El Dueño selecciona un producto y modifica código, nombre, categoría, precio, alícuota, costo de reposición, stock de seguridad, proveedor principal o días de anticipación de la alerta (entero de 0 a 90, 3 por defecto). El sistema aplica las mismas validaciones del alta, guarda los cambios y recalcula el estado de stock; los márgenes se reflejan en la consulta siguiente. Si cambia el precio, agrega una fila al historial de precios. Si cambia el proveedor principal, el costo de reposición pasa al último costo informado por ese proveedor (RN-08). Si el Dueño edita el costo y el producto tiene proveedor principal, el historial de costos registra una carga manual de ese proveedor.</p>
+<p class="alt"><b>3b. Dar de baja.</b> El Dueño selecciona «Dar de baja». El sistema marca el producto como inactivo sin borrarlo, conserva su código y su historial, lo excluye del listado por defecto y lo mantiene accesible.</p>
+<p class="alt"><b>3c. Reactivar.</b> El Dueño selecciona «Reactivar» sobre un producto dado de baja. El sistema verifica el límite del plan y lo devuelve al listado con su código original.</p>
+<p class="alt"><b>3d. Stock editado a mano.</b> Si se intenta modificar directamente el stock actual, el sistema lo rechaza e informa que el stock se ajusta con movimientos (400); el ajuste se registra con CU-10.</p>
+<p class="alt"><b>6a. Datos inválidos.</b> Con precio o stock negativos, alícuota mayor a 100, código vacío, nombre de más de 120 caracteres o días de anticipación fuera de rango, el sistema señala cada campo con error y no registra nada (400).</p>
+<p class="alt"><b>6b. Código repetido.</b> Si el código ya existe en el comercio, el sistema informa que el código ya está en uso (409); si pertenece a un producto dado de baja, sugiere reactivarlo. El mismo código puede existir en otro comercio.</p>
+<p class="alt"><b>6c. Límite del plan.</b> En plan Free con 50 productos activos, el sistema rechaza el alta o la reactivación e informa que se requiere el plan Pro (402).</p>
+<p class="alt"><b>8a. Vender desde el producto (Android).</b> El usuario toca «Vender» en un producto y continúa en CU-10 con el tipo Venta, el producto y su precio ya cargados.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Contador que intenta consultar el catálogo y el Empleado que intenta crear, modificar o dar de baja un producto reciben el aviso de falta de permiso (403); en Android el Contador no tiene la pestaña de inventario y el Empleado no ve «Nuevo producto».</p>
+<p class="alt"><b>E2. Producto de otro comercio.</b> La consulta, modificación o baja de un producto ajeno se informa como inexistente (404) y el producto no cambia.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>El producto queda registrado, modificado, inactivo o reactivado según la operación.</li>
+<li>El stock inicial queda registrado como primer movimiento del producto, y cada precio nuevo en el historial de precios.</li>
+<li>Los márgenes y el estado de stock reflejan los cambios en la consulta siguiente.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-03, RN-05, RN-07, RN-08, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-01.1 a CP-01.7b; CP-10.9 y CP-10.9b (stock inicial); CP-15.2 y CP-15.2b (historial de precios); CP-02.5c y CP-02.5e (costo vigente); CP-M.3 a CP-M.3h.</td></tr>
+</table>
+
+<!-- ============================ CU-02 ============================ -->
+<h3>CU-02 Administrar proveedores y listas de precios</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-02 Administrar proveedores y listas de precios</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-02 Gestión de proveedores y listas de precios. RF-03 (y RF-17 para el canal de contacto).</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Sin actores secundarios.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Sólo el Dueño; Empleado y Contador no acceden.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño. Para importar una lista de precios, productos cargados en el catálogo (CU-01 o CU-05).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Proveedores» para dar de alta un proveedor o para cargar o importar su lista de precios.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Proveedores».</li>
+<li>El sistema lista los proveedores activos del comercio.</li>
+<li>El Dueño selecciona «Nuevo proveedor».</li>
+<li>El sistema solicita nombre, contacto, email, teléfono, CUIT, notas, plazo de entrega en días (7 por defecto), índice de confiabilidad de 1 a 5 (3 por defecto) y canal preferido opcional para enviarle órdenes (correo o WhatsApp). Mientras se escribe el teléfono, muestra el número de WhatsApp tal como quedará.</li>
+<li>El Dueño completa los datos y guarda.</li>
+<li>El sistema valida los datos, verifica que el nombre no se repita en el comercio sin distinguir mayúsculas, normaliza el número de WhatsApp y determina el canal que corresponde al proveedor: el preferido; si no lo tiene, correo cuando hay email; si no, WhatsApp cuando hay un número válido.</li>
+<li>El sistema registra el proveedor como activo.</li>
+<li>El Dueño selecciona «Importar lista» en el proveedor y sube una planilla .xlsx o .csv con código de producto y costo neto sin IVA.</li>
+<li>El sistema valida el archivo (hasta 2 MB y 5.000 filas), reconoce encabezados y formatos numéricos flexibles y presenta una vista previa que clasifica cada fila como sin cambio, cambio de costo (con el costo anterior), costo nuevo para ese proveedor, sin producto o inválida (con su motivo), junto con un resumen de conteos. En este paso no registra nada.</li>
+<li>El Dueño revisa la vista previa y confirma.</li>
+<li>El sistema registra cada costo aplicable como una fila nueva del historial de costos, con origen importación y un mismo lote, sin modificar ni borrar filas anteriores.</li>
+<li>El sistema actualiza el costo vigente y recalcula los márgenes de los productos afectados («include» Actualizar costo vigente y recalcular márgenes): cambia el costo de reposición de los productos cuyo proveedor principal es este proveedor y de los que no tenían proveedor principal, que lo adoptan como principal (RN-08).</li>
+<li>El sistema informa la cantidad de costos registrados.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>3a. Modificar un proveedor.</b> El Dueño edita los datos de contacto, el plazo de entrega, la confiabilidad o el canal preferido; el sistema valida y guarda. El plazo y la confiabilidad quedan disponibles para CU-06, CU-07 y CU-12.</p>
+<p class="alt"><b>3b. Dar de baja y reactivar.</b> El Dueño da de baja un proveedor; el sistema lo excluye del listado por defecto y conserva su historial de precios. Al reactivarlo, vuelve al listado.</p>
+<p class="alt"><b>6a. Datos inválidos.</b> Con nombre vacío, email mal formado, plazo negativo o confiabilidad fuera de 1 a 5, el sistema señala cada campo (400).</p>
+<p class="alt"><b>6b. Nombre repetido.</b> El sistema informa que ya existe un proveedor con ese nombre (409).</p>
+<p class="alt"><b>6c. Canal preferido sin datos.</b> Si se elige WhatsApp con un teléfono sin código de área, o correo sin email, el formulario muestra el aviso y el sistema rechaza el guardado con el error en el canal preferido (400).</p>
+<p class="alt"><b>8a. Carga manual de costos.</b> El Dueño selecciona «Cargar costo», indica producto y costo neto; el sistema registra la fila con origen manual y continúa en el paso 12.</p>
+<p class="alt"><b>8b. Consultas.</b> El Dueño selecciona «Ver lista vigente» (último costo por producto del proveedor) o consulta el historial de costos de un producto, del más reciente al más antiguo, con proveedor, costo, vigencia y origen.</p>
+<p class="alt"><b>9a. Archivo inválido.</b> Si el archivo no es .xlsx ni .csv, supera 2 MB o 5.000 filas, o no tiene columnas reconocibles de código y costo, el sistema explica el problema (400).</p>
+<p class="alt"><b>10a. Cancelar.</b> El Dueño abandona la vista previa; no se registra nada. El archivo no se conserva.</p>
+<p class="alt"><b>11a. Reconfirmación.</b> Una segunda confirmación idéntica no registra filas nuevas, porque los costos ya son los vigentes.</p>
+<p class="alt"><b>12a. Proveedor no principal.</b> El costo de un proveedor que no es el principal del producto queda en el historial sin cambiar el costo vigente.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado y el Contador no acceden a proveedores, costos ni importaciones (403).</p>
+<p class="alt"><b>E2. Datos de otro comercio.</b> La consulta o edición de un proveedor ajeno, o la carga de costos sobre un proveedor o producto ajeno, se informa como inexistente (404).</p>
+<p class="alt"><b>E3. Costos inmutables.</b> Las filas del historial de costos no pueden modificarse ni borrarse; una corrección se registra como un costo nuevo.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>El proveedor queda registrado con su plazo, confiabilidad y canal de contacto.</li>
+<li>El historial de costos suma las filas nuevas y el costo de reposición de los productos afectados queda actualizado.</li>
+<li>Los márgenes, la sugerencia de órdenes y el comparador reflejan los costos nuevos en la consulta siguiente.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-04 (plazo de entrega), RN-08, RN-10, RN-13 (confiabilidad).</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-02.1 a CP-02.7; CP-16.1 a CP-16.1c y CP-16.5b (canal de contacto).</td></tr>
+</table>
+
+<!-- ============================ CU-03 ============================ -->
+<h3>CU-03 Consultar rentabilidad</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-03 Consultar rentabilidad</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-03 Cálculo automático de rentabilidad. RF-04.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Dueño y Contador (lectura). El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web. El celular muestra sólo el consolidado del mes dentro del panel (CU-04).</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Productos con precio, alícuota y costo de reposición. Para el margen neto, gastos cargados en el mes (CU-13) y ventas registradas (CU-10).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario ingresa a «Rentabilidad».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario ingresa a «Rentabilidad».</li>
+<li>El sistema toma como período el mes actual.</li>
+<li>El sistema calcula para cada producto activo el precio de venta neto (precio con IVA dividido por uno más la alícuota del producto) y el margen bruto en pesos y en porcentaje sobre el precio neto (RN-01, RN-03).</li>
+<li>El sistema obtiene el gasto operativo por unidad vendida del mes (total de gastos aplicables dividido por las unidades vendidas no anuladas, CU-13) y calcula el margen neto unitario de cada producto en pesos y porcentaje (RN-02).</li>
+<li>El sistema calcula el consolidado del mes: ventas netas, costo de lo vendido al costo vigente, margen bruto total, gastos del mes y margen neto total, en pesos y en porcentaje.</li>
+<li>El sistema muestra el listado de productos en orden alfabético, con sus márgenes, las unidades vendidas y el margen bruto generado en el mes, junto con el consolidado.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Otro período o búsqueda.</b> El usuario elige otro mes, busca por código o nombre o avanza de página; el sistema recalcula para ese mes. Un mes mal formado se rechaza (400).</p>
+<p class="alt"><b>3a. Casos límite.</b> Un producto con precio neto menor al costo muestra margen negativo; un producto con precio cero muestra el margen bruto igual a menos su costo y el porcentaje sin calcular.</p>
+<p class="alt"><b>4a. Sin gastos cargados.</b> El sistema informa que el margen neto no es calculable porque faltan los gastos del mes, en lugar de mostrar un valor igual al bruto.</p>
+<p class="alt"><b>4b. Gastos sin ventas.</b> El sistema informa que el margen neto no es calculable porque no hubo ventas en el mes.</p>
+<p class="alt"><b>5a. Ventas anuladas.</b> Las ventas anuladas no forman parte de las unidades ni de los importes.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado no accede a la rentabilidad, que es información sensible (403).</p>
+<p class="alt"><b>E2. Aislamiento.</b> Los cálculos sólo consideran productos, ventas y gastos del propio comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>No se modifica ningún dato. Los márgenes se calculan en cada consulta, sin almacenarse, por lo que todo cambio de precio, alícuota, costo, venta o gasto se refleja en la consulta siguiente.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-02, RN-03, RN-08.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-03.1 a CP-03.7b.</td></tr>
+</table>
+
+<!-- ============================ CU-04 ============================ -->
+<h3>CU-04 Visualizar dashboard</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-04 Visualizar dashboard</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-04 Dashboard financiero. RF-05 (RNF-04).</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Los bloques de alertas de reposición, pérdidas por falta de stock y stock parado se muestran desde el plan Pro. Dueño y Contador; el Empleado no accede al panel.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, el panel resumido del mes con cuatro indicadores, los tres productos más rentables, las alertas y las tarjetas de análisis.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño o Contador.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario ingresa a «Inicio».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario ingresa a «Inicio».</li>
+<li>Si el plan incluye alertas y el último recálculo del comercio tiene más de una hora, el sistema recalcula las alertas de reposición antes de responder («extend» CU-06).</li>
+<li>El sistema calcula en una sola consulta los indicadores del mes: stock (productos activos, unidades, valorización al costo vigente, productos sin stock y con stock bajo); ventas (unidades vendidas, ventas netas, margen bruto y neto en pesos y porcentaje, gastos); comparación de unidades y ventas netas contra el mes anterior; hasta cinco productos más rentables por margen generado; alertas (sin stock, stock bajo, falta de gastos del mes y alertas de reposición); pérdidas por falta de stock de los últimos 30 días y stock parado de 90 días.</li>
+<li>El sistema presenta los indicadores con frases completas en lenguaje claro y enlaces a la acción que corresponde.</li>
+<li>Mientras la pantalla está abierta, el sistema vuelve a consultar los datos al menos cada 60 segundos y al recuperar el foco, sin botón de recarga.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Otro mes.</b> El usuario elige otro mes (en el celular, con la flecha hacia el mes anterior); el sistema muestra los indicadores de ese mes. Los bloques de pérdidas y de stock parado siempre corresponden a los últimos 30 y 90 días. Un mes inválido se rechaza (400).</p>
+<p class="alt"><b>3a. Plan Free.</b> El sistema no incluye los bloques de alertas de reposición, pérdidas ni stock parado; en el celular el bloque «Reposición» avisa que las alertas predictivas son del plan Pro.</p>
+<p class="alt"><b>3b. Sin ventas ni gastos.</b> El sistema muestra cero unidades vendidas, margen neto no calculable, la lista de más rentables vacía, la variación contra el mes anterior sin calcular y el aviso de gastos faltantes.</p>
+<p class="alt"><b>4a. Sin gastos del mes.</b> La web muestra «No se puede calcular el margen neto: cargá los gastos del mes» con un enlace a cargar gastos (CU-13); el celular muestra «No calculable» con la indicación «Cargá tus gastos del mes desde la web».</p>
+<p class="alt"><b>4b. Acceso a los análisis.</b> El usuario selecciona la tarjeta «Perdiste por falta de stock», «Plata parada en stock» o el bloque de reposición («Ver alertas») y continúa en CU-18, CU-19 o CU-06. En el celular, las tarjetas con monto cero no se muestran.</p>
+<p class="alt"><b>5a. Movimiento nuevo.</b> Una venta, un gasto o un costo registrados se reflejan en la consulta siguiente sin acción manual.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado no accede al panel (403): en la web ve su inicio operativo y en el celular su inicio es el inventario.</p>
+<p class="alt"><b>E2. Aislamiento.</b> Ningún indicador incluye datos de otro comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>No se modifican datos de negocio. Si correspondía, las alertas de reposición quedan recalculadas.</li>
+<li>El panel responde en menos de 3 segundos para un comercio con 5.000 productos y 50.000 movimientos (RNF-04).</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-02, RN-03, RN-04, RN-14, RN-15.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-04.1 a CP-04.5b; CP-18.7; CP-19.6; CP-M.2 a CP-M.2e; CP-M.11 a CP-M.11d.</td></tr>
+</table>
+
+<!-- ============================ CU-05 ============================ -->
+<h3>CU-05 Importar inventario</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-05 Importar inventario</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-05 Importación desde Excel (onboarding). RF-08.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Sin actores secundarios.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free, sujeto al límite de 50 productos activos. Sólo el Dueño.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño y comercio con nombre (CU-11a).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>Al terminar de nombrar el comercio, el Dueño elige «Importar desde Excel»; o, en cualquier momento, selecciona «Importar planilla» desde «Inventario».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El sistema ofrece importar el inventario desde Excel o cargarlo a mano.</li>
+<li>El Dueño elige importar.</li>
+<li>El sistema presenta el primer paso del asistente con la plantilla descargable («Descargar planilla de ejemplo»).</li>
+<li>El Dueño sube un archivo .xlsx o .csv con código, nombre y precio de venta (obligatorios) y costo, stock inicial, stock de seguridad, categoría y alícuota (opcionales).</li>
+<li>El sistema reconoce los encabezados y los formatos numéricos, valida cada fila con las reglas del alta de producto y la clasifica como «Nuevo», «Actualiza» (el código existe y está activo) o «Inválida» con el error por campo. Calcula un resumen con los conteos y si la importación superaría el límite de productos del plan. En este paso no registra nada.</li>
+<li>El sistema muestra la vista previa con los errores, la cantidad de productos que se van a crear y actualizar, y la opción de cancelar.</li>
+<li>El Dueño confirma.</li>
+<li>El sistema aplica las filas en una sola operación: crea los productos nuevos con su stock inicial registrado como ingreso con motivo «stock inicial» y actualiza en los existentes nombre, precio, costo, categoría, alícuota y stock de seguridad, sin modificar su stock actual; registra los precios en el historial de precios.</li>
+<li>El sistema muestra el resultado (por ejemplo, «3 productos creados») con un enlace a «Inventario».</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Carga manual.</b> El Dueño elige cargar a mano y continúa en CU-01.</p>
+<p class="alt"><b>5a. Archivo inválido.</b> Si el archivo no es .xlsx ni .csv, no tiene las columnas de código, nombre y precio o supera 5.000 filas, el sistema explica el problema (400).</p>
+<p class="alt"><b>5b. Filas con errores.</b> Una fila sin nombre, con precio negativo, con stock no numérico, con el código de un producto dado de baja (se sugiere reactivarlo) o con un código repetido en la planilla (se usa la primera fila) se marca como inválida con su motivo; las demás siguen válidas.</p>
+<p class="alt"><b>5c. Límite del plan.</b> Si los productos resultantes superan el límite del plan, la vista previa lo informa para que el Dueño decida.</p>
+<p class="alt"><b>6a. Cancelar.</b> En cualquier paso, el Dueño selecciona cancelar; vuelve al inicio o a «Inventario» y el catálogo no cambia.</p>
+<p class="alt"><b>8a. Límite del plan al confirmar.</b> Si al confirmar el comercio superaría el límite, el sistema no aplica ninguna fila e informa que se requiere el plan Pro (402).</p>
+<p class="alt"><b>8b. Fila que dejó de ser válida.</b> Si entre la vista previa y la confirmación una fila pasó a ser inválida, el sistema aplica las demás e informa la omitida con su código y motivo.</p>
+<p class="alt"><b>8c. Reimportación.</b> Confirmar de nuevo la misma planilla actualiza los productos sin duplicarlos ni registrar movimientos nuevos.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado y el Contador no pueden importar (403).</p>
+<p class="alt"><b>E2. Aislamiento.</b> Los códigos se comparan sólo contra el catálogo del propio comercio; un producto con el mismo código en otro comercio no se modifica.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Los productos nuevos quedan en el catálogo con su primer movimiento de stock y los existentes, actualizados.</li>
+<li>El historial de precios registra los precios importados.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-03, RN-05, RN-07, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-05.1 a CP-05.6; CP-15.2c.</td></tr>
+</table>
+
+<!-- ============================ CU-06 ============================ -->
+<h3>CU-06 Generar alerta de reposición</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-06 Generar alerta de reposición</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-06 Alertas predictivas de reposición. RF-06.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Sistema (proceso programado). Secundarios: Dueño / Administrador (recibe y gestiona las alertas), Contador / Asesor externo (consulta), Servicio de correo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño: consulta, recálculo a pedido y gestión. Contador: sólo consulta. El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, desde «Más», sección «Análisis», «Alertas de reposición», y en el bloque «Reposición» del inicio.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior y productos activos con ventas en los últimos 30 días.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El proceso diario de las 07:00; o la consulta de alertas o del panel cuando el último cálculo tiene más de una hora; o el Dueño selecciona «Recalcular ahora».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Sistema inicia el recálculo de alertas del comercio.</li>
+<li>El Sistema calcula para cada producto activo la velocidad diaria de venta (unidades vendidas no anuladas de los últimos 30 días dividido 30), el punto de reposición (velocidad por plazo de entrega del proveedor principal, o 7 días si no tiene, más stock de seguridad, RN-04), el umbral de alerta (velocidad por la suma del plazo y los días de anticipación del producto, más stock de seguridad), los días de cobertura y la cantidad sugerida para cubrir 30 días de venta más el plazo de entrega.</li>
+<li>Si el stock actual es menor o igual al umbral, el Sistema genera una alerta activa con severidad «Próxima al quiebre» o «Crítica» (cuando el stock no supera el punto de reposición) y guarda las cifras del cálculo.</li>
+<li>El Sistema marca como resueltas las alertas de los productos cuyo stock volvió a superar el umbral.</li>
+<li>Si el recálculo generó alertas nuevas, el Sistema envía, a través del Servicio de correo, un único resumen a los Dueños activos con producto, stock, días de cobertura y cantidad sugerida, y marca cada alerta como notificada.</li>
+<li>El Dueño ingresa a «Alertas».</li>
+<li>El sistema muestra el resumen (alertas activas, críticas y fecha del último cálculo) y la lista ordenada por días de cobertura, con producto, stock y stock de seguridad, ventas por día, cobertura, severidad, proveedor con su plazo y cantidad sugerida.</li>
+<li>El Dueño selecciona «Atendida» en una alerta.</li>
+<li>El sistema registra la alerta como atendida y la quita de las activas.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Sin ventas recientes.</b> Un producto sin ventas en los últimos 30 días no genera alerta predictiva; sigue cubierto por los avisos de sin stock y stock bajo del panel. Las ventas anuladas no cuentan para la velocidad.</p>
+<p class="alt"><b>3a. Alerta ya abierta.</b> Si el producto ya tiene una alerta activa o pospuesta, el Sistema actualiza sus cifras y su severidad; nunca hay más de una alerta abierta por producto.</p>
+<p class="alt"><b>5a. Sin alertas nuevas.</b> El Sistema no envía correo.</p>
+<p class="alt"><b>5b. Servicio de correo no configurado.</b> Las alertas se generan igual y el envío queda registrado, sin afectar la operación.</p>
+<p class="alt"><b>7a. Filtros.</b> El usuario filtra por activas, pospuestas o todas; en el celular la lista se pagina con «Cargar más». Sin alertas, el celular muestra «No hay productos por reponer.» con la explicación del cálculo.</p>
+<p class="alt"><b>8a. Posponer.</b> El Dueño selecciona «Posponer 7 días»; la alerta deja de contar entre las activas y, si al vencer el plazo el producto sigue en alerta, el recálculo la vuelve a activar.</p>
+<p class="alt"><b>8b. Registrar el ingreso.</b> El Dueño selecciona «Registrar ingreso» y continúa en CU-10 con el tipo Ingreso y el producto ya elegidos.</p>
+<p class="alt"><b>8c. Pedir la mercadería.</b> El Dueño continúa en CU-07, que sugiere órdenes a partir de las alertas activas; al confirmarse la orden, las alertas de sus productos quedan atendidas con referencia a ella.</p>
+<p class="alt"><b>8d. Ajustar la anticipación.</b> El Dueño modifica los días de anticipación del producto (CU-01, 0 a 90); el siguiente recálculo usa el nuevo umbral. Un valor fuera de rango se rechaza (400).</p>
+<p class="alt"><b>9a. Alerta atendida.</b> Un producto con alerta atendida no genera una alerta nueva hasta que se registre un ingreso posterior a la atención.</p>
+<p class="alt"><b>9b. Acción no válida.</b> Atender una alerta ya resuelta se rechaza por conflicto (409) y una acción desconocida por datos inválidos (400). En el celular, si otra persona ya cerró la alerta desde la web, se muestra el mensaje de la API y se recarga la lista.</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free las alertas no se calculan ni se consultan (402); la web muestra el aviso de plan y el celular explica que las alertas son del plan Pro sin consultar la API.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador consulta pero no puede atender, posponer ni recalcular (403) y no ve esos botones; el Empleado no accede (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> Cada comercio ve sólo sus alertas; operar sobre una alerta ajena se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Las alertas quedan persistidas con su estado (activa, pospuesta, atendida o resuelta) y las cifras del último cálculo.</li>
+<li>Cada alerta nueva se notifica por correo una sola vez.</li>
+<li>El recálculo de un comercio con 5.000 productos y 50.000 movimientos se completa en menos de 3 segundos (RNF-04).</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-04, RN-07 (las ventas anuladas no cuentan), RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-06.1 a CP-06.7; CP-04.1e; CP-M.9 a CP-M.9g; CP-M.11c y CP-M.11d.</td></tr>
+</table>
+
+<!-- ============================ CU-07 ============================ -->
+<h3>CU-07 Generar orden de compra</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-07 Generar orden de compra</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-07 Órdenes de compra en modo copiloto. RF-07.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundarios: Contador / Asesor externo (consulta), Proveedor (recibe la orden), Servicio de correo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño: sugerir, crear, editar, confirmar, cancelar y marcar como enviada. Contador: sólo consulta la sugerencia, el listado y el detalle, y copia el texto. El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En la web, el ciclo completo. En Android, desde «Más», sección «Compras»: listado por estado, detalle, edición de cantidades y eliminación de líneas del borrador, cancelación, confirmación con elección del canal y copia del texto. La creación de órdenes a partir de la sugerencia y el cambio de proveedor de un borrador se realizan desde la web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior. Para la sugerencia, alertas de reposición activas (CU-06) y proveedores con costos cargados (CU-02).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Órdenes» y selecciona «Orden sugerida» o «Nueva orden», o abre un borrador existente.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Órdenes» y selecciona «Orden sugerida».</li>
+<li>El sistema arma la sugerencia con las alertas activas de severidad crítica: agrupa los productos por el proveedor más conveniente (menor costo neto vigente entre los proveedores activos con precio; ante empate, menor plazo de entrega y luego mayor confiabilidad; sin precio cargado, el proveedor principal) e informa por producto la cantidad sugerida, el costo unitario, el subtotal y el motivo de la elección, y por grupo el total neto estimado y el plazo de entrega. La sugerencia no crea órdenes ni envía nada.</li>
+<li>El Dueño selecciona «Crear borrador» en un grupo («include» Crear borrador de orden).</li>
+<li>El sistema crea la orden en estado borrador con un número correlativo del comercio (por ejemplo, OC-0001), guarda por ítem el costo unitario neto vigente de ese proveedor y redacta automáticamente el asunto y el texto: saludo con el nombre y el contacto del proveedor, lista de productos con código, nombre, cantidad y costo (o «a confirmar»), total neto estimado, plazo de entrega esperado y firma con el comercio y los datos del dueño.</li>
+<li>El Dueño revisa el borrador y, si lo necesita, cambia cantidades, agrega o quita ítems, cambia el proveedor, edita las notas o reemplaza el texto.</li>
+<li>El sistema recalcula el total y vuelve a redactar el texto, salvo que el Dueño lo haya editado a mano.</li>
+<li>El Dueño selecciona el botón de confirmación, que indica el canal por el que sale la orden (por ejemplo, «Confirmar y enviar por correo») («include» Elegir canal de envío).</li>
+<li>El sistema resuelve el canal: el que el Dueño eligió o, si no eligió ninguno, el que corresponde al proveedor.</li>
+<li>El sistema registra la confirmación con usuario y fecha y pasa a atendidas, con referencia a la orden, las alertas abiertas de los productos incluidos.</li>
+<li>Con canal correo, el sistema envía el asunto y el texto al email del proveedor mediante el Servicio de correo, con el correo del dueño como dirección de respuesta, y deja la orden en estado enviada.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Orden manual.</b> El Dueño selecciona «Nueva orden», elige un proveedor activo e indica productos y cantidades; continúa en el paso 4.</p>
+<p class="alt"><b>1b. Borrador preparado por el asistente.</b> El Dueño abre un borrador creado desde CU-08 y continúa en el paso 5.</p>
+<p class="alt"><b>2a. Incluir próximas.</b> Con «Incluir próximas al quiebre», la sugerencia suma las alertas de severidad próxima; las pospuestas y las atendidas nunca se sugieren.</p>
+<p class="alt"><b>2b. Producto sin proveedor.</b> Un producto en alerta sin precios ni proveedor principal figura aparte como «sin proveedor» y no integra ninguna orden.</p>
+<p class="alt"><b>4a. Datos inválidos.</b> Una orden sin ítems, con cantidad cero, con un producto inactivo o con un proveedor dado de baja se rechaza (400); un producto o proveedor de otro comercio se informa como inexistente (404).</p>
+<p class="alt"><b>5a. Texto propio.</b> El texto editado a mano se conserva aunque cambien los ítems; «Volver al texto sugerido» restituye el texto generado.</p>
+<p class="alt"><b>5b. Cancelar el borrador.</b> El Dueño selecciona «Cancelar borrador» y confirma; la orden queda cancelada, se conserva en el listado y las alertas no cambian.</p>
+<p class="alt"><b>8a. Canal WhatsApp.</b> Si el canal es WhatsApp, continúa en CU-16 («extend»).</p>
+<p class="alt"><b>8b. Canal sin datos.</b> Si el Dueño elige un canal para el que al proveedor le faltan datos, el sistema rechaza la confirmación (400); la orden sigue en borrador y las alertas no cambian.</p>
+<p class="alt"><b>10a. Proveedor sin email ni teléfono.</b> La orden queda confirmada sin canal, con el motivo «sin email», y el sistema ofrece «Copiar texto» para enviarla por otro medio y «Ya la envié» para marcarla como enviada.</p>
+<p class="alt"><b>10b. Envío rechazado.</b> Si el Servicio de correo rechaza el envío, la orden queda confirmada con el motivo «envío fallido», sin error para el usuario.</p>
+<p class="alt"><b>10c. Orden ya cerrada.</b> Confirmar de nuevo, editar o cancelar una orden que ya no es borrador se rechaza por conflicto (409) y la orden no se reenvía. En el celular se muestra «Sólo se puede modificar una orden en borrador.» y la orden se recarga con su estado real.</p>
+<p class="alt"><b>11a. Consultar.</b> El usuario consulta el listado, de la más reciente a la más antigua, filtrado por estado (borrador, confirmada, enviada, cancelada o todas), y el detalle con ítems, asunto, texto y datos de confirmación y envío.</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free todas las operaciones de órdenes se rechazan (402); el celular explica que las órdenes son del plan Pro sin consultar la API.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador que intenta crear, editar, confirmar o cancelar recibe el aviso de falta de permiso (403) y no ve esos botones; el Empleado no accede (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> Cada comercio ve y opera sólo sus órdenes; una orden ajena se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>La orden queda confirmada o enviada con la trazabilidad de quién y cuándo la confirmó, el canal y el destinatario.</li>
+<li>Las alertas de los productos incluidos quedan atendidas con referencia a la orden.</li>
+<li>Ninguna orden sale hacia el proveedor sin la confirmación explícita del Dueño.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-04, RN-06, RN-08, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-07.1 a CP-07.6c; CP-06.5e; CP-M.13, CP-M.13b, CP-M.13c y CP-M.13f a CP-M.13l (Android, change «mobile-orders» en curso).</td></tr>
+</table>
+
+<!-- ============================ CU-08 ============================ -->
+<h3>CU-08 Consultar al asistente</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-08 Consultar al asistente</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-08 Asistente conversacional con IA. RF-10.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Servicio de IA (Anthropic).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Premium (RN-09). Sólo el Dueño; Contador y Empleado no acceden.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, desde «Más», sección «Asistente», «Asistente con IA».</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Premium activo, límite diario de 50 consultas por comercio no alcanzado y Servicio de IA disponible.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño abre «Asistente» y escribe una consulta o selecciona una pregunta sugerida.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño abre «Asistente».</li>
+<li>El sistema muestra el chat, preguntas sugeridas (por ejemplo, «¿Qué productos tengo que reponer?»), el historial de conversaciones y el aviso permanente de que las respuestas las genera un modelo de IA y conviene verificar los números importantes.</li>
+<li>El Dueño escribe una consulta de hasta 1.000 caracteres o selecciona una pregunta sugerida.</li>
+<li>El sistema valida la consulta, verifica el límite diario y la envía al Servicio de IA junto con los mensajes anteriores de la conversación y el catálogo de consultas predefinidas; mientras tanto muestra un indicador de espera («Consultando tus datos…» en el celular).</li>
+<li>El Servicio de IA solicita las consultas que necesita y el sistema las ejecuta únicamente sobre los datos del comercio del usuario, con un máximo de seis por respuesta: resumen de rentabilidad, productos más rentables, productos más vendidos, estado de stock y alertas de reposición, gastos del período, precios frente a la inflación, comparación de proveedores de un insumo, pérdidas por falta de stock, stock parado y búsqueda de productos y proveedores.</li>
+<li>El Servicio de IA redacta la respuesta en español con los datos obtenidos; toda cifra proviene de esas consultas.</li>
+<li>El sistema guarda la consulta y la respuesta en la conversación y muestra la respuesta con las consultas realizadas («Consulté: …»).</li>
+<li>El Dueño continúa la conversación con una pregunta de seguimiento o inicia una nueva con «Nueva conversación».</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Retomar una conversación.</b> El Dueño abre «Conversaciones», que lista las suyas de la más reciente a la más antigua, selecciona una y la continúa; el asistente tiene en cuenta sus mensajes anteriores.</p>
+<p class="alt"><b>3a. Consulta vacía o extensa.</b> Una consulta vacía o de más de 1.000 caracteres no se envía (400); en el celular el contador de caracteres se marca en rojo.</p>
+<p class="alt"><b>4a. Límite diario alcanzado.</b> El sistema informa que el límite se renueva al día siguiente (429); la consulta queda escrita en el campo.</p>
+<p class="alt"><b>4b. Servicio de IA no disponible.</b> Si el servicio no está configurado, no responde o falla, el sistema informa que el asistente no está disponible (503), no guarda la respuesta, no descuenta la consulta del límite y conserva la consulta escrita. El resto del sistema sigue funcionando.</p>
+<p class="alt"><b>5a. Consulta ajena al negocio.</b> El asistente la rechaza con amabilidad, sin ejecutar consultas, y propone ejemplos de preguntas sobre el negocio.</p>
+<p class="alt"><b>5b. Pedido de modificar datos.</b> Ante un pedido como cambiar un precio, el asistente responde que no puede modificar datos e indica dónde hacerlo; ningún dato cambia. El asistente tampoco confirma, envía ni cancela órdenes.</p>
+<p class="alt"><b>5c. Pedido de armar una orden.</b> Si el Dueño pide un pedido a un proveedor, el sistema crea una orden en borrador con los productos y cantidades indicados o surgidos de las alertas («extend» Crear borrador de orden). La respuesta muestra el número de la orden y aclara que es un borrador que todavía no se envió; la orden se revisa y se confirma en CU-07.</p>
+<p class="alt"><b>5d. Proveedor inexistente.</b> Si el proveedor no existe o está dado de baja, el asistente lo informa y no crea ninguna orden.</p>
+<p class="alt"><b>5e. Sin datos.</b> Si no hay datos para responder (por ejemplo, sin ventas en el período), el asistente lo dice sin informar productos ni cifras. Las pérdidas por falta de stock se presentan como estimación, y un producto sin historial suficiente, sin cifra.</p>
+<p class="alt"><b>5f. Instrucciones dentro de los datos.</b> Los nombres, notas y observaciones del comercio se tratan como datos y nunca como instrucciones.</p>
+<p class="alt"><b>5g. Período inválido.</b> Si una consulta predefinida recibe un período inválido, vuelve al asistente como error y este lo explica en palabras simples.</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En los planes Free y Pro el asistente y sus conversaciones se rechazan informando el plan Premium (402), sin consultar al modelo; la web y el celular muestran el aviso de plan.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador y el Empleado no acceden (403) y no ven la sección del asistente.</p>
+<p class="alt"><b>E3. Aislamiento.</b> El asistente sólo informa datos del comercio del usuario, aunque la pregunta pida otro comercio; una conversación ajena se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>La conversación queda guardada con sus mensajes, fuentes y acciones; los mensajes no se modifican.</li>
+<li>Como máximo, queda creada una orden en borrador; el asistente no envía ni modifica ningún otro dato.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-03, RN-06, RN-09, RN-10, RN-14, RN-15.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-08.1 a CP-08.8c; CP-M.12 a CP-M.12k; CP-M.8g.</td></tr>
+</table>
+
+<!-- ============================ CU-09 ============================ -->
+<h3>CU-09 Emitir reporte semanal</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-09 Emitir reporte semanal</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-09 Reportes semanales automáticos. RF-09.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Sistema (proceso programado). Secundarios: Dueño / Administrador, Contador / Asesor externo (consulta y puede ser destinatario adicional), Servicio de correo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño: genera, consulta y ajusta. Contador: consulta reportes y ajustes. El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web (el reporte llega además por correo).</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior y reportes activos en los ajustes (activos por defecto).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El proceso semanal de los lunes a las 08:00; o la consulta de «Reportes» cuando falta el de la última semana cerrada; o el Dueño selecciona «Generar el de esta semana».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Sistema identifica los comercios con plan Pro o superior y reportes activos.</li>
+<li>Para la semana recién cerrada (lunes a domingo, en horario de Buenos Aires), el Sistema calcula unidades vendidas, ventas netas, costo de lo vendido, margen bruto y su porcentaje, margen neto con el gasto por unidad del mes en que termina la semana, variación de ventas netas contra la semana anterior, hasta cinco productos estrella por margen generado y las alertas de reposición críticas abiertas.</li>
+<li>El Sistema calcula las oportunidades de ahorro: comprar más barato (productos cuyo costo vigente supera el menor costo de otro proveedor activo, con el ahorro estimado sobre las ventas de 30 días), capital inmovilizado (productos con stock y sin ventas en 30 días) y margen bajo (productos vendidos en la semana con margen bruto menor al 15 %).</li>
+<li>El Sistema guarda el reporte tal como se generó.</li>
+<li>El Sistema envía, mediante el Servicio de correo, un único correo con el asunto «Tu semana en {comercio}», los números, las estrellas, las oportunidades y un enlace al reporte, a los Dueños activos y a los destinatarios adicionales configurados.</li>
+<li>El Sistema registra los destinatarios y la fecha de envío.</li>
+<li>El Dueño o el Contador ingresa a «Reportes» y consulta el historial, de la semana más reciente a la más antigua, y el detalle de un reporte.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Generación bajo demanda.</b> Si al consultar «Reportes» falta el reporte de la última semana cerrada, el sistema lo genera y lo envía en ese momento.</p>
+<p class="alt"><b>1b. Generación a pedido.</b> El Dueño genera el reporte de la semana en curso o de una semana dada; regenerar reemplaza el contenido sin volver a enviar el correo, salvo que seleccione «Reenviar por correo». Una semana inválida se rechaza (400).</p>
+<p class="alt"><b>1c. Reportes desactivados.</b> Si el Dueño desactivó el envío, no se genera ni se envía nada automáticamente; la generación a pedido sigue disponible.</p>
+<p class="alt"><b>2a. Semana sin ventas.</b> El reporte se genera y se envía igual, con importes en cero, márgenes sin calcular con su motivo y sin estrellas.</p>
+<p class="alt"><b>3a. Sin oportunidades.</b> Las tres listas quedan vacías y el reporte lo informa en lenguaje claro.</p>
+<p class="alt"><b>5a. Correo no configurado o rechazado.</b> El reporte queda guardado sin fecha de envío y con el motivo correspondiente, sin error para el usuario.</p>
+<p class="alt"><b>5b. Reporte ya enviado.</b> Un nuevo proceso, una nueva consulta o una regeneración no crean otro reporte de la misma semana ni envían otro correo.</p>
+<p class="alt"><b>7a. Ajustes.</b> El Dueño activa o desactiva el envío y configura hasta cinco destinatarios adicionales; correos mal formados, repetidos o más de cinco se rechazan (400).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free los reportes se rechazan (402) y el proceso semanal omite al comercio.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador que intenta generar o cambiar los ajustes recibe el aviso de falta de permiso (403); el Empleado no accede (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> Cada comercio ve sólo sus reportes; uno ajeno se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Existe un único reporte por comercio y semana, guardado tal como se generó y enviado una sola vez.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-02, RN-03, RN-08, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-09.1 a CP-09.6c.</td></tr>
+</table>
+
+<!-- ============================ CU-10 ============================ -->
+<h3>CU-10 Registrar movimiento de stock</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-10 Registrar movimiento de stock</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-10 Registro de movimientos de stock. RF-13, RF-02.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Empleado / Operador o Dueño / Administrador. Secundario: Contador / Asesor externo (consulta del historial).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Dueño y Empleado registran y consultan; sólo el Dueño anula. El Contador consulta el historial.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, el registro de ventas, ingresos y ajustes desde la pestaña «Movimiento»; el historial y la anulación se realizan desde la web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño o Empleado y producto activo en el catálogo.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario selecciona «Registrar movimiento», «Vender» en un producto o «Registrar ingreso» en una alerta.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario selecciona «Registrar movimiento».</li>
+<li>El sistema presenta el formulario: tipo (venta, ingreso o ajuste), producto, cantidad, fecha (por defecto, el momento del registro), motivo y observación.</li>
+<li>El usuario elige el tipo Venta y el producto; el sistema muestra el precio de venta vigente, al que se registrará la venta.</li>
+<li>El usuario indica la cantidad y confirma.</li>
+<li>El sistema valida los datos (cantidad entera mayor a cero, fecha no futura, producto activo) y verifica que haya stock suficiente.</li>
+<li>El sistema registra el movimiento con el usuario, el efecto sobre el stock, el stock resultante y el precio unitario vigente, y actualiza el stock del producto en la misma operación.</li>
+<li>El sistema informa el resultado con el stock resultante (por ejemplo, «Venta registrada. Stock resultante: 8») y el estado de stock del producto.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Fecha retroactiva.</b> El usuario indica una fecha pasada; el movimiento se registra con esa fecha.</p>
+<p class="alt"><b>3a. Ingreso de mercadería.</b> El usuario elige Ingreso; el sistema solicita el motivo entre los admitidos para ese tipo (obligatorio en el celular) y una observación opcional (por ejemplo, el número de remito); la cantidad se suma al stock.</p>
+<p class="alt"><b>3b. Ajuste de inventario.</b> El usuario elige Ajuste; la cantidad puede ser positiva o negativa y el motivo es obligatorio (por ejemplo, rotura). Un ajuste sin motivo se rechaza (400).</p>
+<p class="alt"><b>5a. Stock insuficiente.</b> Una venta o un ajuste negativo mayor al stock disponible se rechaza informando el stock actual y la cantidad pedida (409); el stock no cambia.</p>
+<p class="alt"><b>5b. Datos inválidos.</b> Cantidad cero, negativa en una venta o un ingreso, o no entera, fecha futura, tipo desconocido u observación de más de 200 caracteres se rechazan (400); un producto inexistente se informa como tal (404) y uno dado de baja, como conflicto (409). No se registra nada.</p>
+<p class="alt"><b>6a. Reintento sin duplicar.</b> Si la respuesta se perdió por un corte de red y el usuario selecciona «Reintentar» sin cambiar el formulario, el movimiento queda registrado una sola vez.</p>
+<p class="alt"><b>6b. Registros simultáneos.</b> Varios movimientos simultáneos sobre el mismo producto se aplican en orden, sin perder unidades ni repetir stocks resultantes.</p>
+<p class="alt"><b>7a. Stock bajo.</b> Si el stock resultante queda por debajo del stock de seguridad, el sistema lo advierte (por ejemplo, «Quedan 4 unidades, por debajo del stock de seguridad (5)»).</p>
+<p class="alt"><b>8a. Consultar el historial.</b> El usuario consulta los movimientos del más reciente al más antiguo, con filtros por producto, tipo y rango de fechas; un rango inválido se rechaza (400).</p>
+<p class="alt"><b>8b. Anular un movimiento.</b> El Dueño selecciona un movimiento del historial, elige «Anular» e indica una observación; el sistema registra un ajuste inverso que referencia al original y devuelve el stock al valor previo, y el original queda marcado como anulado (RN-07). Anular dos veces, anular una anulación o una anulación que dejaría el stock negativo se rechazan (409); el Empleado no puede anular (403).</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Contador consulta el historial pero no registra ni anula (403); en el celular no tiene acceso a la pantalla de registrar movimiento. El Empleado registra y consulta sin ver costos ni márgenes.</p>
+<p class="alt"><b>E2. Inmutabilidad.</b> Los movimientos no pueden modificarse ni eliminarse; la corrección es siempre una anulación.</p>
+<p class="alt"><b>E3. Aislamiento.</b> Registrar sobre un producto de otro comercio, o consultar o anular un movimiento ajeno, se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>El movimiento queda registrado de forma inmutable y el stock del producto, actualizado.</li>
+<li>El historial alimenta la velocidad de venta (RN-04), la rentabilidad, el panel, la falta de stock y el stock parado.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-04, RN-07, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-10.1 a CP-10.10; CP-M.4 a CP-M.4g; CP-M.9c.</td></tr>
+</table>
+
+<!-- ============================ CU-11a ============================ -->
+<h3>CU-11a Registrarse e iniciar sesión</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-11a Registrarse e iniciar sesión</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-11 Gestión de usuarios y acceso (criterios 1, 2 y 5). RF-11 (RNF-03, RNF-10).</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: cualquier usuario (Dueño, Empleado o Contador) o persona sin cuenta. Secundario: Firebase Authentication.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Todos los roles.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>La persona dispone de un email o de una cuenta de Google.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>La persona abre la web o la aplicación sin una sesión vigente.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>La persona selecciona «Crear cuenta».</li>
+<li>El sistema solicita los datos de registro: en la web, nombre del comercio, email, contraseña de al menos 8 caracteres y la aceptación de los términos y la política de privacidad; en el celular, nombre, email y contraseña.</li>
+<li>La persona completa los datos; Firebase Authentication registra la identidad y emite la credencial.</li>
+<li>El sistema verifica la credencial y, como la identidad es nueva y su email no tiene una invitación pendiente, crea en una única operación un comercio con plan Free y un usuario con rol Dueño vinculado a esa identidad (RN-10).</li>
+<li>Si el nombre del comercio está pendiente, el sistema lo solicita en una pantalla única y no muestra el resto de las funciones hasta completarlo.</li>
+<li>El Dueño ingresa el nombre del comercio (2 a 120 caracteres) y el sistema lo guarda.</li>
+<li>En la web, el sistema ofrece importar el inventario desde Excel (CU-05) o cargarlo a mano (CU-01); luego muestra el inicio que corresponde al rol.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Iniciar sesión.</b> La persona ya registrada ingresa con email y contraseña o selecciona «Continuar con Google»; Firebase Authentication la autentica y el sistema devuelve su usuario, comercio, rol y plan, y muestra el inicio de su rol (en el celular: Dueño con Inicio, Inventario, Movimiento y Más; Empleado con Inventario, Movimiento y Más; Contador con Inicio y Más).</p>
+<p class="alt"><b>1b. Sesión persistente.</b> En el celular, al volver a abrir la aplicación con una sesión vigente, la persona entra directo a su inicio.</p>
+<p class="alt"><b>2a. Datos de registro inválidos.</b> Una contraseña de menos de 8 caracteres o la falta de aceptación de los términos se informan sin crear la cuenta.</p>
+<p class="alt"><b>3a. Credenciales incorrectas.</b> El sistema informa «El email o la contraseña no son correctos.» y permanece en la pantalla de acceso.</p>
+<p class="alt"><b>3b. Google no disponible en la instalación Android.</b> El celular explica que el ingreso con Google no está disponible en esa instalación y que puede ingresar con email y contraseña.</p>
+<p class="alt"><b>4a. Invitación pendiente.</b> Si el email tiene una invitación pendiente (CU-11b), el sistema vincula la identidad al usuario invitado, no crea otro comercio y la persona ingresa al comercio que la invitó con el rol asignado.</p>
+<p class="alt"><b>4b. Ingresos posteriores.</b> Los ingresos de una identidad que ya tiene usuario, aun simultáneos, no crean comercios ni usuarios adicionales.</p>
+<p class="alt"><b>6a. Nombre inválido.</b> Un nombre vacío o fuera de rango se rechaza (400).</p>
+<p class="alt"><b>8a. Cerrar sesión.</b> El usuario cierra la sesión (en el celular, desde «Más», «Cerrar sesión»); vuelve a la pantalla de acceso y no queda sesión guardada.</p>
+<p class="alt"><b>E1. Sesión no válida.</b> Toda solicitud sin credencial o con una credencial vencida o alterada se rechaza sin exponer datos (401); el celular cierra la sesión local y vuelve al acceso con un mensaje.</p>
+<p class="alt"><b>E2. Usuario dado de baja.</b> Un usuario desactivado por el Dueño recibe el aviso de que su acceso fue dado de baja aunque su credencial sea válida (403); el celular cierra la sesión con el mensaje correspondiente.</p>
+<p class="alt"><b>E3. Aislamiento.</b> Cada solicitud resuelve el comercio y el rol a partir de la identidad autenticada; todo identificador de negocio es no adivinable y ninguna consulta, incluso sin filtro explícito, devuelve datos de otro comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>La identidad queda vinculada a un único usuario y a un único comercio.</li>
+<li>Para un registro nuevo, existe un comercio en plan Free con su Dueño y su nombre.</li>
+<li>La sesión queda vigente y cada solicitud se resuelve con el rol y el plan actuales.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-11.1 a CP-11.1c; CP-11.2 a CP-11.2c; CP-11.3b; CP-11.5 a CP-11.5d; CP-11.6; CP-14.1; CP-M.1 a CP-M.1i; CP-M.8 y CP-M.8b.</td></tr>
+</table>
+
+<!-- ============================ CU-11b ============================ -->
+<h3>CU-11b Gestionar usuarios y datos del comercio</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-11b Gestionar usuarios y datos del comercio</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-11 Gestión de usuarios y acceso (criterios 3, 4 y 5). RF-11, RF-15 (límite de usuarios).</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundarios: Empleado y Contador (usuarios invitados o modificados).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free; invitar a un segundo usuario requiere plan Pro. Sólo el Dueño.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Usuarios» o a «Comercio».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Usuarios».</li>
+<li>El sistema lista los usuarios del comercio con su email, rol y estado (activo, invitado o dado de baja).</li>
+<li>El Dueño selecciona «Invitar a alguien» e indica el email y el rol (Dueño, Empleado o Contador).</li>
+<li>El sistema valida el email, verifica el límite de usuarios del plan y que el email no pertenezca a un usuario de ningún comercio.</li>
+<li>El sistema crea el usuario en estado invitado, sin identidad vinculada, y lo muestra en el listado.</li>
+<li>Cuando la persona invitada ingresa por primera vez con ese email, queda vinculada al comercio con el rol asignado (CU-11a, 4a).</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>3a. Cambiar el rol.</b> El Dueño cambia el rol de un usuario; el cambio rige desde la siguiente solicitud del usuario afectado, sin que deba volver a iniciar sesión.</p>
+<p class="alt"><b>3b. Desactivar o reactivar.</b> El Dueño desactiva un usuario, que pierde el acceso desde su siguiente solicitud, o reactiva uno dado de baja.</p>
+<p class="alt"><b>3c. Datos del comercio.</b> El Dueño ingresa a «Comercio» y modifica el nombre, el CUIT o la alícuota de IVA por defecto, que se aplica a los productos nuevos sin alícuota indicada; el sistema devuelve el comercio actualizado.</p>
+<p class="alt"><b>3d. Único dueño activo.</b> Si el único Dueño activo intenta cambiar su propio rol o desactivarse, el sistema lo rechaza y explica que el comercio necesita al menos un dueño activo (400).</p>
+<p class="alt"><b>4a. Límite del plan.</b> En plan Free, que ya tiene su Dueño, la invitación se rechaza informando que se requiere el plan Pro (402) y no se crea.</p>
+<p class="alt"><b>4b. Email en uso.</b> Si el email ya pertenece a un usuario de cualquier comercio, el sistema informa que está en uso (409), porque un usuario pertenece a un único comercio.</p>
+<p class="alt"><b>4c. Email inválido.</b> Un email mal formado se rechaza (400).</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado y el Contador no pueden listar, invitar ni modificar usuarios ni los datos del comercio (403).</p>
+<p class="alt"><b>E2. Aislamiento.</b> Un usuario de otro comercio se informa como inexistente (404) y no cambia.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Los usuarios del comercio quedan con el rol y el estado asignados, y los permisos se aplican en cada solicitud: Dueño con acceso total; Empleado con catálogo y movimientos, sin costos ni márgenes; Contador con sólo lectura.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-06 (sólo el rol Dueño confirma órdenes), RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-11.2d; CP-11.3 a CP-11.3f; CP-11.4 a CP-11.4d; CP-11.5b; CP-11.7 y CP-11.7b; CP-14.4.</td></tr>
+</table>
+
+<!-- ============================ CU-12 ============================ -->
+<h3>CU-12 Comparar proveedores</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-12 Comparar proveedores</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-12 Comparador de precios entre proveedores. RF-12.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Sin actores secundarios.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Premium. Sólo el Dueño; Contador y Empleado no acceden, igual que en proveedores y costos.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Premium; productos con costos cargados por dos o más proveedores activos (CU-02).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Comparador» desde «Proveedores».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Comparador».</li>
+<li>El sistema calcula, en el momento y con los costos vigentes, para cada producto activo con dos o más proveedores comparables, el puntaje de cada proveedor: 0,60 por precio, más 0,25 por plazo de entrega, más 0,15 por confiabilidad, cada componente de 0 a 100 relativo a los proveedores comparados (RN-13); identifica el recomendado (mayor puntaje), el más barato y el principal actual, y estima el ahorro mensual como la diferencia de costo entre el principal y el recomendado por las unidades vendidas en los últimos 30 días.</li>
+<li>El sistema muestra los totales en lenguaje claro (insumos comparables, cuántos conviene cambiar y ahorro estimado) y la lista de insumos ordenada por ahorro, con el recomendado, el principal y el ahorro.</li>
+<li>El Dueño abre el detalle de un insumo.</li>
+<li>El sistema muestra cada proveedor con su costo vigente y desde cuándo rige, plazo, confiabilidad, diferencia porcentual contra el más barato y una barra con el puntaje y sus tres componentes; marca el recomendado y el principal y explica cómo se calcula el puntaje.</li>
+<li>El Dueño selecciona «Usar como principal» en el proveedor recomendado y confirma.</li>
+<li>El sistema establece ese proveedor como principal del producto; el costo de reposición pasa al de ese proveedor y los márgenes se recalculan («extend» Actualizar costo vigente y recalcular márgenes). El insumo deja de figurar entre los que conviene cambiar.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Sin principal o sin ventas.</b> Un insumo sin proveedor principal, o con principal distinto del recomendado y sin ventas en 30 días, figura como cambio conveniente sin ahorro estimable.</p>
+<p class="alt"><b>3a. Sólo oportunidades.</b> Con «Sólo los que conviene cambiar», el sistema lista únicamente los insumos cuyo recomendado no es el proveedor principal.</p>
+<p class="alt"><b>5a. Uno o ningún proveedor.</b> Con un solo proveedor, el detalle lo puntúa y lo recomienda, pero indica que el insumo no es comparable; sin proveedores, la lista está vacía y no hay recomendado.</p>
+<p class="alt"><b>5b. Costos considerados.</b> De cada proveedor sólo cuenta su costo más reciente, y los proveedores dados de baja no se comparan.</p>
+<p class="alt"><b>5c. Empate.</b> Ante igual puntaje, se recomienda el de menor costo, luego el de menor plazo, luego el de mayor confiabilidad y por último el primero por nombre.</p>
+<p class="alt"><b>6a. Cancelar.</b> El Dueño no confirma el cambio; el proveedor principal no cambia.</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En los planes Free y Pro el comparador se rechaza informando el plan Premium (402); la web muestra el aviso con el enlace a «Plan» y ningún dato.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador y el Empleado no acceden (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> La comparación de un producto de otro comercio se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Los puntajes no se almacenan: toda carga o importación de costos, cambio de plazo o confiabilidad, o baja de un proveedor se refleja en la consulta siguiente.</li>
+<li>Si el Dueño lo eligió, el producto queda con el nuevo proveedor principal y su costo de reposición actualizado.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-08, RN-10, RN-13.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-12.1 a CP-12.6b.</td></tr>
+</table>
+
+<!-- ============================ CU-13 ============================ -->
+<h3>CU-13 Administrar gastos</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-13 Administrar gastos</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-13 Gestión de gastos operativos. RF-14.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo (consulta).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Dueño: todas las operaciones. Contador: consulta del listado, el detalle y el resumen. El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado con rol Dueño (o Contador para consultar).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Gastos».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Gastos».</li>
+<li>El sistema muestra, para el mes actual, los gastos aplicables con el importe que corresponde al mes, los totales de fijos, variables y general, y el resumen del prorrateo (unidades vendidas y gasto por unidad).</li>
+<li>El Dueño selecciona agregar un gasto.</li>
+<li>El sistema solicita concepto, tipo (fijo o variable), importe neto sin IVA, período (mes), periodicidad (único, mensual o anual), mes de fin opcional para los recurrentes y notas.</li>
+<li>El Dueño completa los datos y guarda.</li>
+<li>El sistema valida los datos y registra el gasto con el usuario que lo cargó.</li>
+<li>El sistema recalcula los gastos del mes (los únicos por su importe completo en su mes; los mensuales en cada mes desde su período hasta su fin; los anuales por un doceavo durante doce meses) y el gasto por unidad, igual al total del mes dividido por las unidades vendidas no anuladas, que alimenta el margen neto (CU-03, CU-04).</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Otro mes o filtro.</b> El usuario elige otro mes o filtra por tipo; un período mal formado se rechaza (400).</p>
+<p class="alt"><b>3a. Modificar un gasto.</b> El Dueño edita un gasto existente; el sistema valida, guarda y recalcula el mes.</p>
+<p class="alt"><b>3b. Eliminar un gasto.</b> El Dueño elimina un gasto; deja de existir y de figurar en el mes.</p>
+<p class="alt"><b>6a. Datos inválidos.</b> Concepto vacío, importe cero o negativo, tipo o periodicidad desconocidos, período mal formado o fin anterior al período se rechazan señalando cada campo (400).</p>
+<p class="alt"><b>7a. Sin gastos.</b> El gasto por unidad y el margen neto se informan como no calculables por falta de gastos, nunca como cero.</p>
+<p class="alt"><b>7b. Gastos sin ventas.</b> El gasto por unidad y el margen neto se informan como no calculables por falta de ventas.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Contador consulta pero no crea, modifica ni elimina (403); el Empleado no accede (403).</p>
+<p class="alt"><b>E2. Aislamiento.</b> Un gasto de otro comercio se informa como inexistente (404) y el resumen sólo cuenta ventas del propio comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Los gastos del mes y el gasto por unidad quedan actualizados, y el margen neto de CU-03 y CU-04 los refleja en la consulta siguiente.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-02, RN-03, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-13.1 a CP-13.6b.</td></tr>
+</table>
+
+<!-- ============================ CU-14 ============================ -->
+<h3>CU-14 Gestionar plan</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-14 Gestionar plan</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-14 Gestión de plan y suscripción. RF-15.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundarios: Empleado y Contador (consulta del plan).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Free. Todos los roles consultan; sólo el Dueño cambia el plan.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web. En Android, «Más» muestra el plan vigente e indica que el plan se cambia desde la web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Usuario autenticado y activo.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario ingresa a «Plan», o sigue el enlace de un aviso de funcionalidad no incluida en su plan.</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario ingresa a «Plan».</li>
+<li>El sistema muestra el plan vigente, el uso actual contra los límites (productos activos y usuarios activos) y la comparación de los tres planes con sus funcionalidades y el plan mínimo de cada una.</li>
+<li>El Dueño elige otro plan.</li>
+<li>El sistema presenta una confirmación que informa qué funcionalidades se habilitan o dejan de estar disponibles y aclara que el cambio no tiene cobro.</li>
+<li>El Dueño confirma.</li>
+<li>El sistema evalúa la regla de cambio, actualiza el plan del comercio y registra el cambio en el historial con el plan anterior, el nuevo, el usuario y la fecha.</li>
+<li>El cambio rige desde la siguiente solicitud de cualquier usuario del comercio, sin cerrar sesión: las funcionalidades del plan nuevo quedan habilitadas o bloqueadas de inmediato.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Comercio nuevo.</b> Todo comercio se da de alta en plan Free (CU-11a) y su historial de cambios está vacío.</p>
+<p class="alt"><b>1b. Funcionalidad bloqueada.</b> Toda funcionalidad no incluida en el plan vigente se rechaza informando el plan mínimo requerido (402), que coincide con el informado en «Plan»; el aviso enlaza a esa página. En plan Free, el alta del producto 51 o la invitación de un segundo usuario se rechazan del mismo modo.</p>
+<p class="alt"><b>2a. Historial.</b> El Dueño consulta el historial de cambios de plan, del más reciente al más antiguo; los registros no pueden modificarse ni borrarse.</p>
+<p class="alt"><b>6a. Bajar a Free por encima de los límites.</b> Si el comercio tiene más de 50 productos activos o más de 1 usuario activo, el sistema rechaza el cambio e informa la cantidad y el límite de cada recurso (409); el plan no cambia. El Dueño da de baja lo que sobra (CU-01, CU-11b) y vuelve a intentar. Los usuarios dados de baja no cuentan.</p>
+<p class="alt"><b>6b. Pedido inválido.</b> Pedir el plan vigente se rechaza por conflicto (409) y un plan inexistente por datos inválidos (400); no se registra nada.</p>
+<p class="alt"><b>7a. Bajar de plan.</b> Al bajar de plan no se borran datos: órdenes, reportes, remarcaciones, alertas y conversaciones quedan guardados, se rechazan mientras el plan no los incluya y vuelven a estar disponibles al subir.</p>
+<p class="alt"><b>E1. Rol sin permiso.</b> El Empleado y el Contador consultan el plan pero no pueden cambiarlo (403) y no ven los botones de cambio.</p>
+<p class="alt"><b>E2. Aislamiento.</b> Un comercio ve y cambia sólo su propio plan y su historial.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>El comercio queda en el plan elegido, con el cambio registrado en el historial, y las funcionalidades habilitadas o bloqueadas de inmediato.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-09, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-14.1 a CP-14.6c; CP-01.6 y CP-01.6b; CP-11.7 y CP-11.7b; CP-M.8c.</td></tr>
+</table>
+
+<!-- ============================ CU-15 ============================ -->
+<h3>CU-15 Comparar precios con la inflación</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-15 Comparar precios con la inflación</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-15 Mis precios frente a la inflación. RF-16 (RNF-08).</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundarios: Contador / Asesor externo (consulta), Fuentes oficiales INDEC y BCRA, Sistema (actualización diaria de indicadores).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro para la comparación y el historial de precios; los indicadores económicos están disponibles en cualquier plan. Dueño y Contador consultan la comparación; el Empleado sólo ve los indicadores.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior, ventas registradas en el período e indicadores obtenidos al menos una vez.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño ingresa a «Precios e inflación».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño ingresa a «Precios e inflación».</li>
+<li>El sistema obtiene los indicadores guardados (índice de precios al consumidor nivel general y bienes, inflación mensual e interanual y tipo de cambio minorista, con fecha y fuente); si la última actualización tiene más de 24 horas, los consulta antes en las Fuentes oficiales INDEC y BCRA.</li>
+<li>El sistema calcula, para los últimos 6 meses completos hasta el último mes con índice publicado, las series mensuales en índice base 100 de los precios y los costos propios (canasta fija de los productos activos con ventas, ponderada por unidades vendidas) y del índice general y de bienes; la variación de cada serie y las brechas reales entre precios e inflación y entre precios y costos (RN-11).</li>
+<li>El sistema calcula para cada producto activo el precio y el costo inicial y final, sus variaciones, la variación real del precio contra el índice, el estado («Atrasado» por debajo de −2 %, «Adelantado» por encima de +2 %, «Alineado» en el medio), el precio sugerido para alcanzar la inflación y el precio sugerido para sostener el margen bruto inicial con el costo final.</li>
+<li>El sistema muestra el gráfico de líneas con leyenda, una tabla alternativa con los mismos datos, las variaciones en lenguaje claro (por ejemplo, «Tus precios subieron 18 % y la inflación 20 %: en términos reales bajaron 1,7 %») y la tabla de productos del más atrasado al más adelantado.</li>
+<li>El Dueño cambia el período a 3, 6 o 12 meses y el sistema recalcula.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Contexto en el inicio.</b> El inicio muestra la tarjeta «Contexto» con la inflación mensual e interanual, el dólar minorista y el stock valorizado en dólares, citando la fuente y la fecha de cada dato.</p>
+<p class="alt"><b>2a. Actualización programada.</b> El Sistema actualiza los indicadores una vez por día a las 09:00; las consultas no vuelven a consultar las fuentes mientras el dato tenga menos de 24 horas.</p>
+<p class="alt"><b>2b. Fuente no disponible.</b> Si una fuente responde con error o no responde en 10 segundos, el sistema utiliza el último dato guardado, lo marca como desactualizado e informa la fecha de la última actualización, sin fallar. Sin datos guardados, los indicadores se muestran vacíos y marcados como desactualizados.</p>
+<p class="alt"><b>3a. Período recortado.</b> Si el período pedido excede el último mes con índice publicado, el sistema lo recorta a ese mes y lo informa.</p>
+<p class="alt"><b>3b. Sin ventas en el período.</b> Las series propias se informan vacías con su motivo y la serie del índice se muestra completa.</p>
+<p class="alt"><b>3c. Período inválido.</b> Un inicio posterior al fin, un período de más de 24 meses o un formato distinto de año y mes se rechazan (400).</p>
+<p class="alt"><b>4a. Sin historial de costos.</b> Un producto sin historial de costos de su proveedor muestra variación de costo nula y el precio sugerido por margen igual a su precio inicial.</p>
+<p class="alt"><b>5a. Remarcar.</b> El Dueño selecciona «Remarcar» y continúa en CU-17 («extend»).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free la comparación se rechaza (402); los indicadores siguen disponibles.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Empleado no accede a la comparación ni al historial de precios (403), porque incluyen costos.</p>
+<p class="alt"><b>E3. Aislamiento.</b> La comparación sólo incluye productos del comercio y el historial de precios de un producto ajeno se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>La consulta no modifica ningún precio: los precios sugeridos son informativos.</li>
+<li>Los indicadores quedan guardados con su fecha y su fuente.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-08, RN-10, RN-11.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-15.1 a CP-15.6b.</td></tr>
+</table>
+
+<!-- ============================ CU-16 ============================ -->
+<h3>CU-16 Enviar la orden por WhatsApp</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-16 Enviar la orden por WhatsApp</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-16 Enviar la orden por WhatsApp. RF-17.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Proveedor (recibe el mensaje en su WhatsApp).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Sólo el Dueño confirma y marca como enviada; el Contador consulta y copia el texto; el Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Orden en borrador (CU-07) para un proveedor con un teléfono que permite obtener un número de WhatsApp válido y cuyo canal es WhatsApp, o elegido por el Dueño. WhatsApp disponible en el dispositivo del Dueño (aplicación o WhatsApp Web). El sistema no utiliza la API de WhatsApp Business: el mensaje sale del teléfono del Dueño.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño, en un borrador, selecciona «Confirmar y enviar por WhatsApp».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño abre el borrador; el botón de confirmación indica que la orden sale por WhatsApp y todavía no existe ningún enlace de envío.</li>
+<li>El Dueño selecciona «Confirmar y enviar por WhatsApp» (en la web, un solo clic, sin diálogo intermedio).</li>
+<li>El sistema confirma la orden como en CU-07 (registro de la confirmación y atención de las alertas), con canal WhatsApp, sin enviar ningún correo; la orden queda confirmada.</li>
+<li>El sistema arma el mensaje con el asunto en la primera línea y el texto de la orden debajo, tal como el Dueño lo dejó, generado o editado.</li>
+<li>El sistema genera el enlace de WhatsApp con el número normalizado del proveedor y el mensaje, y muestra «Abrir WhatsApp».</li>
+<li>El Dueño selecciona «Abrir WhatsApp»; se abre WhatsApp en el chat del proveedor con el mensaje ya escrito.</li>
+<li>El Dueño envía el mensaje desde su propio WhatsApp; el Proveedor lo recibe fuera del sistema.</li>
+<li>El Dueño vuelve a la orden y selecciona «Ya la envié».</li>
+<li>El sistema marca la orden como enviada, con canal WhatsApp, el teléfono del proveedor como destinatario y la fecha, y lo informa (por ejemplo, «Enviada por WhatsApp a {teléfono} el {fecha}.»).</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Elegir el canal.</b> Si el proveedor tiene correo y WhatsApp, el Dueño elige el canal en el momento de confirmar («Enviar por» en el celular); al elegir correo, la orden continúa en CU-07, paso 10.</p>
+<p class="alt"><b>2a. Proveedor sin WhatsApp válido.</b> Si el teléfono del proveedor no permite obtener un número válido (por ejemplo, sin código de área), la confirmación por WhatsApp se rechaza (400); la orden sigue en borrador y las alertas no cambian.</p>
+<p class="alt"><b>4a. Mensaje extenso.</b> Si el mensaje supera los 3.000 caracteres, el sistema lo recorta en un salto de línea y agrega una nota que indica que el detalle completo se envía aparte; el texto completo sigue disponible para copiar.</p>
+<p class="alt"><b>7a. El Dueño no envía.</b> Mientras la orden esté confirmada, el enlace sigue disponible para volver a abrir WhatsApp. El sistema no puede saber si el mensaje salió, por lo que no marca la orden como enviada hasta que el Dueño lo indique.</p>
+<p class="alt"><b>8a. Otro medio.</b> En una orden confirmada sin canal, el Dueño selecciona «Copiar texto», la envía por otro medio y selecciona «Ya la envié»; la orden queda enviada con canal «otro» y sin destinatario.</p>
+<p class="alt"><b>8b. Orden no confirmada.</b> Marcar como enviada una orden en borrador, ya enviada o cancelada se rechaza por conflicto (409).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free se rechaza (402).</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador y el Empleado no pueden confirmar ni marcar como enviada (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> Una orden de otro comercio se informa como inexistente (404) y no cambia.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>La orden queda confirmada con el enlace de WhatsApp disponible o, tras «Ya la envié», enviada con canal, destinatario y fecha. En el caso de WhatsApp, «enviada» significa que el Dueño declaró haberla enviado.</li>
+<li>Ningún mensaje sale sin la confirmación y la acción explícita del Dueño.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-06, RN-10.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-16.1 a CP-16.5b; CP-M.13d a CP-M.13g (Android, change «mobile-orders» en curso).</td></tr>
+</table>
+
+<!-- ============================ CU-17 ============================ -->
+<h3>CU-17 Remarcar precios en lote</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-17 Remarcar precios en lote</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-17 Remarcación asistida. RF-18.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo (vista previa y lotes).</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño: vista previa, aplicación, listado y deshacer. Contador: sólo vista previa y lotes. El Empleado no accede.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Web.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior y productos activos con precio; para los criterios de inflación y margen, la comparación de CU-15.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El Dueño selecciona «Remarcar» en «Precios e inflación».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El Dueño selecciona «Remarcar» en «Precios e inflación».</li>
+<li>El sistema abre el asistente de remarcación con los productos atrasados y el criterio de inflación del período que se estaba consultando.</li>
+<li>El Dueño ajusta, si lo necesita, el criterio (alcanzar la inflación, sostener el margen, porcentaje fijo o margen objetivo), sus parámetros y el redondeo (ninguno, al peso, a la decena o a la centena), quita productos o ajusta a mano el precio nuevo de alguno.</li>
+<li>El sistema calcula la vista previa sin modificar datos: por producto, el precio actual, el nuevo, la variación, el margen bruto actual y el nuevo, y el resultado (sube, baja, sin cambio o sin datos), con un resumen de cuántos productos suben.</li>
+<li>El Dueño selecciona aplicar y confirma.</li>
+<li>El sistema verifica que cada producto siga activo, que su precio actual coincida con el de la vista previa y que el precio nuevo sea mayor a cero y distinto del actual.</li>
+<li>El sistema actualiza todos los precios en una sola operación, registra cada cambio en el historial de precios con origen remarcación y crea un lote con el criterio, sus parámetros, el usuario, la fecha y el precio anterior y nuevo de cada producto (RN-12).</li>
+<li>El sistema informa cuántos productos se remarcaron; los precios nuevos se ven en «Inventario» y el lote aparece en «Remarcaciones».</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>1a. Otra selección.</b> El Dueño elige los productos por lista, por estado frente a la inflación o todos.</p>
+<p class="alt"><b>4a. Protección contra bajas.</b> Un precio nuevo menor o igual al actual se informa como «sin cambio» y conserva el precio actual, salvo que el Dueño permita bajas explícitamente (RN-12).</p>
+<p class="alt"><b>4b. Sin datos.</b> Si el criterio no puede calcularse para un producto (por ejemplo, margen objetivo con costo cero), se informa como «sin datos» y no se remarca.</p>
+<p class="alt"><b>4c. Parámetros inválidos.</b> Porcentaje faltante o mayor a 500, margen objetivo de 100 o criterio desconocido se rechazan (400).</p>
+<p class="alt"><b>6a. Precio cambiado.</b> Si el precio de algún producto cambió desde la vista previa, el sistema no aplica ningún cambio e informa los productos afectados con su precio actual (409).</p>
+<p class="alt"><b>6b. Datos inválidos.</b> Una remarcación sin productos, con productos repetidos, con precio nuevo cero o igual al actual, con un producto dado de baja o con más de 5.000 productos se rechaza (400); un producto de otro comercio se informa como inexistente (404). En ningún caso cambia un precio.</p>
+<p class="alt"><b>9a. Deshacer.</b> El Dueño ingresa a «Remarcaciones», que lista los lotes del más reciente al más antiguo, elige uno, selecciona deshacer y confirma. Los productos cuyo precio sigue siendo el remarcado vuelven al anterior, con su fila en el historial; los que cambiaron después no se tocan y se informan como omitidos.</p>
+<p class="alt"><b>9b. Ya revertido.</b> Deshacer un lote ya revertido se rechaza (409).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free se rechaza (402).</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Contador consulta la vista previa y los lotes pero no puede aplicar ni deshacer (403) y no ve esos botones; el Empleado no accede (403).</p>
+<p class="alt"><b>E3. Aislamiento.</b> Cada comercio ve y opera sólo sus productos y sus lotes; un lote ajeno se informa como inexistente (404).</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>Los precios quedan actualizados todos o ninguno, con su historial y un lote que permite deshacer la remarcación una vez.</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-03, RN-10, RN-11, RN-12.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-17.1 a CP-17.6b; CP-15.2e.</td></tr>
+</table>
+
+<!-- ============================ CU-18 ============================ -->
+<h3>CU-18 Consultar pérdidas por falta de stock</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-18 Consultar pérdidas por falta de stock</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-18 Cuánto pierdo por quedarme sin stock. RF-19.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño y Contador; el Empleado no accede, porque la consulta informa márgenes.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, desde «Más», sección «Análisis», «Falta de stock», y desde la tarjeta del inicio.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior y movimientos de stock registrados (CU-10).</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario abre «Falta de stock» desde el menú, desde la tarjeta «Perdiste por falta de stock» del panel o desde «Alertas».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario abre «Falta de stock».</li>
+<li>El sistema reconstruye, a partir del historial de movimientos, los quiebres de los últimos 30 días de cada producto activo: cada intervalo en que el stock estuvo en cero, incluidos los que siguen en curso, contando sólo la parte que cae dentro del período.</li>
+<li>El sistema estima para cada producto la demanda diaria (unidades vendidas no anuladas en los días con stock de los últimos 90, divididas por esos días), las unidades perdidas (días sin stock por demanda diaria), la venta perdida (al precio neto de IVA vigente) y la ganancia perdida (al margen bruto unitario vigente) (RN-14).</li>
+<li>El sistema muestra los totales del período (ganancia perdida, venta perdida, unidades perdidas, productos afectados y quiebres en curso), una frase que explica cómo se estima la pérdida y la tabla de productos ordenada por ganancia perdida, con días sin stock y la marca «Sin stock ahora» para los quiebres en curso.</li>
+<li>El usuario cambia el período a 60 o 90 días y el sistema recalcula.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Sin quiebres.</b> Si en el período ningún producto quedó sin stock, el sistema muestra los totales en cero y la lista vacía («No te quedaste sin stock en este período.» en el celular).</p>
+<p class="alt"><b>2b. Venta anulada.</b> Un quiebre provocado por una venta que luego se anuló dura sólo hasta la anulación, y esa venta no cuenta para la demanda.</p>
+<p class="alt"><b>3a. Sin historial suficiente.</b> Un producto con menos de 7 días con stock en los últimos 90, o sin ventas en ellos, se muestra con sus días sin stock y la leyenda «Sin historial suficiente», sin cifras estimadas, y no suma en los totales.</p>
+<p class="alt"><b>4a. Paginación.</b> Con muchos productos afectados, la lista se pagina y los totales se mantienen iguales en todas las páginas.</p>
+<p class="alt"><b>4b. Stock parado.</b> El usuario continúa en CU-19 desde el enlace a «Stock parado».</p>
+<p class="alt"><b>5a. Período inválido.</b> Un período distinto de 30, 60 o 90 días se rechaza (400).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free la consulta se rechaza informando el plan Pro (402); la web muestra el aviso con el enlace «Ver planes» y el celular no muestra la entrada en «Más» y, si se llega a la pantalla, explica que es del plan Pro sin consultar la API.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Empleado no accede (403) y la opción no se le muestra.</p>
+<p class="alt"><b>E3. Aislamiento.</b> La consulta sólo incluye productos y totales del propio comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>No se modifica ningún dato. Las cifras coinciden con las del panel (CU-04) y las del asistente (CU-08) para el mismo período.</li>
+<li>La consulta responde en menos de 3 segundos para 5.000 productos y 50.000 movimientos en 90 días (RNF-04).</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-01, RN-03, RN-07, RN-10, RN-14.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-18.1 a CP-18.7; CP-M.10, CP-M.10b, CP-M.10c, CP-M.10f, CP-M.10g y CP-M.10h; CP-M.11 y CP-M.11b.</td></tr>
+</table>
+
+<!-- ============================ CU-19 ============================ -->
+<h3>CU-19 Consultar stock parado</h3>
+<table border="1">
+<tr><td class="etiqueta">Nombre</td><td>CU-19 Consultar stock parado</td></tr>
+<tr><td class="etiqueta">Historia y requisito</td><td>HU-19 Plata parada en stock. RF-20.</td></tr>
+<tr><td class="etiqueta">Actores</td><td>Principal: Dueño / Administrador. Secundario: Contador / Asesor externo.</td></tr>
+<tr><td class="etiqueta">Plan mínimo y roles permitidos</td><td>Plan Pro. Dueño y Contador; el Empleado no accede, porque la consulta informa costos.</td></tr>
+<tr><td class="etiqueta">Plataforma</td><td>Ambas. En Android, desde «Más», sección «Análisis», «Stock parado», y desde la tarjeta del inicio.</td></tr>
+<tr><td class="etiqueta">Precondiciones</td><td>Comercio con plan Pro o superior y productos activos con stock.</td></tr>
+<tr><td class="etiqueta">Disparador</td><td>El usuario abre «Stock parado» desde el menú, desde la tarjeta «Plata parada en stock» del panel o desde «Falta de stock».</td></tr>
+<tr><td class="etiqueta">Flujo principal</td><td><ol>
+<li>El usuario abre «Stock parado».</li>
+<li>El sistema identifica como parados los productos activos con stock mayor a cero, dados de alta hace más de 90 días, que no tuvieron ventas no anuladas en los últimos 90 días (RN-15).</li>
+<li>El sistema calcula para cada uno el capital parado (stock por costo de reposición vigente, neto de IVA), la fecha de su última venta y los días sin vender.</li>
+<li>El sistema muestra los totales (capital parado, productos, unidades y porcentaje del capital parado sobre el stock valorizado), la tabla ordenada por capital parado con stock, última venta y días sin vender, y una línea con ideas para liberar ese dinero.</li>
+<li>El usuario cambia el período a 30, 60 o 180 días y el sistema recalcula.</li>
+</ol></td></tr>
+<tr><td class="etiqueta">Flujos alternativos y excepciones</td><td>
+<p class="alt"><b>2a. Sin stock parado.</b> Si todos los productos con stock vendieron en el período, el sistema muestra los totales en cero y la lista vacía («No tenés stock parado en este período.» en el celular).</p>
+<p class="alt"><b>2b. Exclusiones.</b> No se consideran los productos sin stock, los dados de baja ni los dados de alta dentro del período. Un producto cuya única venta del período se anuló sí se considera parado.</p>
+<p class="alt"><b>3a. Nunca se vendió.</b> Un producto sin ventas muestra «Nunca se vendió» en lugar de la fecha, y los días sin vender se cuentan desde su alta.</p>
+<p class="alt"><b>4a. Stock valorizado nulo.</b> Si el stock valorizado es cero, el porcentaje no se calcula.</p>
+<p class="alt"><b>4b. Paginación.</b> Con muchos productos parados, la lista se pagina y los totales se mantienen.</p>
+<p class="alt"><b>5a. Período inválido.</b> Un período distinto de 30, 60, 90 o 180 días se rechaza (400).</p>
+<p class="alt"><b>E1. Plan insuficiente.</b> En plan Free la consulta se rechaza informando el plan Pro (402); la web muestra el aviso con «Ver planes» y el celular no muestra la entrada.</p>
+<p class="alt"><b>E2. Rol sin permiso.</b> El Empleado no accede (403) y la opción no se le muestra.</p>
+<p class="alt"><b>E3. Aislamiento.</b> La consulta sólo incluye productos y totales del propio comercio.</p>
+</td></tr>
+<tr><td class="etiqueta">Postcondiciones</td><td><ul>
+<li>No se modifica ningún dato. Las cifras coinciden con las del panel (CU-04) y las del asistente (CU-08) para el mismo período.</li>
+<li>La consulta responde en menos de 3 segundos para 5.000 productos y 50.000 movimientos (RNF-04).</li>
+</ul></td></tr>
+<tr><td class="etiqueta">Reglas de negocio</td><td>RN-07, RN-08, RN-10, RN-15.</td></tr>
+<tr><td class="etiqueta">Casos de prueba relacionados</td><td>CP-19.1 a CP-19.6; CP-M.10b, CP-M.10d, CP-M.10e, CP-M.10f, CP-M.10g y CP-M.10h; CP-M.11 y CP-M.11b.</td></tr>
+</table>
+
+<h2>6. Relaciones de inclusión y extensión</h2>
+<p>Se modelan tres casos de uso auxiliares, sin número propio, que representan comportamiento compartido entre varios casos: «Crear borrador de orden», «Elegir canal de envío» y «Actualizar costo vigente y recalcular márgenes». En las relaciones «include», el caso base siempre ejecuta el caso incluido; en las relaciones «extend», el caso extensor agrega comportamiento al caso base sólo cuando se cumple la condición indicada.</p>
+<table border="1">
+<tr><th>Caso base</th><th>Relación</th><th>Caso relacionado</th><th>Condición o explicación</th></tr>
+<tr><td>CU-07 Generar orden de compra</td><td>«include»</td><td>Crear borrador de orden</td><td>Toda orden nace como borrador con número correlativo, costo vigente por ítem y texto redactado, ya sea desde la sugerencia o como orden manual.</td></tr>
+<tr><td>CU-07 Generar orden de compra</td><td>«include»</td><td>Elegir canal de envío</td><td>Toda confirmación resuelve el canal: el elegido por el Dueño o el que corresponde al proveedor (correo, WhatsApp o ninguno).</td></tr>
+<tr><td>CU-07 Generar orden de compra</td><td>«extend» (por CU-16)</td><td>CU-16 Enviar la orden por WhatsApp</td><td>Punto de extensión: confirmación de la orden. Condición: el canal resuelto es WhatsApp.</td></tr>
+<tr><td>CU-08 Consultar al asistente</td><td>«extend» (por Crear borrador de orden)</td><td>Crear borrador de orden</td><td>Punto de extensión: resolución de la consulta. Condición: el Dueño pide armar un pedido a un proveedor activo. El asistente sólo deja la orden en borrador; la confirmación y el envío se realizan en CU-07.</td></tr>
+<tr><td>CU-02 Administrar proveedores y listas de precios</td><td>«include»</td><td>Actualizar costo vigente y recalcular márgenes</td><td>Toda importación o carga de costos actualiza el costo de reposición de los productos cuyo proveedor principal es el proveedor de la lista (RN-08); los márgenes se recalculan en la consulta siguiente.</td></tr>
+<tr><td>CU-12 Comparar proveedores</td><td>«extend» (por Actualizar costo vigente)</td><td>Actualizar costo vigente y recalcular márgenes</td><td>Condición: el Dueño selecciona «Usar como principal» y confirma; el costo de reposición pasa al del proveedor elegido.</td></tr>
+<tr><td>CU-15 Comparar precios con la inflación</td><td>«extend» (por CU-17)</td><td>CU-17 Remarcar precios en lote</td><td>Punto de extensión: tabla de productos. Condición: el Dueño selecciona «Remarcar»; el asistente abre con los productos atrasados y el criterio de inflación del período.</td></tr>
+<tr><td>CU-04 Visualizar dashboard</td><td>«extend» (por CU-06)</td><td>CU-06 Generar alerta de reposición</td><td>Condición: el plan incluye alertas y el último recálculo del comercio tiene más de una hora; el panel recalcula las alertas antes de responder.</td></tr>
+</table>
+<p>Además de las relaciones anteriores, existen dependencias de datos que no se modelan como inclusiones: todos los casos, salvo CU-11a y los procesos programados, requieren la autenticación de CU-11a; CU-01 y CU-05 registran el stock inicial como un ingreso de CU-10; CU-01, CU-05 y CU-11b verifican los límites del plan Free definidos en CU-14; CU-07 parte de las alertas de CU-06; y el asistente de CU-08 consulta los mismos cálculos que CU-03, CU-06, CU-12, CU-13, CU-15, CU-18 y CU-19, sin modificarlos.</p>
+
+<h2>7. Diferencias respecto de la Propuesta v2.0</h2>
+<p>Las especificaciones funcionales vigentes precisan o modifican algunos criterios de la Propuesta. En todos los casos, este documento sigue la especificación.</p>
+<table border="1">
+<tr><th>Tema</th><th>Propuesta v2.0</th><th>Comportamiento especificado</th></tr>
+<tr><td>Contenido del plan Free</td><td>Inventario, movimientos y margen bruto; proveedores, gastos, margen neto, dashboard completo e importación desde Excel en Pro.</td><td>Free incluye además panel y rentabilidad con margen neto, gastos, proveedores e importación desde Excel. Pro suma alertas, falta de stock, stock parado, órdenes, reportes, inflación y remarcación.</td></tr>
+<tr><td>Alcance del Contador</td><td>Sólo lectura de reportes de rentabilidad y dashboard.</td><td>Lectura también de gastos, historial de movimientos, alertas, órdenes, inflación, remarcaciones, falta de stock y stock parado; sin acceso al catálogo, proveedores, comparador ni asistente.</td></tr>
+<tr><td>Redacción de la orden (HU-07)</td><td>«El asistente redacta automáticamente el texto».</td><td>El texto se genera con una plantilla determinista, sin IA, y el Dueño puede reemplazarlo.</td></tr>
+<tr><td>Correos del asistente (HU-08)</td><td>El asistente redacta correos a proveedores con envío sujeto a confirmación.</td><td>El asistente sólo deja una orden en borrador; no envía nada. La confirmación y el envío se realizan en la pantalla de órdenes (CU-07).</td></tr>
+<tr><td>Envío por WhatsApp</td><td>WhatsApp Business API fuera de alcance.</td><td>Se mantiene fuera de alcance; HU-16 envía órdenes con un enlace de WhatsApp que el Dueño abre y envía desde su teléfono. Alertas y reportes siguen saliendo sólo por correo.</td></tr>
+<tr><td>Plataformas</td><td>Órdenes de compra sólo en la web; gestión de usuarios en ambas.</td><td>Las órdenes también se gestionan en Android; la gestión de usuarios, el plan, los proveedores, los gastos y la importación quedan en la web (decisión 0024).</td></tr>
+<tr><td>Bajas</td><td>Eliminación de proveedores; baja lógica de productos con movimientos.</td><td>Proveedores y productos se dan de baja siempre en forma lógica y reversible; los gastos sí se eliminan.</td></tr>
+<tr><td>Costo vigente (RN-08)</td><td>Última lista importada del proveedor asociado.</td><td>Último costo informado por el proveedor principal, importado o cargado a mano; los costos de otros proveedores quedan en el historial sin cambiar el vigente.</td></tr>
+<tr><td>Venta mayor al stock (HU-10)</td><td>El sistema la impide o la advierte.</td><td>El sistema la impide; el stock nunca queda negativo.</td></tr>
+<tr><td>Configuración de la alerta (HU-06)</td><td>Configurar el stock de seguridad.</td><td>Además del stock de seguridad, se configuran por producto los días de anticipación del umbral (0 a 90).</td></tr>
+<tr><td>Servicio de IA</td><td>OpenAI o Anthropic.</td><td>Anthropic.</td></tr>
+<tr><td>Rangos de casos de prueba</td><td>Cinco casos por historia (por ejemplo, CP-01.1 a CP-01.5).</td><td>Los rangos reales son más amplios e incluyen variantes con letra (por ejemplo, CP-01.1 a CP-01.7b).</td></tr>
+</table>
+
+</body>
+</html>

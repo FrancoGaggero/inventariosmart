@@ -1,0 +1,71 @@
+DIAGRAMA DE GANTT — InventarioSmart · v3.0 · 09/10/2026 · Franco Gaggero (proyecto individual)
+#,EDT,Tarea / actividad,Responsable,Inicio,Fin,Días háb.,Depend.,% comp.,Change de OpenSpec,Observaciones
+ETAPA 1 — DETECCIÓN DE LA NECESIDAD Y ANÁLISIS
+1,1.1,Observación del problema y definición del dominio,Franco Gaggero,02/03/2026,04/03/2026,3,—,100%,,
+2,1.2,Entrevista en profundidad (comerciante de repuestos),Franco Gaggero,05/03/2026,10/03/2026,4,1.1,100%,,
+3,1.3,Diseño y aplicación de la encuesta cuantitativa (n=24),Franco Gaggero,11/03/2026,17/03/2026,5,1.2,100%,,
+4,1.4,Análisis de los resultados de la encuesta,Franco Gaggero,18/03/2026,20/03/2026,3,1.3,100%,,
+5,1.5,Elaboración del mapa de empatía (Carlos),Franco Gaggero,23/03/2026,25/03/2026,3,1.4,100%,,
+6,1.6,Definición del buyer persona,Franco Gaggero,26/03/2026,27/03/2026,2,1.5,100%,,
+,H1,HITO — Cierre de la etapa de análisis,Franco Gaggero,27/03/2026,27/03/2026,1,1.6,100%,,
+"ETAPA 2 — IDEACIÓN, VALIDACIÓN Y VIABILIDAD"
+7,2.1,Benchmarking y análisis de la competencia,Franco Gaggero,31/03/2026,03/04/2026,4,H1,100%,,
+8,2.2,Cuadro comparativo de soluciones y análisis FODA,Franco Gaggero,06/04/2026,08/04/2026,3,2.1,100%,,
+9,2.3,Sesión de brainstorming,Franco Gaggero,09/04/2026,09/04/2026,1,2.2,100%,,
+10,2.4,Técnica Seis Sombreros (Edward de Bono),Franco Gaggero,10/04/2026,10/04/2026,1,2.3,100%,,
+11,2.5,Técnica Fresh Eyes (perspectiva externa),Franco Gaggero,13/04/2026,13/04/2026,1,2.4,100%,,
+12,2.6,Definición de la idea central del proyecto,Franco Gaggero,14/04/2026,15/04/2026,2,2.5,100%,,
+13,2.7,Desarrollo SCAMPER aplicado a InventarioSmart,Franco Gaggero,16/04/2026,22/04/2026,5,2.6,100%,,
+14,2.8,Validación técnica y comercial. Modelo de negocio SaaS,Franco Gaggero,23/04/2026,24/04/2026,2,2.7,100%,,
+15,2.9,Revisión integral de la documentación (Propuesta v2.0),Franco Gaggero,24/08/2026,27/08/2026,4,2.8,100%,,Receso académico entre el 27/04 y el 24/08.
+,H2,HITO — Cierre de ideación y viabilidad,Franco Gaggero,27/08/2026,27/08/2026,1,2.9,100%,,
+"ETAPA 3 — DISEÑO Y MODELADO (en paralelo con la etapa 4, por historia)"
+16,3.1,Separación de los requisitos funcionales Web / Mobile,Franco Gaggero,09/09/2026,09/10/2026,23,H2,100%,ADR 0024,Criterio de mostrador fijado el 02/10; documento de requisitos web y mobile del 09/10.
+17,3.2,Diagrama de casos de uso (UML),Franco Gaggero,02/10/2026,09/10/2026,6,3.1,100%,,docs/diagramas/casos-de-uso.mmd
+18,3.3,Especificación de los casos de uso (CU-01 a CU-19),Franco Gaggero,02/10/2026,09/10/2026,6,3.2,100%,,Amplía de 14 a 19 casos por las HU-15 a HU-19.
+19,3.4,Modelo entidad-relación (DER),Franco Gaggero,09/09/2026,09/10/2026,23,H2,100%,,Borrador el 09/09; versión final generada desde el esquema real (19 tablas).
+20,3.5,Diagrama de clases,Franco Gaggero,06/10/2026,09/10/2026,4,3.4,100%,,docs/diagramas/clases.mmd
+21,3.6,Diseño de arquitectura,Franco Gaggero,09/09/2026,09/10/2026,23,H2,100%,,docs/arquitectura.html y 25 ADR.
+22,3.7,Diagrama de componentes,Franco Gaggero,06/10/2026,09/10/2026,4,3.6,100%,,docs/diagramas/componentes.mmd
+23,3.8,Refinamiento de wireframes e identidad visual,Franco Gaggero,24/09/2026,06/10/2026,9,3.7,100%,"web-visual-polish, web-redesign, mobile-redesign, app-animations","Paleta ámbar, tema claro y oscuro (ADR 0022 y 0024) y animaciones (ADR 0025)."
+,H3,HITO — Cierre del diseño técnico,Franco Gaggero,09/10/2026,09/10/2026,1,3.8,100%,,
+"ETAPA 4 — DESARROLLO E IMPLEMENTACIÓN (Fases 1, 2 y 3)"
+24,4.1,Setup de repositorios y entorno de desarrollo,Franco Gaggero,09/09/2026,10/09/2026,2,H2,100%,sprint0-esqueleto,"Adelantado a septiembre; monorepo, CI, Render, Vercel y Neon."
+25,4.2,Modelo de datos y backend base (NestJS + Prisma),Franco Gaggero,09/09/2026,10/09/2026,2,4.1,100%,sprint0-esqueleto,
+26,4.3,"Autenticación, usuarios y roles — HU-11",Franco Gaggero,10/09/2026,10/09/2026,1,4.2,100%,auth-tenancy,Incluye RLS por comercio.
+27,4.4,Módulo de inventario — HU-01,Franco Gaggero,10/09/2026,10/09/2026,1,4.3,100%,product-catalog,
+28,4.5,Registro de movimientos de stock — HU-10,Franco Gaggero,22/09/2026,22/09/2026,1,4.4,100%,stock-movements,
+29,4.6,Proveedores y listas de precios — HU-02,Franco Gaggero,22/09/2026,22/09/2026,1,4.5,100%,suppliers-price-lists,
+30,4.7,"Gastos y motor de rentabilidad — HU-03, HU-13",Franco Gaggero,22/09/2026,23/09/2026,2,4.6,100%,"operating-expenses, profitability-engine",
+31,4.8,Dashboard financiero — HU-04,Franco Gaggero,23/09/2026,23/09/2026,1,4.7,100%,financial-dashboard,
+32,4.9,Importación desde Excel y onboarding — HU-05,Franco Gaggero,23/09/2026,23/09/2026,1,4.8,100%,excel-import-onboarding,
+33,4.10,Aplicación mobile Flutter (pantallas del MVP),Franco Gaggero,23/09/2026,23/09/2026,1,4.9,100%,mobile-mvp,
+,H4a,HITO — MVP Fase 1 funcional (web y mobile),Franco Gaggero,23/09/2026,23/09/2026,1,4.10,100%,,Adelantado del 04/12 al 23/09.
+34,4.11,Alertas predictivas de reposición — HU-06,Franco Gaggero,23/09/2026,23/09/2026,1,H4a,100%,restock-alerts,Fase 2.
+35,4.12,Órdenes de compra en modo copiloto — HU-07,Franco Gaggero,24/09/2026,24/09/2026,1,4.11,100%,purchase-orders-copilot,Fase 2.
+36,4.13,Reportes semanales — HU-09,Franco Gaggero,24/09/2026,24/09/2026,1,4.12,100%,weekly-reports,Fase 2.
+37,4.14,Precios frente a la inflación — HU-15,Franco Gaggero,28/09/2026,28/09/2026,1,4.13,100%,inflation-insights,Historia nueva (v3.0).
+38,4.15,Envío de órdenes por WhatsApp — HU-16,Franco Gaggero,28/09/2026,28/09/2026,1,4.12,100%,purchase-orders-whatsapp,Historia nueva (v3.0).
+39,4.16,Remarcación asistida — HU-17,Franco Gaggero,28/09/2026,28/09/2026,1,4.14,100%,bulk-repricing,Historia nueva (v3.0).
+40,4.17,Comparador de proveedores — HU-12,Franco Gaggero,28/09/2026,28/09/2026,1,4.6,100%,supplier-comparison,Fase 2.
+41,4.18,Asistente conversacional con IA — HU-08,Franco Gaggero,28/09/2026,02/10/2026,5,4.12,100%,"ai-assistant, assistant-top-sellers, assistant-stock-insights",Fase 3.
+42,4.19,Gestión de plan y suscripción — HU-14,Franco Gaggero,29/09/2026,29/09/2026,1,4.3,100%,subscription-plans,Fase 3.
+43,4.20,Pérdidas por falta de stock — HU-18,Franco Gaggero,01/10/2026,01/10/2026,1,4.5,100%,stockout-losses,Historia nueva (v3.0).
+44,4.21,Stock parado — HU-19,Franco Gaggero,01/10/2026,01/10/2026,1,4.5,100%,dead-stock,Historia nueva (v3.0).
+45,4.22,"App Android: análisis, asistente y órdenes en el celular",Franco Gaggero,02/10/2026,09/10/2026,6,4.10,90%,"mobile-redesign, mobile-stock-insights, mobile-assistant, mobile-orders",Falta la prueba en dispositivo de mobile-orders.
+,H4,HITO — Producto completo Fases 1 a 3 (web y mobile),Franco Gaggero,09/10/2026,09/10/2026,1,4.22,90%,,
+"ETAPA 5 — PRUEBAS, DOCUMENTACIÓN Y ENTREGA"
+46,5.1,Diseño y ejecución de los casos de prueba (CP),Franco Gaggero,10/09/2026,10/12/2026,66,H4,95%,,426 casos especificados; los automatizados corren en CI en cada cambio. Quedan 21 de verificación manual.
+47,5.2,Corrección de defectos detectados,Franco Gaggero,12/10/2026,14/12/2026,46,5.1,0%,,
+48,5.3,Carga de datos de demostración y usuario de prueba,Franco Gaggero,12/10/2026,15/12/2026,47,5.2,100%,,Usuario de prueba informado en la planilla de seguimiento.
+49,5.4,Redacción del manual de usuario,Franco Gaggero,09/10/2026,16/12/2026,49,5.2,60%,,Versión 1.0 redactada; faltan las capturas.
+50,5.5,Grabación y edición del video DEMO,Franco Gaggero,17/12/2026,17/12/2026,1,5.4,0%,,
+51,5.6,Consolidación del formulario de entrega PL03,Franco Gaggero,09/10/2026,18/12/2026,51,5.5,50%,,PL03 v3 con enlaces y estados al 09/10.
+52,5.7,Respaldo diario de la base (RNF-09),Franco Gaggero,12/10/2026,30/10/2026,15,H4,0%,,"Pendiente: pg_dump diario, 30 días de retención y restauración probada."
+,H5,HITO — ENTREGA FINAL,Franco Gaggero,18/12/2026,18/12/2026,1,5.6,0%,,
+
+AVANCE GENERAL,Tareas: 52,Finalizadas: 45,Avance por tareas: 86.5 %
+NOTAS
+1. La v3 registra fechas reales (fecha del commit de cada change). Las etapas 3 y 4 avanzaron en paralelo por historia de usuario con desarrollo guiado por especificación (OpenSpec).
+"2. Las Fases 2 y 3 del backlog, que la v2 dejaba fuera de plazo, se construyeron completas. Se sumaron las HU-15 a HU-19 (Propuesta v3.0)."
+3. Días hábiles sin sábados ni domingos; no descuenta feriados.

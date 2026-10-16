@@ -1,0 +1,79 @@
+%%{init: {"flowchart": {"htmlLabels": false, "curve": "basis"}} }%%
+%% Diagrama de componentes de InventarioSmart: clientes, API modular, datos y servicios externos.
+flowchart LR
+    subgraph clientes["Clientes"]
+        web["«componente» Web SPA<br>React 19 · Vite · TanStack Query<br>Vercel"]
+        app["«componente» App Android<br>Flutter · Riverpod · dio<br>APK"]
+    end
+
+    shared["«biblioteca» packages/shared<br>esquemas zod · reglas RN · planes"]
+    cliente_ts["«biblioteca» packages/api-client<br>tipos generados de OpenAPI"]
+
+    subgraph api["API REST /api/v1 · NestJS 11 · Render"]
+        direction LR
+        guard["Autenticación<br>FirebaseAuthGuard"]
+        tenant["Contexto de tenant<br>Prisma + RLS"]
+        permisos["Roles y planes<br>guards e interceptor de costos"]
+        subgraph identidad["Identidad y cuenta"]
+            m_me["me · comercio"]
+            m_users["users"]
+            m_plans["plans"]
+        end
+        subgraph stock["Catálogo y stock"]
+            m_products["products"]
+            m_movements["movements"]
+            m_import["import"]
+        end
+        subgraph abastecimiento["Abastecimiento"]
+            m_suppliers["suppliers · listas de precios"]
+            m_alerts["alerts"]
+            m_orders["purchase-orders"]
+            m_compare["supplier-comparison"]
+        end
+        subgraph finanzas["Finanzas y análisis"]
+            m_profit["profitability"]
+            m_expenses["expenses"]
+            m_dashboard["dashboard"]
+            m_reports["reports"]
+            m_insights["insights · indicators"]
+            m_repricing["repricing"]
+            m_losses["stockouts · dead-stock"]
+        end
+        m_assistant["assistant<br>herramientas acotadas"]
+    end
+
+    db[("«base de datos» PostgreSQL 18<br>Neon · Row Level Security")]
+
+    firebase["Firebase Authentication"]
+    resend["Resend · correo"]
+    anthropic["Anthropic · modelo de lenguaje"]
+    oficiales["INDEC y BCRA<br>APIs públicas"]
+    whatsapp["WhatsApp<br>enlace wa.me"]
+
+    web -- "HTTPS JSON + ID token" --> guard
+    app -- "HTTPS JSON + ID token" --> guard
+    web -- "inicio de sesión" --> firebase
+    app -- "inicio de sesión" --> firebase
+    guard -- "verifica el token" --> firebase
+    guard --> tenant
+    tenant --> permisos
+    permisos --> identidad
+    permisos --> stock
+    permisos --> abastecimiento
+    permisos --> finanzas
+    permisos --> m_assistant
+    identidad --> db
+    stock --> db
+    abastecimiento --> db
+    finanzas --> db
+    m_assistant --> db
+    m_alerts -- "resumen diario" --> resend
+    m_orders -- "orden por correo" --> resend
+    m_reports -- "reporte semanal" --> resend
+    m_assistant -- "Messages API" --> anthropic
+    m_insights -- "IPC, inflación, dólar" --> oficiales
+    app -. "abre el enlace" .-> whatsapp
+    web -. "abre el enlace" .-> whatsapp
+    web --- shared
+    api --- shared
+    web --- cliente_ts

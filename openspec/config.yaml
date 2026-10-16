@@ -12,10 +12,10 @@ context: |
   (Analista de Sistemas, Escuela Da Vinci). Desarrollador único: Franco Gaggero.
   Idioma de specs, proposals, tasks y UI: español rioplatense. Código en inglés.
 
-  Arquitectura: monolito modular NestJS + Prisma + PostgreSQL 16, una API REST
+  Arquitectura: monolito modular NestJS + Prisma + PostgreSQL 18, una API REST
   versionada en /api/v1 que consumen la web (React + Vite + TanStack Query +
   Tailwind v4) y la app Android (Flutter + Riverpod + dio). Contrato OpenAPI
-  generado con @nestjs/swagger; clientes tipados para TS y Dart.
+  generado con @nestjs/swagger; cliente TS generado y modelos Dart escritos a mano (ADR 0009).
   Autenticación: Firebase Authentication (Google + email); la API verifica el
   ID token con firebase-admin. Roles y comercio viven en PostgreSQL.
   Monorepo pnpm: apps/api, apps/web, apps/mobile, packages/shared (zod),
@@ -76,9 +76,8 @@ context: |
   (RF-17) "Enviar la orden por WhatsApp" y HU-17 (RF-18) "Remarcación asistida"
   se sumaron el 28/09/2026 como diferencial del producto (RNF-08); HU-18
   (RF-19) "Cuánto pierdo por quedarme sin stock" y HU-19 (RF-20) "Plata parada
-  en stock" se sumaron el 01/10/2026. Alcance comprometido para la entrega del 18/12/2026: Fase 1
-  (HU-01, 02, 03, 04, 05, 10, 11, 13). Fases 2 y 3 se modelan pero no se
-  construyen salvo que sobre tiempo (HU-06 primero).
+  en stock" se sumaron el 01/10/2026. Al 09/10/2026 están construidas las 19 HU de las Fases 1, 2 y 3
+  (Propuesta v3.0, Backlog v3, Gantt v3); la entrega es el 18/12/2026.
 
 rules:
   proposal:
@@ -99,7 +98,7 @@ rules:
   tasks:
     - Cada tarea termina con "Listo cuando:" y un criterio verificable (test que pasa, comando, resultado observable).
     - Incluir tareas de test unitario para reglas RN y un e2e por criterio de aceptación.
-    - Incluir la tarea de regenerar el contrato OpenAPI y los clientes TS/Dart si cambió la API.
+    - Incluir la tarea de regenerar el contrato OpenAPI y el cliente TS, y de actualizar a mano los modelos Dart que usa la app, si cambió la API.
     - Cerrar con la tarea de mover la tarjeta de Trello y actualizar el estado en el backlog.
 
 operations:

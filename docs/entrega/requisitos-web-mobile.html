@@ -1,0 +1,80 @@
+<html><head><meta charset="utf-8"><title>Requisitos funcionales Web y Mobile - InventarioSmart</title>
+<style>body{font-family:Arial,sans-serif;font-size:11pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:4px;vertical-align:top}th{background:#f2e6d3}</style></head><body>
+<h1>InventarioSmart · Requisitos funcionales Web y Mobile (APK)</h1>
+<p>Versión 1.0 · 9 de octubre de 2026 · Franco Gaggero · Tarea 3.1 del Gantt. Fuente: Propuesta v3.0 §3.1, especificaciones de OpenSpec (<code>openspec/specs</code>) y ADR 0024.</p>
+
+<h2>1. Criterio de distribución</h2>
+<p>La web y la aplicación Android consumen la misma API REST (<code>/api/v1</code>), con la misma autenticación, los mismos roles y los mismos planes, de modo que una operación tiene el mismo resultado desde cualquiera de los dos clientes. Lo que cambia es qué pantallas ofrece cada uno.</p>
+<p>Van a la aplicación Android las tareas que se realizan en el mostrador o fuera del local, que entran en una pantalla chica y duran menos de un minuto. Lo que exige comparar tablas, cargar planillas o revisar muchos productos a la vez queda en la web (ADR 0024). La pestaña «Más» de la aplicación indica qué se hace desde la web.</p>
+
+<h2>2. Matriz de requisitos por plataforma</h2>
+<table>
+<tr><th>RF</th><th>Requisito</th><th>HU</th><th>Plan mínimo</th><th>Web</th><th>Android (APK)</th></tr>
+<tr><td>RF-01</td><td>Alta, baja, modificación y consulta de productos</td><td>HU-01</td><td>Free</td><td>Completo: listado con búsqueda y filtros, alta, edición, baja lógica y reactivación</td><td>Parcial: listado con búsqueda y filtros por estado de stock, detalle y alta rápida. La edición de un producto existente queda en la web.</td></tr>
+<tr><td>RF-02</td><td>Stock actualizado a partir de los movimientos</td><td>HU-01, HU-10</td><td>Free</td><td>Sí</td><td>Sí (el stock que se ve en la app es el mismo)</td></tr>
+<tr><td>RF-03</td><td>Proveedores y listas de precios</td><td>HU-02</td><td>Free</td><td>Completo: ABM, lead time, confiabilidad, canal preferido e importación de listas</td><td>No</td></tr>
+<tr><td>RF-04</td><td>Margen bruto y neto por producto</td><td>HU-03</td><td>Free</td><td>Completo: por producto y consolidado, por período</td><td>Resumen: margen del mes en Inicio (sólo Dueño y Contador)</td></tr>
+<tr><td>RF-05</td><td>Dashboard financiero</td><td>HU-04</td><td>Free</td><td>Completo, con actualización automática</td><td>Panel resumido del mes, análisis y reposición en Inicio</td></tr>
+<tr><td>RF-06</td><td>Alertas predictivas de reposición</td><td>HU-06</td><td>Pro</td><td>Completo: listado, atender, posponer y recalcular</td><td>Sí: listado, atender y posponer</td></tr>
+<tr><td>RF-07</td><td>Órdenes de compra en modo copiloto</td><td>HU-07</td><td>Pro</td><td>Completo: sugerencia por alertas, borrador editable, confirmación y cancelación</td><td>Parcial: listado y detalle, cambiar cantidades y quitar líneas del borrador, confirmar, cancelar y copiar el texto. Agregar productos o cambiar el proveedor del borrador queda en la web.</td></tr>
+<tr><td>RF-08</td><td>Importación desde Excel con onboarding</td><td>HU-05</td><td>Free</td><td>Sí</td><td>No (el onboarding del comercio sí está en la app)</td></tr>
+<tr><td>RF-09</td><td>Reportes semanales automáticos</td><td>HU-09</td><td>Pro</td><td>Sí: historial, reenvío y configuración</td><td>No (llegan por correo)</td></tr>
+<tr><td>RF-10</td><td>Asistente conversacional con IA</td><td>HU-08</td><td>Premium</td><td>Sí</td><td>Sí, con historial de conversaciones y acceso a la orden que deja en borrador</td></tr>
+<tr><td>RF-11</td><td>Usuarios, roles, permisos y autenticación</td><td>HU-11</td><td>Free</td><td>Completo: registro, inicio de sesión con email o Google, invitación de usuarios y asignación de roles</td><td>Parcial: inicio de sesión con email o Google, creación de cuenta y onboarding; la gestión de usuarios queda en la web</td></tr>
+<tr><td>RF-12</td><td>Comparador de precios entre proveedores</td><td>HU-12</td><td>Premium</td><td>Sí</td><td>No</td></tr>
+<tr><td>RF-13</td><td>Registro de movimientos de stock</td><td>HU-10</td><td>Free</td><td>Completo: venta, ingreso, ajuste, historial con filtros y anulación</td><td>Sí: venta, ingreso y ajuste desde el mostrador, con protección contra el doble envío</td></tr>
+<tr><td>RF-14</td><td>Gastos operativos</td><td>HU-13</td><td>Free</td><td>Sí</td><td>No</td></tr>
+<tr><td>RF-15</td><td>Plan y suscripción</td><td>HU-14</td><td>Free</td><td>Sí: consultar y cambiar el plan, historial de cambios</td><td>Consulta: el plan vigente se muestra en «Más»; las pantallas de un plan superior explican el plan requerido</td></tr>
+<tr><td>RF-16</td><td>Precios frente a la inflación</td><td>HU-15</td><td>Pro (indicadores en todos los planes)</td><td>Completo: gráfico, brechas, estado y precio sugerido por producto</td><td>No</td></tr>
+<tr><td>RF-17</td><td>Envío de la orden por WhatsApp</td><td>HU-16</td><td>Pro</td><td>Sí</td><td>Sí: elegir el canal al confirmar, «Abrir WhatsApp» con el mensaje redactado y «Ya la envié»</td></tr>
+<tr><td>RF-18</td><td>Remarcación asistida en lote</td><td>HU-17</td><td>Pro</td><td>Sí: vista previa, aplicar y deshacer</td><td>No</td></tr>
+<tr><td>RF-19</td><td>Pérdidas por falta de stock</td><td>HU-18</td><td>Pro</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>RF-20</td><td>Stock parado</td><td>HU-19</td><td>Pro</td><td>Sí</td><td>Sí</td></tr>
+</table>
+
+<h2>3. Requisitos funcionales de la web</h2>
+<p>La web implementa los veinte requisitos funcionales (RF-01 a RF-20). Es la herramienta de gestión: carga inicial, proveedores, gastos, análisis, remarcación, configuración del comercio, usuarios y plan.</p>
+<table>
+<tr><th>Código</th><th>Requisito funcional web</th><th>RF</th></tr>
+<tr><td>RFW-01</td><td>La web debe permitir registrarse, iniciar sesión con email o Google y completar el alta del comercio.</td><td>RF-11, RF-15</td></tr>
+<tr><td>RFW-02</td><td>La web debe permitir al Dueño invitar usuarios, asignarles un rol y desactivarlos.</td><td>RF-11</td></tr>
+<tr><td>RFW-03</td><td>La web debe permitir el ABM de productos con búsqueda, filtros por estado de stock y paginación.</td><td>RF-01, RF-02</td></tr>
+<tr><td>RFW-04</td><td>La web debe permitir importar productos desde una planilla .xlsx o .csv con vista previa de errores antes de confirmar.</td><td>RF-08</td></tr>
+<tr><td>RFW-05</td><td>La web debe permitir registrar ventas, ingresos y ajustes, consultar el historial con filtros y anular un movimiento mediante un ajuste.</td><td>RF-13, RF-02</td></tr>
+<tr><td>RFW-06</td><td>La web debe permitir el ABM de proveedores y la carga manual o importación de listas de precios, con el historial de costos por producto.</td><td>RF-03</td></tr>
+<tr><td>RFW-07</td><td>La web debe permitir el ABM de gastos operativos por período.</td><td>RF-14</td></tr>
+<tr><td>RFW-08</td><td>La web debe mostrar la rentabilidad bruta y neta por producto y consolidada, y el panel del mes con actualización automática.</td><td>RF-04, RF-05</td></tr>
+<tr><td>RFW-09</td><td>La web debe listar las alertas de reposición y permitir atenderlas, posponerlas y recalcularlas.</td><td>RF-06</td></tr>
+<tr><td>RFW-10</td><td>La web debe sugerir órdenes de compra, permitir editarlas y confirmarlas por correo o WhatsApp, marcarlas como enviadas y cancelarlas.</td><td>RF-07, RF-17</td></tr>
+<tr><td>RFW-11</td><td>La web debe mostrar el historial de reportes semanales y permitir reenviarlos y configurar sus destinatarios.</td><td>RF-09</td></tr>
+<tr><td>RFW-12</td><td>La web debe mostrar el comparador de proveedores por insumo con el recomendado y su fundamento.</td><td>RF-12</td></tr>
+<tr><td>RFW-13</td><td>La web debe mostrar la comparación de precios y costos contra la inflación, con gráfico, tabla accesible, estado por producto y precio sugerido.</td><td>RF-16</td></tr>
+<tr><td>RFW-14</td><td>La web debe permitir remarcar precios en lote con vista previa, aplicar y deshacer.</td><td>RF-18</td></tr>
+<tr><td>RFW-15</td><td>La web debe mostrar las pérdidas por falta de stock y el stock parado del período elegido.</td><td>RF-19, RF-20</td></tr>
+<tr><td>RFW-16</td><td>La web debe ofrecer el asistente con IA con historial de conversaciones.</td><td>RF-10</td></tr>
+<tr><td>RFW-17</td><td>La web debe mostrar el plan vigente, sus límites y funcionalidades, y permitir cambiarlo.</td><td>RF-15</td></tr>
+<tr><td>RFW-18</td><td>La web debe ser responsive, con tema claro y oscuro y contraste WCAG AA.</td><td>RNF-01, RNF-06</td></tr>
+</table>
+
+<h2>4. Requisitos funcionales de la aplicación Android</h2>
+<p>Los casos de prueba de la aplicación se identifican como CP-M.x y se verifican con tests de widgets contra un servidor simulado.</p>
+<table>
+<tr><th>Código</th><th>Requisito funcional mobile</th><th>RF</th><th>Casos de prueba</th></tr>
+<tr><td>RFM-01</td><td>La app debe permitir iniciar sesión con email o Google con la misma cuenta que la web, crear una cuenta y completar el onboarding del comercio.</td><td>RF-11</td><td>CP-M.1</td></tr>
+<tr><td>RFM-02</td><td>La app debe mostrar pestañas según el rol: el Dueño ve Inicio, Inventario, Movimiento y Más; el Empleado, Inventario, Movimiento y Más; el Contador, Inicio y Más.</td><td>RF-11</td><td>CP-M.1, CP-M.8</td></tr>
+<tr><td>RFM-03</td><td>La app debe mostrar el panel resumido del mes, con análisis y reposición, al Dueño y al Contador.</td><td>RF-04, RF-05</td><td>CP-M.2, CP-M.11</td></tr>
+<tr><td>RFM-04</td><td>La app debe listar el inventario con búsqueda y filtros, mostrar el detalle de un producto y permitir un alta rápida.</td><td>RF-01</td><td>CP-M.3</td></tr>
+<tr><td>RFM-05</td><td>La app debe permitir registrar una venta, un ingreso o un ajuste desde el mostrador, sin duplicarlo si se reintenta.</td><td>RF-13, RF-02</td><td>CP-M.4</td></tr>
+<tr><td>RFM-06</td><td>La app debe informar los errores de conexión, el servidor que está despertando y la falta de permisos, y no mezclar datos entre comercios.</td><td>RNF-02, RNF-10</td><td>CP-M.5</td></tr>
+<tr><td>RFM-07</td><td>La app debe permitir elegir el tema Sistema, Claro u Oscuro y recordarlo.</td><td>RNF-01</td><td>CP-M.7</td></tr>
+<tr><td>RFM-08</td><td>La app debe ofrecer la pestaña «Más» con la cuenta, el tema, las secciones Análisis, Compras y Asistente según el rol y el plan, lo que se hace desde la web y el cierre de sesión.</td><td>RF-11, RF-15</td><td>CP-M.8</td></tr>
+<tr><td>RFM-09</td><td>La app debe listar las alertas de reposición y permitir atenderlas o posponerlas.</td><td>RF-06</td><td>CP-M.9</td></tr>
+<tr><td>RFM-10</td><td>La app debe mostrar las pérdidas por falta de stock y el stock parado.</td><td>RF-19, RF-20</td><td>CP-M.10</td></tr>
+<tr><td>RFM-11</td><td>La app debe ofrecer el asistente con IA al Dueño con plan Premium, con historial de conversaciones, y llevar a la orden que el asistente deja en borrador.</td><td>RF-10</td><td>CP-M.12</td></tr>
+<tr><td>RFM-12</td><td>La app debe listar las órdenes de compra por estado, mostrar su detalle, permitir al Dueño ajustar las cantidades del borrador, confirmarla eligiendo el canal, abrir WhatsApp con el mensaje redactado, marcarla como enviada o cancelarla, y a cualquier rol con acceso copiar su texto.</td><td>RF-07, RF-17</td><td>CP-M.13</td></tr>
+<tr><td>RFM-13</td><td>La app debe explicar el plan requerido cuando una sección no está incluida en el plan del comercio, sin consultar la API.</td><td>RF-15</td><td>CP-M.8, CP-M.12j, CP-M.13k</td></tr>
+</table>
+
+<h2>5. Fuera del alcance de la aplicación Android</h2>
+<p>Importación de planillas, proveedores y listas de precios, comparador, gastos operativos, remarcación en lote, precios frente a la inflación, reportes semanales, edición de un producto existente, gestión de usuarios y cambio de plan. Se realizan desde la web, que la aplicación indica en «Más».</p>
+</body></html>

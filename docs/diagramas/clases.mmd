@@ -1,0 +1,206 @@
+%% Diagrama de clases del dominio de InventarioSmart. Atributos principales de cada entidad
+%% (el detalle de columnas está en der.mmd) y operaciones que expone su módulo de la API.
+classDiagram
+    direction LR
+
+    class Comercio {
+        +UUID id
+        +String nombre
+        +String cuit
+        +Plan plan
+        +Decimal ivaDefault
+        +Boolean reportesActivos
+        +obtener() Comercio
+        +actualizar(datos)
+        +completarOnboarding(nombre)
+    }
+    class Usuario {
+        +UUID id
+        +String email
+        +String firebaseUid
+        +Rol rol
+        +Boolean activo
+        +invitar(email, rol)
+        +actualizar(rol, activo)
+    }
+    class CambioPlan {
+        +Plan planAnterior
+        +Plan planNuevo
+        +DateTime creadoEn
+    }
+    class Producto {
+        +UUID id
+        +String codigo
+        +String nombre
+        +Decimal precioVenta
+        +Decimal alicuotaIva
+        +Decimal costoReposicion
+        +Int stockActual
+        +Int stockSeguridad
+        +Boolean activo
+        +crear(datos)
+        +actualizar(datos)
+        +darDeBaja()
+        +historialPrecios() PrecioVentaHistorial[]
+        +margenBruto() Decimal
+    }
+    class Movimiento {
+        +UUID id
+        +TipoMovimiento tipo
+        +Int cantidad
+        +Int efectoStock
+        +Int stockResultante
+        +Decimal precioUnitario
+        +DateTime fecha
+        +registrar(datos, claveIdempotencia)
+        +anular(motivo) Movimiento
+    }
+    class Proveedor {
+        +UUID id
+        +String nombre
+        +String email
+        +String whatsapp
+        +CanalEnvio canalPreferido
+        +Int leadTimeDias
+        +Int confiabilidad
+        +crear(datos)
+        +darDeBaja()
+        +importarListaDePrecios(archivo)
+    }
+    class PrecioProveedor {
+        +Decimal costoNeto
+        +DateTime vigenteDesde
+        +OrigenPrecio origen
+    }
+    class PrecioVentaHistorial {
+        +Decimal precioVenta
+        +DateTime vigenteDesde
+        +OrigenPrecioVenta origen
+    }
+    class Gasto {
+        +String concepto
+        +TipoGasto tipo
+        +Decimal importe
+        +Periodicidad periodicidad
+        +prorrateoPorUnidad(periodo) Decimal
+    }
+    class Alerta {
+        +EstadoAlerta estado
+        +SeveridadAlerta severidad
+        +Decimal velocidadDiaria
+        +Int puntoReposicion
+        +Int cantidadSugerida
+        +recalcular()
+        +atender()
+        +posponer()
+    }
+    class OrdenCompra {
+        +Int numero
+        +EstadoOrdenCompra estado
+        +String texto
+        +Decimal totalNeto
+        +CanalEnvio canal
+        +sugerir(severidad) OrdenCompra[]
+        +editar(lineas, texto)
+        +confirmar(canal)
+        +marcarEnviada()
+        +cancelar()
+        +whatsappUrl() String
+    }
+    class OrdenCompraItem {
+        +Int cantidad
+        +Decimal costoUnitarioNeto
+    }
+    class ReporteSemanal {
+        +String semana
+        +Json contenido
+        +DateTime enviadoEn
+        +generar(semana)
+        +reenviar()
+    }
+    class Remarcacion {
+        +CriterioRemarcacion criterio
+        +Json parametros
+        +Int cantidad
+        +DateTime revertidoEn
+        +vistaPrevia(criterio) RemarcacionItem[]
+        +aplicar()
+        +deshacer()
+    }
+    class RemarcacionItem {
+        +Decimal precioAnterior
+        +Decimal precioNuevo
+        +Boolean revertido
+    }
+    class Conversacion {
+        +String titulo
+        +DateTime actualizadoEn
+        +responder(mensaje) MensajeAsistente
+    }
+    class MensajeAsistente {
+        +RolMensaje rol
+        +String contenido
+        +Json fuentes
+        +Json acciones
+    }
+    class IndicadorEconomico {
+        +SerieIndicador serie
+        +Date fecha
+        +Decimal valor
+        +String fuente
+        +actualizarSiVence()
+    }
+
+    class Plan {
+        <<enumeration>>
+        FREE
+        PRO
+        PREMIUM
+    }
+    class Rol {
+        <<enumeration>>
+        DUENIO
+        EMPLEADO
+        CONTADOR
+    }
+    class TipoMovimiento {
+        <<enumeration>>
+        VENTA
+        INGRESO
+        AJUSTE
+    }
+    class EstadoOrdenCompra {
+        <<enumeration>>
+        BORRADOR
+        CONFIRMADA
+        ENVIADA
+        CANCELADA
+    }
+
+    Comercio "1" *-- "1..*" Usuario : integra
+    Comercio "1" *-- "0..*" Producto
+    Comercio "1" *-- "0..*" Proveedor
+    Comercio "1" *-- "0..*" Gasto
+    Comercio "1" *-- "0..*" ReporteSemanal
+    Comercio "1" *-- "0..*" CambioPlan
+    Producto "1" *-- "0..*" Movimiento : modifica stock
+    Movimiento "0..1" --> "0..1" Movimiento : corrige a
+    Usuario "1" --> "0..*" Movimiento : registra
+    Producto "0..*" --> "0..1" Proveedor : principal
+    Proveedor "1" *-- "0..*" PrecioProveedor : lista de precios
+    Producto "1" *-- "0..*" PrecioProveedor : costos
+    Producto "1" *-- "0..*" PrecioVentaHistorial : precios
+    Producto "1" *-- "0..*" Alerta
+    Proveedor "1" --> "0..*" OrdenCompra : recibe
+    OrdenCompra "1" *-- "1..*" OrdenCompraItem
+    OrdenCompraItem "0..*" --> "1" Producto
+    Alerta "0..*" --> "0..1" OrdenCompra : atendida por
+    Remarcacion "1" *-- "1..*" RemarcacionItem
+    RemarcacionItem "0..*" --> "1" Producto
+    Usuario "1" --> "0..*" Conversacion
+    Conversacion "1" *-- "0..*" MensajeAsistente
+    MensajeAsistente ..> OrdenCompra : deja en borrador
+    Comercio --> Plan
+    Usuario --> Rol
+    Movimiento --> TipoMovimiento
+    OrdenCompra --> EstadoOrdenCompra

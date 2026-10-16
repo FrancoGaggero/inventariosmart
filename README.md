@@ -115,9 +115,11 @@ pnpm dev
   (ADR 0012 y 0022).
 - Mobile (con el emulador abierto): `cd apps/mobile && flutter run --dart-define=API_URL=http://10.0.2.2:3000`
 
-  App Android (`mobile-mvp`): login (email/contraseña y Google), panel resumido del mes, inventario de mostrador con alta
-  rápida y registro de movimientos; pestañas según rol (DUENIO: Inicio · Inventario · Movimiento; EMPLEADO sin Inicio;
-  CONTADOR sólo Inicio). Contra la API publicada: `flutter run --dart-define=API_URL=https://inventariosmart-api.onrender.com`.
+  App Android (ADR 0024: el celular para el mostrador, la web para la gestión): login (email/contraseña y Google),
+  onboarding, inicio con el panel del mes y análisis, inventario de mostrador con alta rápida, registro de movimientos y
+  "Más" con alertas, falta de stock, stock parado, órdenes de compra con WhatsApp y asistente según rol y plan; tema
+  Sistema, Claro u Oscuro. Pestañas según rol (DUENIO: Inicio · Inventario · Movimiento · Más; EMPLEADO: Inventario ·
+  Movimiento · Más; CONTADOR: Inicio · Más). Contra la API publicada: `flutter run --dart-define=API_URL=https://inventariosmart-api.onrender.com`.
   APK de demo: `flutter build apk --release --dart-define=API_URL=https://inventariosmart-api.onrender.com`
   (queda en `apps/mobile/build/app/outputs/flutter-apk/app-release.apk`, ignorado por git).
   Google en Android exige registrar la huella SHA-1 en Firebase → Configuración del proyecto → app Android
@@ -160,6 +162,8 @@ Desarrollo guiado por especificación con [OpenSpec](https://github.com/Fission-
 4. `openspec archive <nombre> --yes` fusiona los specs en `openspec/specs/`.
 
 Orden de las changes y nombres de capacidad: `openspec/CAPACIDADES.md`. Guía de arranque: `docs/ARRANQUE.md`. Arquitectura: `docs/arquitectura.html`. Decisiones: `docs/adr/`. Despliegue: `docs/runbooks/deploy.md`.
+
+Documentos de la cátedra (fuente de lo que se sube a la carpeta de Drive del proyecto): `docs/entrega/`. Diagramas en `docs/diagramas/`, con su SVG y PNG: el DER, las clases y los componentes en Mermaid, y los casos de uso dibujados por script. Se regeneran con `python herramientas/diagramas/der.py` (DER desde `schema.prisma`), `node herramientas/diagramas/renderizar.mjs` (Mermaid a SVG y PNG; requiere Google Chrome) y `python herramientas/diagramas/casos_de_uso.py` seguido de `node herramientas/diagramas/renderizar.mjs casos-de-uso.svg`. La planilla de casos de prueba sale de los specs con `python herramientas/diagramas/casos_de_prueba.py`.
 
 ## Despliegue
 

@@ -9,6 +9,9 @@ apps/api/src/generated
 apps/api/prisma/migrations
 docs/openapi.json
 docs/arquitectura.html
+# Documentos para la cátedra y diagramas generados (se exportan a Google Drive tal cual).
+docs/entrega
+docs/diagramas
 openspec
 .claude
 CHANGELOG.md

@@ -1,0 +1,539 @@
+<html><head><meta charset="utf-8"><title>InventarioSmart – Propuesta de Proyecto v3.0</title><style>body{font-family:Arial,sans-serif;font-size:11pt}table{border-collapse:collapse}td,th{border:1px solid #888;padding:4px;vertical-align:top}th{background:#f2e6d3}</style></head><body>
+<p>InventarioSmart – Propuesta de Proyecto v3.0</p>
+<p>InventarioSmart | Propuesta de Proyecto | v3.0</p>
+<p>ESCUELA DA VINCI</p>
+<p>Carrera: Analista de Sistemas</p>
+<p>Seminario de Sistemas</p>
+<h1>PROPUESTA DE PROYECTO</h1>
+<p>TRABAJO FINAL DE CARRERA</p>
+<h1>InventarioSmart</h1>
+<p>Plataforma integral de gestión de inventario e inteligencia financiera para PyMEs</p>
+<p>Franco Gaggero</p>
+<p>Proyecto individual</p>
+<p>Versión 3.0 — 9 de octubre de 2026</p>
+<p><b>Control de versiones</b></p>
+<p>El presente documento se encuentra bajo control de versiones. Toda modificación sustancial de alcance, requisitos o planificación genera una nueva versión y queda registrada en la tabla siguiente.</p>
+<table>
+<tr><th>Versión</th><th>Fecha</th><th>Autor</th><th>Descripción de los cambios</th></tr>
+<tr><td>1.0</td><td>Marzo 2026</td><td>Franco Gaggero</td><td>Versión inicial de la propuesta: definición del problema, alcance funcional preliminar y stack tecnológico.</td></tr>
+<tr><td>1.1</td><td>Abril 2026</td><td>Franco Gaggero</td><td>Incorporación de los resultados de la investigación de mercado (entrevista y encuesta), benchmarking de competencia, requisitos funcionales y no funcionales, backlog priorizado e historias de usuario.</td></tr>
+<tr><td>2.0</td><td>27/08/2026</td><td>Franco Gaggero</td><td>Revisión integral. Se unifica la denominación del proyecto y se corrigen inconsistencias de fecha y de alcance geográfico de la muestra. Se incorporan: definición de actores y roles, modelo de multi-tenencia, tres nuevos requisitos funcionales (RF-13 a RF-15), dos nuevos requisitos no funcionales (RNF-09 y RNF-10), tres nuevas historias de usuario (HU-10, HU-13, HU-14), matriz de trazabilidad, modelo de negocio, limitaciones de la investigación, glosario y conclusión.</td></tr>
+<tr><td>3.0</td><td>09/10/2026</td><td>Franco Gaggero</td><td>Actualización con el producto construido. Se incorporan cinco historias de usuario (HU-15 a HU-19), cinco requisitos funcionales (RF-16 a RF-20) y cinco reglas de negocio (RN-11 a RN-15) como diferencial para el contexto argentino. Se ajustan el alcance (envío de órdenes por WhatsApp mediante enlace, sin la API de WhatsApp Business; sucursales sin tabla prevista), la distribución web / mobile, el catálogo de planes y el stack a lo efectivamente implementado. La matriz de trazabilidad pasa a citar los casos de prueba reales y se agrega el estado de avance (§5.7).</td></tr>
+</table>
+<table>
+<tr><td></td></tr>
+<tr><td>Cambio de terminología: a partir de la versión 2.0 este documento utiliza el término «requisito» (y no «requerimiento»), en línea con la nomenclatura del formulario de Entrega Final PL03 y de la grilla de seguimiento de la cátedra.</td></tr>
+</table>
+<p><b>Tabla de contenidos</b></p>
+<h1>1. Introducción</h1>
+<p>En el comercio minorista y las PyMEs existe una desconexión crítica entre la gestión física del stock y la administración financiera del negocio. Los dueños suelen llevar el control de inventario en planillas manuales o en software genérico, y calcular costos, ganancias y compras a proveedores por métodos completamente distintos y desconectados entre sí.</p>
+<p>Esta fragmentación tiene consecuencias concretas: se pierde información entre áreas, aparecen quiebres de stock inesperados, resulta imposible conocer la rentabilidad real de cada producto y la gestión financiera se vuelve reactiva en lugar de preventiva. En un contexto inflacionario, donde los costos de reposición se mueven de forma permanente, el problema se agrava: un margen calculado sobre un costo desactualizado no es un margen, es una suposición.</p>
+<p>InventarioSmart aborda esta problemática unificando inventario, finanzas y abastecimiento en una única plataforma SaaS en la nube. La solución no se limita a registrar datos: analiza activamente la rentabilidad y el movimiento de los productos, y alerta al usuario para que pueda tomar decisiones antes de que el problema ocurra.</p>
+<h2>1.1. Objetivo del documento</h2>
+<p>La finalidad del presente documento es definir la solución a la problemática sobre la cual se desarrollará el proyecto final de la carrera Analista de Sistemas de la Escuela Da Vinci, en el marco de la asignatura Seminario de Sistemas. El documento delimita el alcance funcional, especifica los requisitos, define el modelo de negocio y establece la planificación inicial que guiará las etapas de diseño y construcción.</p>
+<h2>1.2. Descripción del equipo</h2>
+<p>Integrante: Franco Gaggero</p>
+<p>Modalidad: proyecto individual.</p>
+<p>Experiencia y conocimientos: programación y desarrollo de aplicaciones web y mobile, bases de datos relacionales y diseño de interfaces. Experiencia inicial en la integración de servicios de inteligencia artificial (modelos de lenguaje vía API) y en metodologías ágiles (Scrum, Kanban).</p>
+<p>Necesidades de capacitación: profundizar en la integración de APIs de LLM en modo copiloto, en algoritmos predictivos de demanda y en arquitecturas SaaS multi-tenant escalables y seguras en la nube.</p>
+<h2>1.3. Metodología de trabajo</h2>
+<p>El proyecto se desarrolla bajo un enfoque ágil de tipo Scrum adaptado a un equipo unipersonal. El trabajo se organiza en tres fases incrementales, cada una de las cuales entrega una porción funcional del producto: primero el MVP de gestión operativa y financiera, luego la capa de inteligencia predictiva y por último el asistente conversacional.</p>
+<p>El seguimiento se realiza sobre un tablero Kanban en Trello, donde cada historia de usuario avanza por los estados Pendiente, En curso y Hecho. El backlog priorizado y el diagrama de Gantt constituyen los instrumentos formales de planificación y control de avance.</p>
+<p>La construcción se guía por especificación con OpenSpec: cada historia de usuario se trabaja como un cambio («change») con cuatro artefactos —propuesta, especificación con escenarios GIVEN / WHEN / THEN, diseño y tareas— y cada criterio de aceptación se convierte en al menos un escenario identificado con su código de caso de prueba (CP-xx.y). Las decisiones de arquitectura se registran como ADR en el repositorio, y una integración continua en GitHub Actions ejecuta en cada cambio el análisis estático, los tests unitarios y end-to-end de la API, los tests de la web y de la aplicación Android, la compilación y la verificación del contrato OpenAPI.</p>
+<h1>2. Descripción del proyecto</h1>
+<h2>2.1. Nombre</h2>
+<p>InventarioSmart</p>
+<p>La denominación se escribe siempre como una sola palabra, sin espacio intermedio, tanto en la documentación como en la interfaz y en los repositorios de código.</p>
+<h2>2.2. Alcance funcional</h2>
+<p>InventarioSmart es una plataforma integral SaaS (web y mobile) que fusiona la gestión de almacén con la inteligencia financiera del negocio.</p>
+<p>Como ENTRADAS, el sistema recibe: la carga de productos y de stock, las listas de precios de los proveedores (con importación inicial desde Excel), los movimientos de ventas, ingresos y ajustes de stock, los gastos operativos del comercio, y las consultas en lenguaje natural dirigidas al asistente de inteligencia artificial.</p>
+<p>Como SALIDAS, el sistema genera: el cálculo automático de márgenes brutos y netos, un dashboard financiero actualizado, alertas predictivas de reposición, órdenes de compra sugeridas en modo copiloto con confirmación humana y envío por correo o WhatsApp, reportes semanales de rentabilidad, la comparación de precios y costos propios contra la inflación oficial, la remarcación de precios en lote, la estimación de las ventas perdidas por quiebres de stock, la valorización del stock inmovilizado y las respuestas del bot conversacional.</p>
+<p>Como ENTRADA externa, el sistema consume además los indicadores económicos oficiales publicados por el INDEC y el Banco Central (índice de precios al consumidor, inflación mensual e interanual y tipo de cambio).</p>
+<p>La solución se apoya en tres pilares: (1) control total operativo y financiero, (2) sistema de alertas inteligentes y (3) asistente con IA en modalidad Premium.</p>
+<table>
+<tr><th>Funcionalidad</th><th>Descripción</th><th>Tipificación</th><th>Aplica a</th></tr>
+<tr><td>Gestión de inventario</td><td>Alta, baja, modificación y consulta de productos del catálogo, con actualización de stock en tiempo real.</td><td>ABM</td><td>Ambas</td></tr>
+<tr><td>Registro de movimientos de stock</td><td>Registro de ventas, ingresos de mercadería y ajustes de inventario. Es la fuente que alimenta el stock disponible, la velocidad de venta y el dashboard.</td><td>ABM / lógica de negocio</td><td>Ambas</td></tr>
+<tr><td>Gestión de proveedores</td><td>ABM de proveedores con sus datos de contacto, plazo de entrega (lead time) e índice de confiabilidad, y carga o importación de sus listas de precios.</td><td>ABM</td><td>Web</td></tr>
+<tr><td>Gestión de gastos operativos</td><td>Registro de gastos fijos y variables del comercio (alquiler, servicios, comisiones, impuestos) necesarios para el cálculo del margen neto.</td><td>ABM</td><td>Web</td></tr>
+<tr><td>Cálculo de rentabilidad</td><td>Cálculo automático de márgenes bruto y neto por producto a partir de los costos actualizados y de los gastos prorrateados.</td><td>Lógica de negocio</td><td>Ambas</td></tr>
+<tr><td>Dashboard financiero</td><td>Panel con indicadores de stock, ventas y rentabilidad actualizados automáticamente. En la aplicación Android, versión resumida del mes.</td><td>Reporte</td><td>Ambas</td></tr>
+<tr><td>Alertas predictivas</td><td>Notificación del momento óptimo de reposición según la velocidad de venta y el lead time del proveedor.</td><td>Lógica de negocio</td><td>Ambas</td></tr>
+<tr><td>Órdenes de compra (copiloto)</td><td>Generación y redacción automática de órdenes de compra; el envío requiere confirmación humana. En la aplicación Android se revisan, se ajustan las cantidades del borrador, se confirman y se envían.</td><td>Lógica de negocio / ABM</td><td>Ambas</td></tr>
+<tr><td>Importación desde Excel</td><td>Onboarding guiado que importa el inventario y los precios iniciales desde planillas de cálculo.</td><td>Lógica de negocio</td><td>Web</td></tr>
+<tr><td>Reportes semanales</td><td>Envío automático de un reporte de rentabilidad con productos estrella y oportunidades de ahorro.</td><td>Reporte</td><td>Web</td></tr>
+<tr><td>Comparador de proveedores</td><td>Comparación de precios entre proveedores para un mismo insumo y puntuación por precio, plazo y confiabilidad.</td><td>Reporte / lógica de negocio</td><td>Web</td></tr>
+<tr><td>Bot conversacional con IA</td><td>Asistente (LLM) que responde consultas del negocio en lenguaje natural y redacta correos a proveedores. Plan Premium.</td><td>Lógica de negocio</td><td>Ambas</td></tr>
+<tr><td>Gestión de usuarios y acceso</td><td>Registro e inicio de sesión, gestión de roles y permisos sobre los módulos del sistema. El alta y la edición de usuarios se realizan desde la web.</td><td>ABM</td><td>Ambas</td></tr>
+<tr><td>Gestión de plan y suscripción</td><td>Alta del comercio, selección de plan y control de las funcionalidades habilitadas según el plan contratado.</td><td>ABM / lógica de negocio</td><td>Web</td></tr>
+<tr><td>Precios frente a la inflación ◆</td><td>Indicadores oficiales (INDEC y BCRA) y comparación de la evolución de los precios de venta y los costos del comercio contra la inflación, con estado y precio sugerido por producto.</td><td>Reporte / lógica de negocio</td><td>Web</td></tr>
+<tr><td>Envío de órdenes por WhatsApp ◆</td><td>Enlace con el mensaje de la orden redactado, que el dueño abre y envía desde su propio teléfono.</td><td>Lógica de negocio</td><td>Ambas</td></tr>
+<tr><td>Remarcación asistida ◆</td><td>Actualización de precios en lote por criterio (inflación, margen, porcentaje o margen objetivo), con vista previa, aplicación atómica y deshacer.</td><td>Lógica de negocio</td><td>Web</td></tr>
+<tr><td>Pérdidas por falta de stock ◆</td><td>Estimación de las unidades, las ventas y la ganancia perdidas por los quiebres de stock del período.</td><td>Reporte</td><td>Ambas</td></tr>
+<tr><td>Stock parado ◆</td><td>Productos con stock y sin ventas en el período, con el capital inmovilizado a costo de reposición.</td><td>Reporte</td><td>Ambas</td></tr>
+</table>
+<p>Tabla 1. Funcionalidades de la aplicación web y mobile. ◆ Incorporada en la versión 3.0. La distribución entre web y aplicación Android sigue un criterio explícito: van al celular las tareas que se hacen en el mostrador o fuera del local, que entran en una pantalla chica y duran menos de un minuto; lo que exige comparar tablas, cargar planillas o revisar muchos productos a la vez queda en la web (ADR 0024).</p>
+<h3>2.2.1. Fuera del alcance</h3>
+<p>Se delimitan explícitamente las siguientes exclusiones, a fin de evitar ambigüedades en la evaluación del proyecto:</p>
+<p>Facturación electrónica y emisión de comprobantes fiscales ante AFIP/ARCA. El sistema registra ventas a efectos de gestión de stock y rentabilidad, no a efectos fiscales.</p>
+<p>Integración con medios de pago y cobro de la suscripción. La gestión del plan se resuelve a nivel de habilitación funcional; la cobranza queda fuera del alcance técnico del trabajo final.</p>
+<p>Gestión de sucursales múltiples. La funcionalidad no se implementa en el alcance actual. Como todas las entidades de negocio cuelgan del comercio, una sucursal se incorporaría más adelante como una entidad intermedia mediante una migración, sin rediseñar el aislamiento entre comercios.</p>
+<p>Integración con la API de WhatsApp Business. Se mantiene como evolución futura debido a los requisitos de aprobación comercial de la plataforma. Las alertas se notifican vía aplicación y correo electrónico, y las órdenes de compra se envían por WhatsApp mediante un enlace con el mensaje redactado que el dueño abre y envía desde su propio teléfono (HU-16), sin que el sistema envíe mensajes por su cuenta.</p>
+<p>Contabilidad, liquidación de sueldos y gestión impositiva.</p>
+<p>Correos de texto libre redactados por el asistente. El asistente prepara órdenes de compra en borrador, cuyo texto se revisa y se envía desde Órdenes; no redacta ni envía correos por fuera de ese circuito.</p>
+<h2>2.3. Modelo de multi-tenencia</h2>
+<p>Al tratarse de una plataforma SaaS, el sistema debe alojar a múltiples comercios sobre una misma instancia. Se adopta el siguiente modelo:</p>
+<p>La entidad principal de aislamiento es el Comercio (tenant). Todo producto, proveedor, movimiento, gasto y alerta pertenece a un único comercio.</p>
+<p>Un usuario pertenece a un comercio y accede exclusivamente a los datos de ese comercio. Ningún dato es visible entre tenants.</p>
+<p>El plan contratado se asocia al comercio, no al usuario individual.</p>
+<p>El aislamiento se aplica en dos capas: la API fija el comercio del usuario en cada pedido y filtra todas las consultas, y PostgreSQL aplica políticas de Row Level Security que impiden leer o escribir filas de otro comercio aunque una consulta omitiera el filtro (ADR 0002). Los indicadores económicos oficiales son la única información de referencia global, compartida por todos los comercios y de sólo lectura.</p>
+<p>Esta definición es determinante para el diseño del modelo entidad-relación y del esquema de permisos, y por lo tanto se establece en esta instancia y no durante la etapa de construcción.</p>
+<h2>2.4. Actores y roles del sistema</h2>
+<p>Se definen a continuación los actores que interactúan con InventarioSmart. Esta definición constituye la base para la elaboración del diagrama de casos de uso y para el esquema de permisos del sistema.</p>
+<table>
+<tr><th>Actor</th><th>Tipo</th><th>Descripción y alcance de acceso</th></tr>
+<tr><td>Dueño / Administrador</td><td>Primario</td><td>Propietario del comercio. Acceso total: inventario, proveedores, gastos, rentabilidad, dashboard, configuración, gestión de usuarios y del plan contratado. Es el único rol que puede confirmar el envío de órdenes de compra.</td></tr>
+<tr><td>Empleado / Operador</td><td>Primario</td><td>Personal del comercio. Puede consultar el catálogo y registrar movimientos de stock (ventas, ingresos y ajustes). No accede a costos, márgenes, gastos ni al dashboard financiero.</td></tr>
+<tr><td>Contador / Asesor externo</td><td>Primario</td><td>Acceso de solo lectura al dashboard, la rentabilidad, los gastos, el historial de movimientos, las alertas, las órdenes de compra, los reportes, la comparación con la inflación, las remarcaciones y los análisis de stock. No accede al catálogo ni a los proveedores, y no puede modificar datos operativos. Responde a una necesidad relevada explícitamente en la encuesta.</td></tr>
+<tr><td>Sistema (procesos automáticos)</td><td>Secundario</td><td>Actor no humano que ejecuta los procesos programados: evaluación de puntos de reposición, generación de alertas y envío de los reportes semanales.</td></tr>
+<tr><td>Proveedor</td><td>Externo</td><td>Receptor de las órdenes de compra generadas por el sistema, por correo electrónico o por WhatsApp. No opera dentro de la plataforma ni posee credenciales de acceso.</td></tr>
+<tr><td>Servicio de IA (LLM)</td><td>Externo</td><td>Servicio de terceros (Anthropic) consumido vía API que resuelve las consultas en lenguaje natural del bot conversacional en el plan Premium. Sólo accede a los datos del comercio mediante consultas predefinidas.</td></tr>
+<tr><td>Fuentes oficiales (INDEC y BCRA) ◆</td><td>Externo</td><td>APIs públicas que proveen el índice de precios al consumidor, la inflación y el tipo de cambio. El sistema las consulta una vez por día y conserva el último dato si no responden.</td></tr>
+<tr><td>Servicio de correo y autenticación</td><td>Externo</td><td>Resend, para el envío de alertas, órdenes y reportes, y Firebase Authentication, para el inicio de sesión con email o Google.</td></tr>
+</table>
+<p>Tabla 2. Actores del sistema. ◆ Incorporado en la versión 3.0.</p>
+<h2>2.5. Tecnología</h2>
+<p>Se detalla el stack tecnológico, considerando lenguajes, frameworks, base de datos, sistema operativo, APIs de autenticación, otras APIs e integración con el ORM. En la versión 3.0 se reemplaza la propuesta inicial por las tecnologías y versiones efectivamente utilizadas.</p>
+<table>
+<tr><th>Componente</th><th>Tecnología</th><th>Justificación</th></tr>
+<tr><td>Lenguaje – Web</td><td>TypeScript / JavaScript</td><td>Tipado estático sobre el ecosistema JavaScript; reduce errores en tiempo de desarrollo y unifica el lenguaje entre frontend y backend.</td></tr>
+<tr><td>Lenguaje – Mobile</td><td>Dart (Flutter)</td><td>Permite construir la aplicación Android desde una única base de código, con buen rendimiento nativo.</td></tr>
+<tr><td>Frameworks</td><td>React 19 con Vite, Tailwind CSS v4 y TanStack Query (frontend web); NestJS 11 sobre Node.js 22 (backend); Flutter 3.47 con Riverpod, dio y go_router (mobile)</td><td>NestJS impone una arquitectura modular por defecto, alineada con el requisito de escalabilidad independiente por módulo.</td></tr>
+<tr><td>Base de datos</td><td>PostgreSQL 18 (Neon)</td><td>Motor relacional robusto, adecuado para la integridad transaccional que exigen el stock y los movimientos. Row Level Security garantiza el aislamiento entre comercios (RNF-10).</td></tr>
+<tr><td>Sistema operativo</td><td>Multiplataforma: navegador en cliente; backend sobre Linux en la nube</td><td>Estándar de despliegue para aplicaciones SaaS.</td></tr>
+<tr><td>Autenticación</td><td>OAuth 2.0 / Firebase Authentication</td><td>Delegación del inicio de sesión a un proveedor confiable, con soporte de inicio de sesión con Google, relevado como preferencia de uso.</td></tr>
+<tr><td>Otras APIs</td><td>API de Anthropic para el asistente conversacional; Resend para el correo transaccional; APIs públicas del INDEC (datos.gob.ar) y del BCRA para los indicadores económicos</td><td>Consumo del modelo de lenguaje como servicio, sin infraestructura propia de entrenamiento. Las APIs oficiales no requieren credenciales.</td></tr>
+<tr><td>ORM</td><td>Prisma ORM 7</td><td>Tipado extremo a extremo con TypeScript y control de migraciones del esquema.</td></tr>
+<tr><td>Infraestructura y calidad</td><td>Render (API en Docker), Vercel (web), Neon (base de datos), GitHub Actions (integración continua), monorepo pnpm</td><td>Despliegue automático en cada cambio de la rama principal y verificación del contrato OpenAPI entre la API y los clientes.</td></tr>
+</table>
+<p>Tabla 3. Stack tecnológico.</p>
+<h2>2.6. Necesidades a satisfacer y oportunidad</h2>
+<p>La necesidad detectada es la ausencia de una herramienta única que integre el control de inventario con la inteligencia financiera, orientada a PyMEs y comercios minoristas. Las técnicas de investigación aplicadas confirman el diagnóstico.</p>
+<p>En la entrevista en profundidad, realizada a un comerciante del rubro repuestos automotores, se validó que la actualización manual de las listas de precios y el consiguiente recálculo de márgenes constituyen su mayor cuello de botella operativo.</p>
+<p>En la encuesta cuantitativa (n = 24) los resultados fueron consistentes con ese diagnóstico:</p>
+<table>
+<tr><th>Hallazgo</th><th>Resultado</th><th>Lectura</th></tr>
+<tr><td>Utiliza un sistema digital de inventario</td><td>37,5 % sí</td><td>Más de 6 de cada 10 comercios no utilizan ningún sistema digital: el mercado no está saturado.</td></tr>
+<tr><td>Conoce con exactitud su margen por producto</td><td>20,8 % sí</td><td>El 79,2 % desconoce su rentabilidad real. Es la necesidad crítica no cubierta y el núcleo de la propuesta de valor.</td></tr>
+<tr><td>Sufre quiebres de stock al menos una vez por mes</td><td>75,0 % sí</td><td>3 de cada 4 comercios sufren quiebres mensuales: el dolor está validado y es recurrente.</td></tr>
+<tr><td>Dedicaría tiempo a aprender una plataforma centralizada</td><td>83,3 % sí</td><td>Barrera de adopción baja, condicionada a que la experiencia de uso sea simple.</td></tr>
+<tr><td>Pagaría una suscripción mensual</td><td>70,8 % sí</td><td>Viabilidad comercial del modelo SaaS confirmada en términos de disposición, aunque no de monto.</td></tr>
+</table>
+<p>Tabla 4. Principales hallazgos de la encuesta de validación (n = 24, marzo de 2026).</p>
+<p>La oportunidad consiste en unificar estos procesos en una plataforma inteligente en la nube que traslade al comerciante de un modelo reactivo a uno preventivo: alertando antes del quiebre y calculando automáticamente la rentabilidad real de cada producto.</p>
+<h3>2.6.1. Limitaciones de la investigación</h3>
+<p>Se explicitan las limitaciones metodológicas del relevamiento, a fin de dimensionar correctamente el alcance de sus conclusiones:</p>
+<p>Muestra no probabilística por conveniencia (n = 24), distribuida mediante formulario digital en grupos y redes de comerciantes. Los resultados son indicativos y no permiten inferencia estadística sobre el universo de PyMEs.</p>
+<p>Existe sesgo de autoselección: quienes respondieron un formulario sobre gestión digital tienden a estar más predispuestos a la digitalización que el promedio del sector.</p>
+<p>La encuesta relevó la disposición a pagar (70,8 %) pero no el monto que el comerciante estaría dispuesto a abonar. La definición de precios del modelo de negocio (sección 4) constituye por lo tanto una hipótesis a validar y no un resultado del relevamiento.</p>
+<p>La entrevista en profundidad fue única y sobre un solo rubro, por lo que sus conclusiones cualitativas requieren confirmación en otros rubros.</p>
+<p>Se prevé como acción de validación complementaria una segunda instancia de encuesta con pregunta de rango de precio, previa al lanzamiento comercial.</p>
+<h2>2.7. Beneficios esperados</h2>
+<table>
+<tr><th>Dimensión</th><th>Situación actual</th><th>Situación posterior a la implementación</th></tr>
+<tr><td>Actualización de costos</td><td>El dueño dedica horas semanales a actualizar listas de precios de forma manual.</td><td>Los costos se actualizan por importación y los márgenes se recalculan automáticamente.</td></tr>
+<tr><td>Conocimiento de la rentabilidad</td><td>Desconoce el margen real por producto; estima &quot;a ojo&quot;.</td><td>El dashboard expone márgenes bruto y neto por producto y consolidados.</td></tr>
+<tr><td>Gestión del stock</td><td>Sufre quiebres que le hacen perder ventas y detecta el faltante cuando ya ocurrió.</td><td>Las alertas predictivas avisan el momento óptimo de reposición antes del quiebre.</td></tr>
+<tr><td>Decisión de compra</td><td>Compra por intuición, sin datos y sin comparar proveedores.</td><td>Órdenes de compra sugeridas y redactadas por el sistema, con comparación de proveedores y confirmación humana.</td></tr>
+<tr><td>Acceso a la información</td><td>Los datos están dispersos entre planillas, cuadernos y WhatsApp.</td><td>Información centralizada, consultable en lenguaje natural mediante el asistente de IA.</td></tr>
+</table>
+<p>Tabla 5. Comparación de la situación previa y posterior a la implementación.</p>
+<p>El resultado agregado es el ahorro de tiempo administrativo, la reducción del error humano, la disminución de los quiebres de stock y la toma de decisiones de compra respaldada por datos.</p>
+<h2>2.8. Investigación de mercado y benchmarking</h2>
+<p>El mercado objetivo son las PyMEs y comercios minoristas del Área Metropolitana de Buenos Aires y de los principales centros urbanos del país —Córdoba, Rosario y Mendoza—, alcance geográfico que se corresponde con la composición efectiva de la muestra relevada. Se trata de un segmento con creciente necesidad de digitalización y obligado por el contexto inflacionario a controlar sus márgenes con precisión.</p>
+<p>El relevamiento identificó cuatro categorías de competidores, que se contrastan a continuación con la propuesta.</p>
+<table>
+<tr><th>Solución del mercado</th><th>Funcionalidad presente</th><th>Funcionalidad propuesta</th><th>Justificación de la diferencia</th></tr>
+<tr><td>Tango Gestión / Xubio / ContaNet (ERP local)</td><td>Módulos de facturación e inventario, pero separados y sin asistencia predictiva.</td><td>Inventario y finanzas integrados en un único dashboard, con alertas predictivas.</td><td>Integración total y asistencia proactiva accesible, con menor curva de aprendizaje y menor costo.</td></tr>
+<tr><td>Excel / Google Sheets</td><td>Registro manual de stock y precios, sin alertas ni sincronización.</td><td>Recálculo automático de márgenes y alertas autónomas.</td><td>Elimina la carga manual y el error de tipeo; centraliza y escala la información.</td></tr>
+<tr><td>Zoho Inventory / Odoo (SaaS internacional)</td><td>Funciones avanzadas, no adaptadas a la inflación ni a la dinámica de proveedores locales.</td><td>Actualización dinámica de costos pensada para el contexto inflacionario argentino.</td><td>Adaptación al mercado local y soporte en español como parte del núcleo del producto.</td></tr>
+<tr><td>ERP y bots con IA en planes corporativos</td><td>Asistentes inteligentes disponibles únicamente en planes de alto costo.</td><td>Asistente conversacional en modo copiloto a precio accesible para PyMEs.</td><td>Democratiza el acceso a la IA para el segmento PyME, con confirmación humana obligatoria.</td></tr>
+</table>
+<p>Tabla 6. Cuadro comparativo de soluciones del mercado (benchmarking).</p>
+<p>La diferencia central de InventarioSmart consiste en integrar stock y finanzas en un único tablero, incorporar inteligencia predictiva y un asistente conversacional accesibles, y estar diseñado específicamente para la realidad operativa de la PyME argentina.</p>
+<h2>2.9. Perfil del usuario objetivo</h2>
+<p>El buyer persona y el mapa de empatía fueron desarrollados en el documento de anteproyecto. Se sintetiza aquí el perfil resultante, dado que orienta las decisiones de diseño de la interfaz y la priorización del backlog.</p>
+<table>
+<tr><th>Dimensión</th><th>Descripción</th></tr>
+<tr><td>Perfil</td><td>Carlos, propietario y administrador directo de un comercio minorista. Rango etario predominante de la muestra: 35 a 55 años.</td></tr>
+<tr><td>Contexto del negocio</td><td>Microemprendimiento o pequeña empresa de 1 a 5 empleados (moda de la muestra), radicado en el Área Metropolitana de Buenos Aires.</td></tr>
+<tr><td>Herramientas actuales</td><td>Excel y WhatsApp. No utiliza un sistema de gestión formal.</td></tr>
+<tr><td>Frustraciones</td><td>Actualizar precios a mano cada vez que un proveedor los modifica; no saber cuánto gana realmente por producto; quedarse sin stock de los artículos que más rotan; no tener los datos ordenados cuando el contador se los pide.</td></tr>
+<tr><td>Motivaciones</td><td>Recuperar tiempo administrativo, dejar de perder ventas por faltantes y tomar decisiones de compra con respaldo en datos.</td></tr>
+<tr><td>Barreras de adopción</td><td>Percepción de que los sistemas son complejos y caros; experiencias previas con software que resultó difícil de usar; falta de tiempo para capacitarse.</td></tr>
+<tr><td>Implicancia para el diseño</td><td>La simplicidad de la interfaz es un requisito de negocio, no una preferencia estética: condiciona directamente la adopción (RNF-01).</td></tr>
+</table>
+<p>Tabla 7. Síntesis del buyer persona (fuente: anteproyecto, entrevista en profundidad y encuesta).</p>
+<h1>3. Requisitos del sistema</h1>
+<p>Se especifican a continuación los requisitos funcionales, no funcionales y las reglas de negocio que rigen el comportamiento del sistema. Los requisitos incorporados en la versión 2.0 del documento se identifican con el símbolo ★ y los incorporados en la versión 3.0 con el símbolo ◆.</p>
+<h2>3.1. Requisitos funcionales</h2>
+<p>Los requisitos funcionales describen las funciones que el sistema debe ofrecer al usuario. Se derivan de las funcionalidades relevadas en la investigación y validadas mediante la entrevista y la encuesta.</p>
+<table>
+<tr><th>Código</th><th>Requisito funcional</th><th>Prioridad</th></tr>
+<tr><td>RF-01</td><td>El sistema debe permitir el alta, baja, modificación y consulta de productos del inventario.</td><td>Alta</td></tr>
+<tr><td>RF-02</td><td>El sistema debe mantener y actualizar el stock disponible de cada producto a partir de los movimientos registrados.</td><td>Alta</td></tr>
+<tr><td>RF-03</td><td>El sistema debe permitir el ABM de proveedores —incluyendo datos de contacto, plazo de entrega (lead time) e índice de confiabilidad— y la carga o importación de sus listas de precios.</td><td>Alta</td></tr>
+<tr><td>RF-04</td><td>El sistema debe calcular automáticamente el margen de ganancia bruto y neto por producto.</td><td>Alta</td></tr>
+<tr><td>RF-05</td><td>El sistema debe mostrar un dashboard financiero con indicadores actualizados automáticamente.</td><td>Alta</td></tr>
+<tr><td>RF-06</td><td>El sistema debe generar alertas predictivas de reposición según la velocidad de venta y el lead time del proveedor.</td><td>Media</td></tr>
+<tr><td>RF-07</td><td>El sistema debe sugerir y redactar órdenes de compra, requiriendo confirmación humana para su envío (modo copiloto).</td><td>Media</td></tr>
+<tr><td>RF-08</td><td>El sistema debe permitir importar los datos iniciales desde archivos Excel mediante un onboarding guiado.</td><td>Alta</td></tr>
+<tr><td>RF-09</td><td>El sistema debe generar y enviar reportes semanales de rentabilidad de forma automática.</td><td>Media</td></tr>
+<tr><td>RF-10</td><td>El sistema debe incluir un asistente conversacional (IA) que responda consultas en lenguaje natural (plan Premium).</td><td>Baja</td></tr>
+<tr><td>RF-11</td><td>El sistema debe gestionar usuarios, roles, permisos y la autenticación de acceso.</td><td>Alta</td></tr>
+<tr><td>RF-12</td><td>El sistema debe comparar precios entre proveedores para un mismo insumo y puntuarlos por precio, plazo y confiabilidad.</td><td>Media</td></tr>
+<tr><td>RF-13 ★</td><td>El sistema debe permitir registrar los movimientos de stock —ventas, ingresos de mercadería y ajustes de inventario—, que constituyen la fuente de datos del stock disponible, de la velocidad de venta y de los indicadores de venta del dashboard.</td><td>Alta</td></tr>
+<tr><td>RF-14 ★</td><td>El sistema debe permitir el ABM de gastos operativos, fijos y variables, y su prorrateo sobre los productos, insumo indispensable para el cálculo del margen neto.</td><td>Alta</td></tr>
+<tr><td>RF-15 ★</td><td>El sistema debe gestionar el alta del comercio, el plan contratado y la habilitación o bloqueo de las funcionalidades según dicho plan.</td><td>Baja</td></tr>
+<tr><td>RF-16 ◆</td><td>El sistema debe obtener los indicadores económicos oficiales (IPC del INDEC, inflación y tipo de cambio del BCRA) y comparar la evolución de los precios de venta y de los costos del comercio contra la inflación, informando el estado de cada producto y un precio sugerido.</td><td>Media</td></tr>
+<tr><td>RF-17 ◆</td><td>El sistema debe permitir enviar una orden de compra confirmada por WhatsApp mediante un enlace con el mensaje redactado, que el dueño abre y envía desde su teléfono.</td><td>Media</td></tr>
+<tr><td>RF-18 ◆</td><td>El sistema debe permitir remarcar precios de venta en lote según un criterio, con vista previa, aplicación completa o nula y la posibilidad de deshacer la remarcación.</td><td>Media</td></tr>
+<tr><td>RF-19 ◆</td><td>El sistema debe detectar los quiebres de stock del período y estimar las unidades, las ventas y la ganancia perdidas a partir del historial de movimientos.</td><td>Media</td></tr>
+<tr><td>RF-20 ◆</td><td>El sistema debe identificar los productos con stock y sin ventas en un período y valorizar el capital inmovilizado a costo de reposición.</td><td>Media</td></tr>
+</table>
+<p>Tabla 8. Requisitos funcionales. ★ Incorporado en la versión 2.0. ◆ Incorporado en la versión 3.0.</p>
+<table>
+<tr><td></td></tr>
+<tr><td>Fundamento de las incorporaciones. RF-13 resuelve una omisión de la versión anterior: el sistema declaraba actualizar el stock «con cada venta» y calcular la «velocidad de venta», pero ninguna funcionalidad capturaba esas ventas. RF-14 hace posible el margen neto comprometido en RF-04, que no puede obtenerse únicamente a partir del costo y del precio de venta. RF-15 sostiene la distinción entre los planes Free, Pro y Premium sobre la que se apoya el modelo de negocio. Los requisitos RF-16 a RF-20 surgen durante la construcción como diferencial para el contexto argentino (RNF-08): el contexto inflacionario y la actualización manual de precios, señalada en la entrevista como el principal cuello de botella, justifican RF-16 y RF-18; WhatsApp como canal habitual con los proveedores, relevado en el buyer persona, justifica RF-17; y RF-19 y RF-20 ponen un monto en pesos a los dos problemas de stock que el comercio no ve: lo que deja de vender por faltantes y lo que inmoviliza en mercadería sin rotación.</td></tr>
+</table>
+<h2>3.2. Requisitos no funcionales</h2>
+<p>Los requisitos no funcionales definen las cualidades y restricciones del sistema —cómo debe comportarse— más allá de las funciones concretas que ofrece.</p>
+<table>
+<tr><th>Código</th><th>Requisito no funcional</th><th>Categoría</th></tr>
+<tr><td>RNF-01</td><td>La interfaz debe ser simple e intuitiva, comprensible para usuarios sin formación técnica. Constituye un requisito de negocio: condiciona la adopción del producto.</td><td>Usabilidad</td></tr>
+<tr><td>RNF-02</td><td>La plataforma debe operar como SaaS en la nube, accesible las 24 horas, con una disponibilidad objetivo del 99 %.</td><td>Disponibilidad</td></tr>
+<tr><td>RNF-03</td><td>Los datos deben almacenarse cifrados, la autenticación debe resolverse mediante OAuth 2.0 y el acceso debe controlarse por roles.</td><td>Seguridad</td></tr>
+<tr><td>RNF-04</td><td>El dashboard y las consultas principales deben responder en menos de 3 segundos.</td><td>Rendimiento</td></tr>
+<tr><td>RNF-05</td><td>La arquitectura debe ser modular, permitiendo escalar cada módulo de forma independiente.</td><td>Escalabilidad</td></tr>
+<tr><td>RNF-06</td><td>La aplicación web debe ser responsive y debe existir una aplicación mobile para Android.</td><td>Compatibilidad</td></tr>
+<tr><td>RNF-07</td><td>El código debe ser modular y estar documentado, para facilitar el mantenimiento y la evolución del producto.</td><td>Mantenibilidad</td></tr>
+<tr><td>RNF-08</td><td>El sistema debe adaptarse al contexto argentino: moneda en pesos, escenario inflacionario e idioma español.</td><td>Localización</td></tr>
+<tr><td>RNF-09 ★</td><td>El sistema debe realizar un respaldo automático diario de la base de datos, con retención mínima de 30 días y procedimiento de recuperación documentado y verificable.</td><td>Resguardo</td></tr>
+<tr><td>RNF-10 ★</td><td>El sistema debe garantizar el aislamiento total de los datos entre comercios (tenants): ninguna consulta debe poder retornar información perteneciente a otro comercio.</td><td>Seguridad / Multi-tenencia</td></tr>
+</table>
+<p>Tabla 9. Requisitos no funcionales. ★ Incorporado en la versión 2.0.</p>
+<h2>3.3. Reglas de negocio</h2>
+<p>Las reglas de negocio precisan la lógica de cálculo y las restricciones de integridad que el sistema debe respetar. Su especificación en esta instancia evita ambigüedades durante el diseño del modelo de datos y la construcción.</p>
+<table>
+<tr><th>Código</th><th>Regla de negocio</th></tr>
+<tr><td>RN-01</td><td>Margen bruto ($) = Precio de venta neto − Costo de reposición neto. Margen bruto (%) = Margen bruto ÷ Precio de venta neto × 100.</td></tr>
+<tr><td>RN-02</td><td>Margen neto ($) = Margen bruto − Gastos operativos prorrateados por unidad. El prorrateo se realiza sobre las unidades vendidas del período.</td></tr>
+<tr><td>RN-03</td><td>Todos los cálculos de rentabilidad se efectúan sobre importes netos, sin IVA. La alícuota es un parámetro configurable por producto, con valor por defecto del 21 %.</td></tr>
+<tr><td>RN-04</td><td>Punto de reposición = (Velocidad de venta diaria × Lead time del proveedor en días) + Stock de seguridad. La velocidad de venta se calcula sobre los movimientos de los últimos 30 días.</td></tr>
+<tr><td>RN-05</td><td>El código de producto debe ser único dentro de cada comercio. Puede repetirse entre comercios distintos.</td></tr>
+<tr><td>RN-06</td><td>Ninguna orden de compra puede enviarse a un proveedor sin la confirmación explícita del Dueño / Administrador. El sistema opera siempre en modo copiloto.</td></tr>
+<tr><td>RN-07</td><td>Los movimientos de stock no se eliminan. Una corrección se registra como un movimiento de ajuste que referencia al original, preservando la trazabilidad histórica.</td></tr>
+<tr><td>RN-08</td><td>El costo de reposición vigente de un producto es el último costo informado por su proveedor principal, importado en una lista de precios o cargado a mano. Al actualizarse, se recalculan automáticamente los márgenes de los productos afectados.</td></tr>
+<tr><td>RN-09</td><td>El asistente conversacional se encuentra habilitado exclusivamente para los comercios con plan Premium activo.</td></tr>
+<tr><td>RN-10</td><td>Un usuario pertenece a un único comercio y accede exclusivamente a los datos de ese comercio.</td></tr>
+<tr><td>RN-11 ◆</td><td>Variación real = ((1 + variación nominal) ÷ (1 + variación de referencia) − 1) × 100. Un precio está atrasado si su variación real contra el IPC es menor a −2 %, adelantado si supera +2 % y alineado en el medio.</td></tr>
+<tr><td>RN-12 ◆</td><td>Una remarcación en lote no baja precios salvo pedido explícito, se aplica completa o no se aplica, y puede deshacerse mientras los precios remarcados no hayan vuelto a cambiar.</td></tr>
+<tr><td>RN-13 ◆</td><td>Puntaje de un proveedor para un insumo = 0,60 × precio + 0,25 × plazo de entrega + 0,15 × confiabilidad, con cada componente de 0 a 100 relativo a los proveedores comparados. Se recomienda el de mayor puntaje.</td></tr>
+<tr><td>RN-14 ◆</td><td>Un quiebre es el tiempo en que un producto activo estuvo con stock cero. Demanda diaria = ventas no anuladas de los días con stock de los últimos 90 ÷ esos días; unidades perdidas = días sin stock × demanda diaria; la venta y la ganancia perdidas se valúan con el precio neto y el margen bruto vigentes. Con menos de 7 días con stock o sin ventas, no se estima.</td></tr>
+<tr><td>RN-15 ◆</td><td>Un producto activo con stock está parado si no tuvo ventas no anuladas en los últimos N días (30, 60, 90 o 180) y se dio de alta antes de ese período. Capital parado = stock × costo de reposición vigente.</td></tr>
+</table>
+<p>Tabla 10. Reglas de negocio. ◆ Incorporada en la versión 3.0. RN-13 formaliza el criterio de puntuación del comparador de proveedores (HU-12), que en la versión 2.0 se enunciaba sin ponderaciones.</p>
+<h1>4. Modelo de negocio</h1>
+<p>InventarioSmart se comercializa bajo un modelo SaaS de suscripción mensual por comercio, con una estructura escalonada de tres planes. La segmentación responde al hallazgo de la encuesta: existe una disposición a pagar del 70,8 %, pero el segmento es sensible al precio y requiere una vía de entrada sin costo que permita comprobar el valor del producto antes de comprometerse.</p>
+<table>
+<tr><th>Plan</th><th>Destinatario</th><th>Funcionalidades incluidas</th><th>Referencia de precio</th></tr>
+<tr><td>Free</td><td>Comercio que evalúa la herramienta</td><td>Hasta 50 productos y 1 usuario. Inventario y movimientos de stock, panel y rentabilidad (margen bruto y neto), gastos operativos, proveedores y listas de precios, e importación desde Excel. Sin alertas, sin reportes automáticos, sin asistente.</td><td>Sin costo</td></tr>
+<tr><td>Pro</td><td>PyME de 1 a 10 empleados en operación</td><td>Productos y usuarios ilimitados. Todo lo incluido en Free, más alertas predictivas, pérdidas por falta de stock, stock parado, órdenes de compra en modo copiloto con envío por correo o WhatsApp, reportes semanales, precios frente a la inflación y remarcación asistida.</td><td>Nivel intermedio</td></tr>
+<tr><td>Premium</td><td>PyME con múltiples proveedores</td><td>Todo lo incluido en Pro, más el asistente conversacional con IA y el comparador de proveedores.</td><td>Nivel superior</td></tr>
+</table>
+<p>Tabla 11. Estructura de planes. En la versión 3.0 la gestión operativa y financiera completa pasa al plan Free, de modo que el comerciante obtenga valor en la primera sesión (§4.2); los planes pagos concentran la capa preventiva y analítica. El catálogo de funcionalidades por plan es único y lo utilizan tanto los bloqueos del sistema como la página de planes (ADR 0019).</p>
+<table>
+<tr><td></td></tr>
+<tr><td>Los valores monetarios concretos de cada plan no se fijan en este documento. La encuesta relevó la disposición a pagar pero no el monto, por lo que cualquier precio publicado en esta instancia constituiría una afirmación sin respaldo. La definición del precio queda supeditada a la segunda instancia de validación prevista en la sección 2.6.1, que incorporará una pregunta de rango de precio. El diseño del plan Free responde además a un pedido explícito relevado en la encuesta: la posibilidad de probar una demostración gratuita antes de contratar.</td></tr>
+</table>
+<h2>4.1. Estructura de costos</h2>
+<p>Los costos operativos previstos para la plataforma se agrupan en cuatro conceptos: la infraestructura en la nube (servidor de aplicación y base de datos gestionada), el consumo de la API del modelo de lenguaje —variable y directamente proporcional al uso del plan Premium, razón por la cual esta funcionalidad se restringe al plan superior—, el servicio de envío de correo electrónico transaccional para alertas y reportes, y el dominio junto con los certificados de seguridad. Durante el desarrollo y la demostración, la infraestructura opera sobre los planes gratuitos de Render, Vercel, Neon y Resend; en el plan gratuito de Render el servidor se suspende por inactividad y la primera consulta puede demorar, situación que la interfaz informa al usuario.</p>
+<p>El único costo significativamente variable es el del modelo de lenguaje. Esta característica determina una decisión de diseño relevante: el asistente conversacional debe operar sobre consultas acotadas al contexto del negocio, y no como un chat de propósito general, a fin de mantener el costo por usuario dentro de un rango previsible.</p>
+<h2>4.2. Estrategia de captación</h2>
+<p>La estrategia se apoya en tres ejes derivados del relevamiento. En primer lugar, la baja fricción de entrada: el plan Free y la importación desde Excel permiten que el comerciante migre su planilla actual y obtenga valor en la primera sesión de uso, atendiendo a la barrera identificada en la sección 2.9. En segundo lugar, la conversión por necesidad: la primera alerta de quiebre evitada y el primer reporte de rentabilidad constituyen los momentos de demostración de valor que justifican el pasaje al plan Pro. En tercer lugar, la difusión por canales sectoriales: cámaras de comercio, agrupaciones de comerciantes por rubro y grupos de mensajería, que son los mismos canales por los cuales se distribuyó la encuesta y que demostraron capacidad de alcance efectivo sobre el segmento.</p>
+<h1>5. Planificación inicial del proyecto</h1>
+<p>Esta sección integra la planificación del proyecto: el backlog priorizado, las historias de usuario con sus criterios de aceptación, la matriz de trazabilidad, el prototipo y los instrumentos de seguimiento.</p>
+<h2>5.1. Backlog priorizado</h2>
+<p>El backlog prioriza las funcionalidades según el valor que entregan al usuario y la dependencia técnica entre módulos. El orden de desarrollo es el siguiente: en primer lugar el MVP, que comprende la gestión operativa y financiera del comercio; en segundo lugar la capa de inteligencia predictiva; y por último el asistente conversacional. La prioridad se expresa como Alta, Media o Baja, y la estimación en Story Points (SP).</p>
+<table>
+<tr><th>ID</th><th>Historia de usuario</th><th>RF</th><th>Prior.</th><th>SP</th><th>Fase</th></tr>
+<tr><td>HU-01</td><td>Gestión de inventario (ABM de productos y stock)</td><td>RF-01, RF-02</td><td>Alta</td><td>8</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-02</td><td>Gestión de proveedores y listas de precios</td><td>RF-03</td><td>Alta</td><td>8</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-03</td><td>Cálculo automático de rentabilidad</td><td>RF-04</td><td>Alta</td><td>8</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-04</td><td>Dashboard financiero</td><td>RF-05</td><td>Alta</td><td>5</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-05</td><td>Importación desde Excel (onboarding)</td><td>RF-08</td><td>Alta</td><td>5</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-10 ★</td><td>Registro de movimientos de stock</td><td>RF-13</td><td>Alta</td><td>5</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-11</td><td>Gestión de usuarios y acceso</td><td>RF-11</td><td>Alta</td><td>3</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-13 ★</td><td>Gestión de gastos operativos</td><td>RF-14</td><td>Alta</td><td>5</td><td>Fase 1 – MVP</td></tr>
+<tr><td>HU-06</td><td>Alertas predictivas de reposición</td><td>RF-06</td><td>Media</td><td>8</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-07</td><td>Órdenes de compra en modo copiloto</td><td>RF-07</td><td>Media</td><td>5</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-09</td><td>Reportes semanales automáticos</td><td>RF-09</td><td>Media</td><td>3</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-12</td><td>Comparador de precios entre proveedores</td><td>RF-12</td><td>Media</td><td>5</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-08</td><td>Asistente conversacional con IA (Premium)</td><td>RF-10</td><td>Baja</td><td>13</td><td>Fase 3 – IA</td></tr>
+<tr><td>HU-14 ★</td><td>Gestión de plan y suscripción</td><td>RF-15</td><td>Baja</td><td>5</td><td>Fase 3 – IA</td></tr>
+<tr><td>HU-15 ◆</td><td>Mis precios frente a la inflación</td><td>RF-16</td><td>Media</td><td>8</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-16 ◆</td><td>Enviar la orden por WhatsApp</td><td>RF-17</td><td>Media</td><td>3</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-17 ◆</td><td>Remarcación asistida</td><td>RF-18</td><td>Media</td><td>5</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-18 ◆</td><td>Cuánto pierdo por quedarme sin stock</td><td>RF-19</td><td>Media</td><td>5</td><td>Fase 2 – Alertas</td></tr>
+<tr><td>HU-19 ◆</td><td>Plata parada en stock</td><td>RF-20</td><td>Media</td><td>3</td><td>Fase 2 – Alertas</td></tr>
+</table>
+<p>Tabla 12. Backlog priorizado. ★ Incorporado en la versión 2.0. ◆ Incorporado en la versión 3.0; la estimación de esas historias se realizó al incorporarlas.</p>
+<table>
+<tr><th>Fase</th><th>Cantidad de HU</th><th>Story Points</th><th>Prioridad</th></tr>
+<tr><td>Fase 1 – MVP</td><td>8</td><td>47</td><td>Alta</td></tr>
+<tr><td>Fase 2 – Alertas</td><td>9</td><td>45</td><td>Media</td></tr>
+<tr><td>Fase 3 – IA</td><td>2</td><td>18</td><td>Baja</td></tr>
+<tr><td>TOTAL</td><td>19</td><td>110</td><td>—</td></tr>
+</table>
+<p>Tabla 13. Resumen del backlog por fase.</p>
+<p>La numeración de las historias de usuario es correlativa de HU-01 a HU-19. El identificador HU-10, que en la versión 1.1 figuraba como un salto en la numeración, fue asignado a la historia de registro de movimientos de stock. Al 09/10/2026 las diecinueve historias se encuentran implementadas y desplegadas (§5.7).</p>
+<h2>5.2. Historias de usuario y criterios de aceptación</h2>
+<p>Se detallan las historias de usuario redactadas con el formato «Como…, quiero…, para…», acompañadas de sus criterios de aceptación verificables.</p>
+<h3>HU-01 – Gestión de inventario</h3>
+<p>Como dueño de la PyME, quiero dar de alta, baja y modificar mis productos con su stock, para mantener mi catálogo actualizado y bajo control.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Dado un producto nuevo, cuando completo nombre, código, costo, precio y stock inicial, entonces el producto queda registrado y visible en el listado.</p>
+<p>El sistema valida que el código de producto no se repita dentro del comercio (RN-05).</p>
+<p>Puedo editar o dar de baja un producto y el cambio se refleja de inmediato.</p>
+<p>La baja de un producto con movimientos asociados es lógica, no física, para preservar el histórico.</p>
+<p>El stock disponible se actualiza automáticamente a partir de los movimientos registrados.</p>
+<h3>HU-02 – Gestión de proveedores y listas de precios</h3>
+<p>Como dueño de la PyME, quiero administrar mis proveedores e importar sus listas de precios, para centralizar los costos y dejar de actualizarlos a mano.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo crear, editar y dar de baja proveedores con sus datos de contacto; la baja es lógica y conserva el historial de costos.</p>
+<p>Puedo registrar el plazo de entrega (lead time) en días de cada proveedor, dato que alimenta el cálculo del punto de reposición (RN-04).</p>
+<p>Puedo registrar y actualizar un índice de confiabilidad del proveedor, utilizado por el comparador (HU-12).</p>
+<p>Puedo asociar una lista de precios a cada proveedor e importarla, actualizando los costos de los productos asociados.</p>
+<p>Al actualizarse un costo, los márgenes de los productos afectados se recalculan automáticamente (RN-08).</p>
+<h3>HU-03 – Cálculo automático de rentabilidad</h3>
+<p>Como dueño de la PyME, quiero que el sistema calcule solo mi ganancia por producto, para conocer mi rentabilidad real sin hacer cuentas manuales.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Dado un producto con costo y precio cargados, el sistema muestra el margen bruto en pesos y en porcentaje (RN-01).</p>
+<p>Cuando existen gastos operativos cargados, el sistema muestra además el margen neto (RN-02).</p>
+<p>Los cálculos se realizan sobre importes netos, sin IVA, con alícuota configurable (RN-03).</p>
+<p>El margen se recalcula automáticamente cuando cambia el costo o el precio.</p>
+<p>El cálculo se muestra por producto y de forma consolidada.</p>
+<h3>HU-04 – Dashboard financiero</h3>
+<p>Como dueño de la PyME, quiero ver un panel con mis números clave, para tomar decisiones de un vistazo y sin tener que buscar los datos.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El dashboard muestra stock total, ventas del período, productos más rentables y alertas activas.</p>
+<p>Los datos se actualizan automáticamente, sin recarga manual.</p>
+<p>El dashboard carga en menos de 3 segundos (RNF-04).</p>
+<p>La información se expresa en lenguaje claro, comprensible para usuarios sin formación técnica.</p>
+<p>El rol Empleado no accede a este panel (sección 2.4).</p>
+<h3>HU-05 – Importación desde Excel (onboarding)</h3>
+<p>Como dueño de la PyME, quiero importar mi inventario desde una planilla de Excel, para empezar a usar el sistema sin recargar todo a mano.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo subir un archivo Excel con productos y precios.</p>
+<p>El sistema valida el formato y muestra los errores detectados antes de confirmar la importación.</p>
+<p>El sistema informa la cantidad de registros a importar y permite cancelar la operación.</p>
+<p>Tras la confirmación, los datos quedan cargados en el inventario.</p>
+<p>El proceso está guiado paso a paso (onboarding).</p>
+<h3>HU-10 ★ – Registro de movimientos de stock</h3>
+<p>Como dueño o empleado del comercio, quiero registrar las ventas, los ingresos de mercadería y los ajustes de inventario, para que el stock y los indicadores del sistema reflejen la realidad del negocio.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo registrar un movimiento indicando su tipo (venta, ingreso o ajuste), el producto, la cantidad y la fecha.</p>
+<p>Al confirmar el movimiento, el stock disponible del producto se actualiza automáticamente (RF-02).</p>
+<p>El sistema impide registrar una venta por una cantidad superior al stock disponible e informa el stock disponible.</p>
+<p>Los movimientos no pueden eliminarse: una corrección se registra como un ajuste que referencia al movimiento original (RN-07).</p>
+<p>El histórico de movimientos alimenta el cálculo de la velocidad de venta de los últimos 30 días (RN-04).</p>
+<p>El rol Empleado puede registrar movimientos sin acceder a costos ni a márgenes.</p>
+<h3>HU-11 – Gestión de usuarios y acceso</h3>
+<p>Como dueño de la PyME, quiero registrar usuarios y controlar sus permisos, para que cada persona acceda solo a lo que le corresponde.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Permite el registro y el inicio de sesión de usuarios.</p>
+<p>Soporta autenticación mediante OAuth 2.0, incluyendo el inicio de sesión con Google.</p>
+<p>Permite asignar los roles definidos en la sección 2.4: Dueño / Administrador, Empleado y Contador.</p>
+<p>Un usuario solo accede a las funciones habilitadas para su rol.</p>
+<p>Un usuario solo accede a los datos del comercio al que pertenece (RN-10, RNF-10).</p>
+<h3>HU-13 ★ – Gestión de gastos operativos</h3>
+<p>Como dueño de la PyME, quiero cargar los gastos de mi negocio, para que el sistema pueda mostrarme cuánto gano realmente y no solo la diferencia entre el costo y el precio.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo dar de alta, editar y eliminar gastos, clasificándolos como fijos o variables.</p>
+<p>Cada gasto registra concepto, importe, período y periodicidad.</p>
+<p>El sistema prorratea los gastos del período sobre las unidades vendidas y los incorpora al margen neto (RN-02).</p>
+<p>El dashboard distingue de forma explícita el margen bruto del margen neto.</p>
+<p>Si no hay gastos cargados, el sistema informa que el margen neto no puede calcularse, en lugar de mostrar un valor equivalente al bruto.</p>
+<h3>HU-06 – Alertas predictivas de reposición</h3>
+<p>Como dueño de la PyME, quiero que el sistema me avise cuándo reponer cada producto, para no quedarme sin stock y no perder ventas.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema calcula el punto de reposición según la velocidad de venta y el lead time del proveedor (RN-04).</p>
+<p>Cuando un producto se aproxima al punto de reposición, se genera una alerta antes de que el stock llegue a cero.</p>
+<p>La alerta se notifica dentro de la aplicación y por correo electrónico.</p>
+<p>Puedo configurar el stock de seguridad y los días de anticipación de la alerta (0 a 90) de cada producto.</p>
+<p>Puedo marcar una alerta como atendida o posponerla.</p>
+<h3>HU-07 – Órdenes de compra en modo copiloto</h3>
+<p>Como dueño de la PyME, quiero que el sistema me prepare las órdenes de compra, para ahorrar tiempo manteniendo yo la decisión final.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema sugiere una orden con los productos en estado crítico y el proveedor más conveniente.</p>
+<p>El sistema redacta automáticamente el texto de la orden o del correo con una plantilla, que puedo editar.</p>
+<p>Puedo editar la orden antes de confirmarla.</p>
+<p>La orden no se envía hasta que la confirmo explícitamente (RN-06).</p>
+<p>Solo el rol Dueño / Administrador puede confirmar el envío.</p>
+<h3>HU-09 – Reportes semanales automáticos</h3>
+<p>Como dueño de la PyME, quiero recibir un reporte semanal de rentabilidad, para entender mi negocio sin tener que armar los informes a mano.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema genera y envía automáticamente un reporte semanal de rentabilidad.</p>
+<p>El reporte incluye los productos más rentables y las oportunidades de ahorro detectadas.</p>
+<p>El envío se realiza sin intervención manual.</p>
+<p>Puedo consultar los reportes de semanas anteriores desde la aplicación.</p>
+<p>Puedo desactivar el envío automático.</p>
+<h3>HU-12 – Comparador de precios entre proveedores</h3>
+<p>Como dueño de la PyME, quiero comparar precios entre proveedores para un mismo insumo, para comprar siempre en la opción más conveniente.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Compara los precios de un mismo insumo entre los distintos proveedores que lo suministran.</p>
+<p>Puntúa a cada proveedor según precio, plazo de entrega y confiabilidad (datos de HU-02).</p>
+<p>Muestra el proveedor recomendado para cada insumo, junto con el fundamento de la recomendación.</p>
+<p>Los datos se actualizan al importar nuevas listas de precios.</p>
+<h3>HU-08 – Asistente conversacional con IA (Premium)</h3>
+<p>Como dueño de la PyME, quiero preguntarle al sistema sobre mi negocio en lenguaje natural, para obtener respuestas rápidas sin necesidad de saber de sistemas.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo formular consultas como «¿cuál fue el producto más rentable de la quincena?».</p>
+<p>El asistente responde utilizando los datos reales del comercio.</p>
+<p>El asistente puede preparar órdenes de compra en borrador, con el texto dirigido al proveedor, cuyo envío requiere confirmación humana (RN-06).</p>
+<p>El asistente responde únicamente sobre el contexto del negocio y rechaza consultas ajenas a ese dominio.</p>
+<p>La funcionalidad está disponible exclusivamente en el plan Premium (RN-09).</p>
+<h3>HU-14 ★ – Gestión de plan y suscripción</h3>
+<p>Como dueño de la PyME, quiero elegir y ver mi plan contratado, para saber qué funcionalidades tengo habilitadas y poder ampliarlas cuando lo necesite.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Al registrarse, el comercio se da de alta con el plan Free por defecto.</p>
+<p>Puedo consultar el plan vigente y el detalle de las funcionalidades que incluye.</p>
+<p>El sistema bloquea las funcionalidades no incluidas en el plan e informa cuál es el plan requerido.</p>
+<p>El plan Free aplica el límite de 50 productos y 1 usuario.</p>
+<p>El cambio de plan habilita o restringe las funcionalidades de forma inmediata.</p>
+<h3>HU-15 ◆ – Mis precios frente a la inflación</h3>
+<p>Como dueño de la PyME, quiero comparar cómo cambiaron mis precios y mis costos frente a la inflación oficial, para saber qué productos quedaron atrasados y cuánto debería cobrarlos.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema obtiene de las fuentes oficiales el IPC del INDEC, la inflación mensual e interanual y el tipo de cambio minorista del BCRA, con su fecha y su fuente, y los actualiza una vez por día.</p>
+<p>Si una fuente no responde, el sistema muestra el último dato guardado e indica que está desactualizado, sin dejar de funcionar.</p>
+<p>Cada cambio de precio de venta queda registrado en un historial que no puede modificarse.</p>
+<p>Para un período de meses, el sistema muestra en un gráfico la evolución de mis precios, mis costos y el IPC en índice base 100, con las brechas en términos reales (RN-11).</p>
+<p>Cada producto se informa como atrasado, alineado o adelantado, con el precio sugerido para alcanzar la inflación y para sostener el margen.</p>
+<p>La comparación está disponible en el plan Pro para el Dueño y el Contador; los indicadores sueltos se ven en todos los planes.</p>
+<h3>HU-16 ◆ – Enviar la orden por WhatsApp</h3>
+<p>Como dueño de la PyME, quiero enviar la orden de compra por WhatsApp, para usar el canal con el que ya trabajo con mis proveedores.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Cada proveedor registra su teléfono de WhatsApp, normalizado al formato internacional, y su canal preferido.</p>
+<p>Al confirmar la orden puedo elegir el canal: correo electrónico o WhatsApp.</p>
+<p>Por WhatsApp, el sistema genera un enlace con el mensaje redactado, que abro y envío desde mi teléfono; el enlace no existe antes de confirmar (RN-06).</p>
+<p>Puedo marcar la orden como enviada una vez que la mandé.</p>
+<p>El flujo está disponible en la web y en la aplicación Android.</p>
+<h3>HU-17 ◆ – Remarcación asistida</h3>
+<p>Como dueño de la PyME, quiero actualizar muchos precios en un solo paso, para no editar producto por producto cada vez que remarco.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>Puedo elegir un criterio: alcanzar la inflación, sostener el margen, aplicar un porcentaje fijo o llegar a un margen objetivo, con redondeo hacia arriba.</p>
+<p>Antes de aplicar, veo una vista previa con el precio actual y el nuevo de cada producto, sin que se modifique nada.</p>
+<p>La remarcación no baja precios salvo que lo pida explícitamente, y se aplica completa o no se aplica (RN-12).</p>
+<p>Puedo deshacer una remarcación una sola vez, sin afectar los productos cuyo precio cambió después.</p>
+<p>Solo el Dueño aplica y deshace; el Contador consulta.</p>
+<h3>HU-18 ◆ – Cuánto pierdo por quedarme sin stock</h3>
+<p>Como dueño de la PyME, quiero saber cuánto dejé de vender y de ganar por quedarme sin stock, para dimensionar el costo de los faltantes.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema detecta los períodos en que cada producto activo estuvo con stock cero, a partir del historial de movimientos.</p>
+<p>Estima las unidades, la venta y la ganancia perdidas con la demanda de los días con stock (RN-14).</p>
+<p>Sin historial suficiente, informa que la pérdida no puede estimarse en lugar de mostrar un valor.</p>
+<p>Puedo consultar los últimos 30, 60 o 90 días, con los productos ordenados por ganancia perdida y los totales; el panel muestra el resumen de los últimos 30 días.</p>
+<p>Está disponible en el plan Pro para el Dueño y el Contador, en la web y en la aplicación Android.</p>
+<h3>HU-19 ◆ – Plata parada en stock</h3>
+<p>Como dueño de la PyME, quiero ver cuánta plata tengo inmovilizada en productos que no se venden, para decidir qué liquidar y dónde no volver a comprar.</p>
+<p><b>Criterios de aceptación:</b></p>
+<p>El sistema identifica los productos activos con stock y sin ventas en los últimos 30, 60, 90 o 180 días (RN-15).</p>
+<p>Valoriza el capital parado de cada producto a costo de reposición y el porcentaje que representa sobre el stock valorizado.</p>
+<p>Los productos dados de alta dentro del período no se consideran parados.</p>
+<p>El panel muestra el capital parado con el criterio de 90 días.</p>
+<p>Está disponible en el plan Pro para el Dueño y el Contador, en la web y en la aplicación Android.</p>
+<h2>5.3. Matriz de trazabilidad</h2>
+<p>La matriz vincula cada requisito funcional con la historia de usuario que lo implementa, el caso de uso que lo especifica y el conjunto de casos de prueba que lo verifica. Su finalidad es garantizar que ningún requisito quede sin implementar ni sin verificar, y permitir evaluar el impacto de cualquier cambio de alcance.</p>
+<table>
+<tr><th>RF</th><th>Historia de usuario</th><th>Caso de uso</th><th>Casos de prueba</th><th>Fase</th></tr>
+<tr><td>RF-01</td><td>HU-01</td><td>CU-01 Administrar productos</td><td>CP-01.1 a CP-01.7b (22 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-02</td><td>HU-01, HU-10</td><td>CU-01, CU-10</td><td>CP-01.5, CP-10.2 y los escenarios de stock de CP-10</td><td>Fase 1</td></tr>
+<tr><td>RF-03</td><td>HU-02</td><td>CU-02 Administrar proveedores y listas de precios</td><td>CP-02.1 a CP-02.7 (21 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-04</td><td>HU-03</td><td>CU-03 Consultar rentabilidad</td><td>CP-03.1 a CP-03.7b (13 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-05</td><td>HU-04</td><td>CU-04 Visualizar dashboard</td><td>CP-04.1 a CP-04.5b (10 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-08</td><td>HU-05</td><td>CU-05 Importar inventario</td><td>CP-05.1 a CP-05.6 (12 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-11</td><td>HU-11</td><td>CU-11a Registrarse e iniciar sesión, CU-11b Gestionar usuarios y datos del comercio</td><td>CP-11.1 a CP-11.7b (24 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-13</td><td>HU-10</td><td>CU-10 Registrar movimiento de stock</td><td>CP-10.1 a CP-10.10 (27 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-14</td><td>HU-13</td><td>CU-13 Administrar gastos</td><td>CP-13.1 a CP-13.6b (12 casos)</td><td>Fase 1</td></tr>
+<tr><td>RF-06</td><td>HU-06</td><td>CU-06 Generar alerta de reposición</td><td>CP-06.1 a CP-06.7 (23 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-07</td><td>HU-07</td><td>CU-07 Generar orden de compra</td><td>CP-07.1 a CP-07.6c (18 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-09</td><td>HU-09</td><td>CU-09 Emitir reporte semanal</td><td>CP-09.1 a CP-09.6c (16 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-12</td><td>HU-12</td><td>CU-12 Comparar proveedores</td><td>CP-12.1 a CP-12.6b (14 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-16</td><td>HU-15</td><td>CU-15 Comparar precios con la inflación</td><td>CP-15.1 a CP-15.6b (20 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-17</td><td>HU-16</td><td>CU-16 Enviar la orden por WhatsApp</td><td>CP-16.1 a CP-16.5b (14 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-18</td><td>HU-17</td><td>CU-17 Remarcar precios en lote</td><td>CP-17.1 a CP-17.6b (18 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-19</td><td>HU-18</td><td>CU-18 Consultar pérdidas por falta de stock</td><td>CP-18.1 a CP-18.7 (17 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-20</td><td>HU-19</td><td>CU-19 Consultar stock parado</td><td>CP-19.1 a CP-19.6 (15 casos)</td><td>Fase 2</td></tr>
+<tr><td>RF-10</td><td>HU-08</td><td>CU-08 Consultar al asistente</td><td>CP-08.1 a CP-08.8c (27 casos)</td><td>Fase 3</td></tr>
+<tr><td>RF-15</td><td>HU-14</td><td>CU-14 Gestionar plan</td><td>CP-14.1 a CP-14.6c (15 casos)</td><td>Fase 3</td></tr>
+<tr><td>RNF-06</td><td>App Android</td><td>CU-01, CU-04, CU-06, CU-07, CU-08, CU-10, CU-11, CU-16, CU-18, CU-19</td><td>CP-M.1 a CP-M.13 (88 casos)</td><td>Fases 1 a 3</td></tr>
+</table>
+<p>Tabla 14. Matriz de trazabilidad RF – HU – CU – CP.</p>
+<p>La numeración de los casos de uso se corresponde con la de las historias de usuario, de modo que la trazabilidad resulte directa. Los casos de prueba se especifican en el documento de casos de prueba, y su identificador sigue el formato CP-[número de historia].[número de criterio de aceptación], con una letra para las variantes del mismo criterio (por ejemplo, CP-15.1b). Los casos de la aplicación Android se identifican como CP-M.x. Los rangos de la tabla corresponden a los casos efectivamente especificados y automatizados al 09/10/2026.</p>
+<h2>5.4. Prototipo</h2>
+<p>Se desarrollaron wireframes navegables de la aplicación web y de la aplicación mobile, que cubren el recorrido completo del usuario: inicio de sesión, registro, onboarding con importación desde Excel, dashboard, inventario, proveedores, alertas, configuración y asistente conversacional.</p>
+<p>Los prototipos son de alta fidelidad estructural y baja fidelidad visual: definen la disposición de la información, la jerarquía de los elementos y el flujo de navegación, sin comprometer decisiones definitivas de identidad visual. La interfaz implementada respeta su estructura y define la identidad visual definitiva: paleta ámbar cálida con tema claro y oscuro, contraste WCAG AA verificado automáticamente y navegación lateral en la web (ADR 0022).</p>
+<p><a href="https://trello.com/c/cnfn6HLD">Acceder a los wireframes (tarjeta de Trello)</a></p>
+<h2>5.5. Tablero del proyecto</h2>
+<p>El seguimiento del backlog se realiza sobre un tablero Kanban en Trello, donde cada historia de usuario avanza por los estados Pendiente, En curso y Hecho.</p>
+<p><a href="https://trello.com/invite/b/6a22169f72d4ec52be1d9794/ATTI3440d666457405151874420ee89c3490D2996DAD/documentacion-invetariosmart">Acceder al tablero del proyecto en Trello</a></p>
+<h2>5.6. Cronograma</h2>
+<p>La planificación temporal se documenta en el diagrama de Gantt del proyecto, estructurado en cinco etapas: (1) detección de la necesidad y análisis, (2) ideación, validación y viabilidad, (3) diseño y modelado, (4) desarrollo e implementación, y (5) pruebas, documentación y entrega. Las etapas 1 y 2 se encuentran finalizadas; el diagrama incorpora los hitos de control y las dependencias entre tareas. En la versión 3 del diagrama, las etapas 3 y 4 se registran con sus fechas reales: el diseño y la construcción avanzaron en paralelo por historia de usuario, siguiendo el ciclo de especificación de OpenSpec, lo que permitió completar las Fases 2 y 3 del backlog dentro del plazo.</p>
+<h2>5.7. Estado de avance al 09/10/2026</h2>
+<table>
+<tr><th>Indicador</th><th>Valor</th></tr>
+<tr><td>Historias de usuario implementadas</td><td>19 de 19 (Fases 1, 2 y 3)</td></tr>
+<tr><td>Requisitos funcionales cubiertos</td><td>RF-01 a RF-20</td></tr>
+<tr><td>Casos de prueba especificados</td><td>426, de los cuales los automatizados se ejecutan en cada cambio</td></tr>
+<tr><td>Decisiones de arquitectura registradas</td><td>25 ADR</td></tr>
+<tr><td>Aplicación web</td><td>https://inventariosmart0.vercel.app</td></tr>
+<tr><td>API</td><td>https://inventariosmart-api.onrender.com/api/v1 (documentación en /docs)</td></tr>
+<tr><td>Repositorio</td><td>https://github.com/FrancoGaggero/inventariosmart (monorepo: API, web, aplicación Android y paquetes compartidos)</td></tr>
+<tr><td>Pendiente</td><td>Video demostrativo, capturas del manual de usuario y prueba final en dispositivo de las órdenes desde el celular</td></tr>
+</table>
+<p>Tabla 15. Estado de avance.</p>
+<h1>6. Conclusión</h1>
+<p>El relevamiento realizado confirma la existencia de un problema concreto, extendido y no resuelto en el segmento objetivo. Los datos son consistentes entre sí: casi ocho de cada diez comerciantes desconocen el margen real de sus productos, tres de cada cuatro sufren quiebres de stock mensuales y más de seis de cada diez no utilizan ningún sistema digital de gestión. No se trata de un mercado saturado en el que haya que disputar usuarios a un competidor establecido, sino de un mercado mayoritariamente no digitalizado, en el que la principal competencia es la planilla de cálculo.</p>
+<p>La propuesta de valor de InventarioSmart se apoya en un desplazamiento conceptual: dejar de tratar el inventario como un registro para tratarlo como una fuente de decisiones financieras. La integración entre stock, costos y rentabilidad en una única plataforma —sumada a una capa de alertas predictivas y a un asistente conversacional accesible— constituye la diferencia respecto de las alternativas relevadas, ninguna de las cuales resuelve ambos dominios de manera conjunta y adaptada al contexto local.</p>
+<p>La revisión efectuada en esta versión 2.0 cerró tres brechas funcionales que comprometían la coherencia interna del alcance: la ausencia de un mecanismo de captura de ventas, la imposibilidad de calcular el margen neto sin gastos operativos, y la falta de sustento funcional para la diferenciación entre planes. Asimismo se incorporaron la definición de actores, el modelo de multi-tenencia y las reglas de negocio, elementos que constituyen la entrada directa de la etapa de diseño.</p>
+<p>La versión 3.0 incorpora además cinco historias que nacieron durante la construcción y profundizan el diferencial local del producto: precios frente a la inflación oficial, remarcación asistida, envío de órdenes por WhatsApp y la medición en pesos de los faltantes y del stock inmovilizado. Con las diecinueve historias implementadas, el trabajo restante se concentra en la etapa 5: pruebas finales, manual de usuario, video demostrativo y consolidación del formulario de entrega.</p>
+<h1>7. Glosario</h1>
+<table>
+<tr><th>Término</th><th>Definición</th></tr>
+<tr><td>ABM</td><td>Alta, Baja y Modificación. Conjunto de operaciones básicas de mantenimiento de una entidad del sistema.</td></tr>
+<tr><td>Backlog</td><td>Lista priorizada de funcionalidades pendientes de desarrollo, expresadas como historias de usuario.</td></tr>
+<tr><td>Costo de reposición</td><td>Precio actual al que el comercio puede volver a comprar un producto a su proveedor. Es el costo relevante para el cálculo del margen en contextos inflacionarios, por oposición al costo histórico de compra.</td></tr>
+<tr><td>Historia de usuario</td><td>Descripción breve de una funcionalidad desde la perspectiva del usuario, con el formato «Como…, quiero…, para…».</td></tr>
+<tr><td>Lead time</td><td>Plazo de entrega. Cantidad de días que transcurren entre la emisión de una orden de compra a un proveedor y la recepción efectiva de la mercadería.</td></tr>
+<tr><td>LLM</td><td>Large Language Model. Modelo de lenguaje de gran escala, consumido en este proyecto como servicio externo vía API para el asistente conversacional.</td></tr>
+<tr><td>Margen bruto</td><td>Diferencia entre el precio de venta neto y el costo de reposición neto de un producto (RN-01).</td></tr>
+<tr><td>Margen neto</td><td>Margen bruto menos los gastos operativos prorrateados por unidad vendida (RN-02).</td></tr>
+<tr><td>Modo copiloto</td><td>Modalidad de operación en la que el sistema propone y redacta una acción, pero la ejecución queda siempre sujeta a la confirmación explícita de una persona.</td></tr>
+<tr><td>MVP</td><td>Minimum Viable Product. Versión mínima del producto que entrega valor real al usuario y permite validar las hipótesis del proyecto.</td></tr>
+<tr><td>Multi-tenant</td><td>Arquitectura en la que una única instancia de la aplicación da servicio a múltiples clientes (tenants), manteniendo sus datos aislados entre sí.</td></tr>
+<tr><td>Punto de reposición</td><td>Nivel de stock a partir del cual corresponde emitir una nueva orden de compra para evitar el quiebre (RN-04).</td></tr>
+<tr><td>Quiebre de stock</td><td>Situación en la que un producto se agota y el comercio pierde la posibilidad de venderlo.</td></tr>
+<tr><td>SaaS</td><td>Software as a Service. Modelo de distribución en el que la aplicación se aloja en la nube y se accede por suscripción, sin instalación local.</td></tr>
+<tr><td>Story Point (SP)</td><td>Unidad relativa de estimación del esfuerzo requerido por una historia de usuario. No equivale a horas de trabajo.</td></tr>
+<tr><td>Tenant</td><td>Cada comercio cliente de la plataforma. Unidad de aislamiento de los datos (RNF-10).</td></tr>
+<tr><td>Velocidad de venta</td><td>Cantidad promedio de unidades de un producto vendidas por día, calculada sobre los movimientos de los últimos 30 días.</td></tr>
+<tr><td>ADR</td><td>Architecture Decision Record. Documento breve que registra una decisión de arquitectura, su contexto, las alternativas y sus consecuencias.</td></tr>
+<tr><td>Capital parado</td><td>Valor, a costo de reposición, del stock de los productos que no registraron ventas en el período (RN-15).</td></tr>
+<tr><td>IPC</td><td>Índice de Precios al Consumidor publicado por el INDEC. Se utiliza como referencia de la inflación (RN-11).</td></tr>
+<tr><td>Remarcación</td><td>Actualización del precio de venta de un conjunto de productos según un criterio común (RN-12).</td></tr>
+<tr><td>Row Level Security (RLS)</td><td>Mecanismo de PostgreSQL que restringe las filas visibles para cada conexión; garantiza que un comercio no acceda a los datos de otro (RNF-10).</td></tr>
+<tr><td>Variación real</td><td>Variación de un precio descontada la inflación del mismo período (RN-11).</td></tr>
+</table>
+<p>Tabla 16. Glosario de términos.</p>
+<p>Escuela Da Vinci – Analista de Sistemas – Seminario de Sistemas | Página de</p>
+</body></html>

@@ -1,0 +1,274 @@
+%% Generado con herramientas/diagramas/der.py desde apps/api/prisma/schema.prisma (no editar a mano).
+%% Todas las tablas con comercio_id FK referencian a comercio; sólo se dibuja comercio-usuario.
+erDiagram
+    proveedor |o--o{ producto : "proveedor_principal"
+    comercio ||--o{ usuario : "comercio"
+    usuario ||--o{ gasto : "usuario"
+    producto ||--o{ precio_proveedor : "producto"
+    proveedor ||--o{ precio_proveedor : "proveedor"
+    usuario ||--o{ precio_proveedor : "usuario"
+    producto ||--o{ movimiento : "producto"
+    usuario ||--o{ movimiento : "usuario"
+    movimiento |o--o| movimiento : "corrige_a"
+    movimiento |o--o| movimiento : "anulado_por"
+    producto ||--o{ alerta : "producto"
+    orden_compra |o--o{ alerta : "orden_compra"
+    proveedor ||--o{ orden_compra : "proveedor"
+    usuario ||--o{ orden_compra : "creada_por"
+    usuario |o--o{ orden_compra : "confirmada_por"
+    orden_compra ||--o{ orden_compra_item : "orden"
+    producto ||--o{ orden_compra_item : "producto"
+    alerta |o--o{ orden_compra_item : "alerta"
+    producto ||--o{ precio_venta_historial : "producto"
+    usuario |o--o{ precio_venta_historial : "usuario"
+    usuario ||--o{ remarcacion : "usuario"
+    usuario |o--o{ remarcacion : "revertido_por"
+    remarcacion ||--o{ remarcacion_item : "remarcacion"
+    producto ||--o{ remarcacion_item : "producto"
+    usuario ||--o{ conversacion : "usuario"
+    conversacion ||--o{ mensaje_asistente : "conversacion"
+    usuario ||--o{ cambio_plan : "usuario"
+    comercio {
+        uuid id PK
+        varchar nombre
+        varchar cuit  "opcional"
+        plan plan
+        decimal iva_default
+        varchar moneda
+        bool onboarding_pendiente
+        timestamptz alertas_calculadas_en  "opcional"
+        bool reportes_activos
+        text_array reportes_destinatarios
+        timestamptz creado_en
+    }
+    producto {
+        uuid id PK
+        uuid comercio_id FK
+        varchar codigo
+        varchar codigo_normalizado
+        varchar nombre
+        varchar categoria  "opcional"
+        decimal precio_venta
+        decimal alicuota_iva
+        decimal costo_reposicion
+        int stock_actual
+        int stock_seguridad
+        smallint dias_anticipacion_alerta
+        uuid proveedor_principal_id FK "opcional"
+        bool activo
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+    usuario {
+        uuid id PK
+        uuid comercio_id FK
+        varchar firebase_uid UK "opcional"
+        varchar email UK
+        varchar nombre  "opcional"
+        rol rol
+        bool activo
+        timestamptz creado_en
+    }
+    gasto {
+        uuid id PK
+        uuid comercio_id FK
+        varchar concepto
+        tipogasto tipo
+        decimal importe
+        date periodo
+        periodicidadgasto periodicidad
+        date fin  "opcional"
+        varchar notas  "opcional"
+        uuid usuario_id FK
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+    proveedor {
+        uuid id PK
+        uuid comercio_id FK
+        varchar nombre
+        varchar nombre_normalizado
+        varchar contacto  "opcional"
+        varchar email  "opcional"
+        varchar telefono  "opcional"
+        canalenvio canal_preferido  "opcional"
+        varchar cuit  "opcional"
+        int lead_time_dias
+        smallint confiabilidad
+        varchar notas  "opcional"
+        bool activo
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+    precio_proveedor {
+        uuid id PK
+        uuid comercio_id FK
+        uuid producto_id FK
+        uuid proveedor_id FK
+        decimal costo_neto
+        timestamptz vigente_desde
+        origenprecio origen
+        uuid lote_id  "opcional"
+        uuid usuario_id FK
+        timestamptz creado_en
+    }
+    movimiento {
+        uuid id PK
+        uuid comercio_id FK
+        uuid producto_id FK
+        uuid usuario_id FK
+        tipomovimiento tipo
+        int cantidad
+        int efecto_stock
+        int stock_resultante
+        decimal precio_unitario  "opcional"
+        motivomovimiento motivo  "opcional"
+        varchar observacion  "opcional"
+        timestamptz fecha
+        uuid corrige_a_id FK,UK "opcional"
+        uuid anulado_por_id FK,UK "opcional"
+        varchar clave_idempotencia  "opcional"
+        timestamptz creado_en
+    }
+    alerta {
+        uuid id PK
+        uuid comercio_id FK
+        uuid producto_id FK
+        estadoalerta estado
+        severidadalerta severidad
+        int stock
+        decimal velocidad_diaria
+        int dias_cobertura  "opcional"
+        int punto_reposicion
+        int umbral
+        int lead_time_dias
+        int dias_anticipacion
+        int cantidad_sugerida
+        timestamptz generada_en
+        timestamptz actualizada_en
+        timestamptz pospuesta_hasta  "opcional"
+        timestamptz atendida_en  "opcional"
+        timestamptz resuelta_en  "opcional"
+        timestamptz notificada_en  "opcional"
+        uuid orden_compra_id FK "opcional"
+    }
+    orden_compra {
+        uuid id PK
+        uuid comercio_id FK
+        int numero
+        uuid proveedor_id FK
+        estadoordencompra estado
+        varchar asunto
+        text texto
+        bool texto_editado
+        varchar notas  "opcional"
+        decimal total_neto
+        motivonoenvio motivo_no_envio  "opcional"
+        canalenvio canal  "opcional"
+        uuid creada_por_id FK
+        uuid confirmada_por_id FK "opcional"
+        timestamptz confirmada_en  "opcional"
+        timestamptz enviada_en  "opcional"
+        varchar enviada_a  "opcional"
+        timestamptz cancelada_en  "opcional"
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+    orden_compra_item {
+        uuid id PK
+        uuid comercio_id FK
+        uuid orden_id FK
+        uuid producto_id FK
+        uuid alerta_id FK "opcional"
+        int cantidad
+        decimal costo_unitario_neto  "opcional"
+    }
+    reporte_semanal {
+        uuid id PK
+        uuid comercio_id FK
+        varchar semana
+        timestamptz desde
+        timestamptz hasta
+        jsonb contenido
+        text_array destinatarios
+        timestamptz enviado_en  "opcional"
+        motivonoenvioreporte motivo_no_envio  "opcional"
+        timestamptz generado_en
+        timestamptz actualizado_en
+    }
+    indicador_economico {
+        uuid id PK
+        serieindicador serie
+        date fecha
+        decimal valor
+        varchar fuente
+        timestamptz actualizado_en
+    }
+    indicador_actualizacion {
+        varchar fuente PK
+        timestamptz actualizado_en  "opcional"
+        timestamptz intentado_en  "opcional"
+        varchar ultimo_error  "opcional"
+    }
+    precio_venta_historial {
+        uuid id PK
+        uuid comercio_id FK
+        uuid producto_id FK
+        decimal precio_venta
+        decimal alicuota_iva
+        timestamptz vigente_desde
+        origenprecioventa origen
+        uuid usuario_id FK "opcional"
+        timestamptz creado_en
+    }
+    remarcacion {
+        uuid id PK
+        uuid comercio_id FK
+        uuid usuario_id FK
+        criterioremarcacion criterio
+        jsonb parametros
+        int cantidad
+        timestamptz creado_en
+        timestamptz revertido_en  "opcional"
+        uuid revertido_por_id FK "opcional"
+        int revertidos  "opcional"
+        int omitidos  "opcional"
+    }
+    remarcacion_item {
+        uuid id PK
+        uuid comercio_id FK
+        uuid remarcacion_id FK
+        uuid producto_id FK
+        decimal precio_anterior
+        decimal precio_nuevo
+        bool revertido
+    }
+    conversacion {
+        uuid id PK
+        uuid comercio_id FK
+        uuid usuario_id FK
+        varchar titulo
+        timestamptz creado_en
+        timestamptz actualizado_en
+    }
+    mensaje_asistente {
+        uuid id PK
+        uuid comercio_id FK
+        uuid conversacion_id FK
+        rolmensaje rol
+        text contenido
+        jsonb fuentes
+        jsonb acciones
+        varchar modelo  "opcional"
+        int tokens_entrada  "opcional"
+        int tokens_salida  "opcional"
+        timestamptz creado_en
+    }
+    cambio_plan {
+        uuid id PK
+        uuid comercio_id FK
+        uuid usuario_id FK
+        plan plan_anterior
+        plan plan_nuevo
+        timestamptz creado_en
+    }

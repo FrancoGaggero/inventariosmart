@@ -1,0 +1,55 @@
+<html><head><meta charset="utf-8"><title>Diseño técnico - InventarioSmart</title>
+<style>body{font-family:Arial,sans-serif;font-size:11pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:4px;vertical-align:top}th{background:#f2e6d3}img{max-width:100%}</style></head><body>
+<h1>InventarioSmart · Diseño técnico: DER, diagrama de clases, componentes y casos de uso</h1>
+<p>Versión 1.0 · 9 de octubre de 2026 · Franco Gaggero · Tareas 3.2, 3.4, 3.5 y 3.7 del Gantt.</p>
+<p>Los diagramas se mantienen en el repositorio, en <a href="https://github.com/FrancoGaggero/inventariosmart/tree/main/docs/diagramas">docs/diagramas</a>, como código Mermaid con su versión SVG (ampliable sin pérdida) y PNG. El DER se genera desde el esquema real de la base de datos, de modo que coincide con lo implementado.</p>
+
+<h2>1. Modelo entidad-relación (DER)</h2>
+<p>El modelo tiene 19 tablas. Dieciocho pertenecen a un comercio: llevan la clave foránea <b>comercio_id</b> y una política de Row Level Security que impide leer o escribir filas de otro comercio (RNF-10). La tabla de indicadores económicos es la única de referencia global, compartida y de sólo lectura para la aplicación.</p>
+<p><img src="https://raw.githubusercontent.com/FrancoGaggero/inventariosmart/main/docs/diagramas/der.png" alt="DER de InventarioSmart" width="640"></p>
+<p><i>Figura 1. DER completo. PK: clave primaria; FK: clave foránea; UK: única. Para que el diagrama se lea, de las relaciones con comercio sólo se dibuja comercio–usuario; todas las tablas con comercio_id FK lo referencian. Versión ampliable: <a href="https://github.com/FrancoGaggero/inventariosmart/blob/main/docs/diagramas/der.svg">der.svg</a>.</i></p>
+<table>
+<tr><th>Grupo</th><th>Tablas</th><th>Historias</th><th>Reglas</th></tr>
+<tr><td>Identidad y planes</td><td>comercio, usuario, cambio_plan</td><td>HU-11, HU-14</td><td>RN-10</td></tr>
+<tr><td>Catálogo y stock</td><td>producto, movimiento, precio_venta_historial</td><td>HU-01, HU-05, HU-10, HU-15</td><td>RN-05, RN-07</td></tr>
+<tr><td>Proveedores y compras</td><td>proveedor, precio_proveedor, alerta, orden_compra, orden_compra_item</td><td>HU-02, HU-06, HU-07, HU-16</td><td>RN-04, RN-06, RN-08</td></tr>
+<tr><td>Finanzas</td><td>gasto, reporte_semanal, remarcacion, remarcacion_item</td><td>HU-09, HU-13, HU-17</td><td>RN-02, RN-12</td></tr>
+<tr><td>Asistente</td><td>conversacion, mensaje_asistente</td><td>HU-08</td><td>RN-09</td></tr>
+<tr><td>Referencia global</td><td>indicador_economico, indicador_actualizacion</td><td>HU-15</td><td>RN-11</td></tr>
+</table>
+<p>Rentabilidad (HU-03), panel (HU-04), comparador (HU-12), pérdidas por falta de stock (HU-18) y stock parado (HU-19) no tienen tablas propias: se calculan al consultar sobre productos, movimientos y precios, para que nunca muestren un dato viejo.</p>
+<p>Restricciones relevantes del modelo:</p>
+<ul>
+<li>Código de producto único por comercio sobre su versión normalizada (RN-05).</li>
+<li>Movimientos de sólo inserción: la corrección es un ajuste que referencia al original con corrige_a_id y anulado_por_id (RN-07). El rol de la aplicación no tiene permiso para borrarlos.</li>
+<li>Precios de proveedor e historial de precios de venta de sólo inserción; el costo vigente es el de la última lista del proveedor principal (RN-08).</li>
+<li>Montos en decimal(14,2) y fechas con zona horaria.</li>
+</ul>
+
+<h2>2. Diagrama de clases del dominio</h2>
+<p>Muestra las entidades del dominio con sus atributos principales y las operaciones que expone su módulo de la API, las relaciones con su multiplicidad (composición cuando la parte no existe sin el todo) y las enumeraciones de estado. En el código, cada entidad es un modelo de Prisma y sus operaciones viven en el servicio del módulo NestJS correspondiente; las reglas de cálculo (márgenes, punto de reposición, variación real, puntaje de proveedores, quiebres y stock parado) son funciones puras del paquete compartido, con tests unitarios.</p>
+<p><img src="https://raw.githubusercontent.com/FrancoGaggero/inventariosmart/main/docs/diagramas/clases.png" alt="Diagrama de clases del dominio" width="640"></p>
+<p><i>Figura 2. Diagrama de clases del dominio. Versión ampliable: <a href="https://github.com/FrancoGaggero/inventariosmart/blob/main/docs/diagramas/clases.svg">clases.svg</a>.</i></p>
+
+<h2>3. Diagrama de componentes</h2>
+<p>InventarioSmart es un monolito modular: una única API REST versionada en /api/v1 sirve a la web y a la aplicación Android sobre una base PostgreSQL compartida y aislada por comercio.</p>
+<p><img src="https://raw.githubusercontent.com/FrancoGaggero/inventariosmart/main/docs/diagramas/componentes.png" alt="Diagrama de componentes" width="640"></p>
+<p><i>Figura 3. Diagrama de componentes. Versión ampliable: <a href="https://github.com/FrancoGaggero/inventariosmart/blob/main/docs/diagramas/componentes.svg">componentes.svg</a>.</i></p>
+<table>
+<tr><th>Componente</th><th>Responsabilidad</th><th>Interfaz</th><th>Despliegue</th></tr>
+<tr><td>Web SPA</td><td>Toda la gestión: catálogo, movimientos, proveedores, gastos, análisis, remarcación, configuración, usuarios y plan.</td><td>Consume la API REST con el token de Firebase</td><td>Vercel</td></tr>
+<tr><td>App Android</td><td>Herramienta de mostrador: inicio, inventario, movimientos, alertas, falta de stock, stock parado, órdenes y asistente.</td><td>Consume la misma API REST</td><td>APK</td></tr>
+<tr><td>API REST</td><td>Reglas de negocio, permisos por rol y plan, aislamiento por comercio y tareas programadas (alertas 07:00, reportes los lunes 08:00, indicadores diarios).</td><td>/api/v1 en JSON, contrato OpenAPI en /docs</td><td>Render (Docker)</td></tr>
+<tr><td>Autenticación y tenant</td><td>Verifica el token de Firebase, resuelve el usuario y su comercio y fija el contexto que aplican la extensión de Prisma y Row Level Security.</td><td>Transversal a todos los módulos</td><td>Dentro de la API</td></tr>
+<tr><td>Módulos de la API</td><td>Identidad (me, comercio, users, plans); catálogo y stock (products, movements, import); abastecimiento (suppliers, alerts, purchase-orders, supplier-comparison); finanzas (profitability, expenses, dashboard, reports, insights, indicators, repricing, stockouts, dead-stock); asistente.</td><td>Un controlador por recurso</td><td>Dentro de la API</td></tr>
+<tr><td>packages/shared</td><td>Esquemas de validación, catálogo de planes y funciones puras de las reglas de negocio, usados por la API y la web.</td><td>Biblioteca TypeScript</td><td>Compilado en cada cliente</td></tr>
+<tr><td>packages/api-client</td><td>Tipos generados desde el contrato OpenAPI para la web.</td><td>Biblioteca TypeScript</td><td>Compilado en la web</td></tr>
+<tr><td>PostgreSQL</td><td>Persistencia con integridad transaccional y Row Level Security.</td><td>SQL desde Prisma</td><td>Neon</td></tr>
+<tr><td>Servicios externos</td><td>Firebase Authentication (inicio de sesión), Resend (correo), Anthropic (modelo de lenguaje del asistente), INDEC y BCRA (indicadores) y WhatsApp (enlace que abre el dueño).</td><td>HTTPS</td><td>Terceros</td></tr>
+</table>
+
+<h2>4. Diagrama de casos de uso</h2>
+<p>La especificación de cada caso está en el documento «05 Casos de uso v1.0». La numeración de los casos coincide con la de las historias de usuario (CU-xx = HU-xx).</p>
+<p><img src="https://raw.githubusercontent.com/FrancoGaggero/inventariosmart/main/docs/diagramas/casos-de-uso.png" alt="Diagrama de casos de uso" width="640"></p>
+<p><i>Figura 4. Diagrama de casos de uso. Versión ampliable: <a href="https://github.com/FrancoGaggero/inventariosmart/blob/main/docs/diagramas/casos-de-uso.svg">casos-de-uso.svg</a>.</i></p>
+</body></html>

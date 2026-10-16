@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Manual de usuario v1.0 - InventarioSmart</title>
+<style>
+body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; line-height: 1.45; max-width: 860px; margin: 24px auto; padding: 0 16px; color: #222; background: #fff; }
+h1 { font-size: 22pt; }
+h2 { font-size: 16pt; margin-top: 28px; }
+h3 { font-size: 13pt; margin-top: 20px; }
+table { border-collapse: collapse; margin: 8px 0 16px; }
+th, td { padding: 4px 8px; vertical-align: top; text-align: left; }
+th { background: #f3efe6; }
+em.captura { color: #8a5a00; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<h1>InventarioSmart</h1>
+<p><strong>Manual de usuario</strong></p>
+<p>Versión 1.0 · 09/10/2026</p>
+<p>Trabajo final de carrera · Analista de Sistemas · Escuela Da Vinci</p>
+<p>Alumno: Franco Gaggero</p>
+<p>Web: <a href="https://inventariosmart0.vercel.app">https://inventariosmart0.vercel.app</a> · App para celulares Android</p>
+
+<h3>A quién va dirigido</h3>
+<p>Este manual es para las personas que usan InventarioSmart todos los días en un comercio: el dueño o la dueña, los empleados que venden y reponen en el mostrador, y el contador o la contadora que revisa los números. No hace falta saber de computación: cada tarea está explicada paso a paso, con los nombres exactos de los botones y menús entre comillas, tal como aparecen en la pantalla.</p>
+<p>Donde dice <em>[Captura: …]</em> va una imagen de la pantalla correspondiente.</p>
+
+<h3>Contenido</h3>
+<ol>
+<li>Qué es InventarioSmart y qué podés hacer</li>
+<li>Requisitos e instalación</li>
+<li>Primeros pasos</li>
+<li>La web, módulo por módulo</li>
+<li>La app para Android</li>
+<li>Mensajes frecuentes y qué hacer</li>
+<li>Preguntas frecuentes</li>
+<li>Glosario</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2>1. Qué es InventarioSmart y qué podés hacer</h2>
+<p>InventarioSmart es un sistema en internet para llevar el stock de tu comercio y saber cuánta plata te deja cada producto. Registrás ventas, ingresos de mercadería y ajustes; el sistema actualiza el stock solo, calcula tus márgenes sin IVA, te avisa antes de que un producto se agote, te arma los pedidos a tus proveedores y te muestra si tus precios le ganan o le pierden a la inflación.</p>
+<p>Lo usás de dos maneras:</p>
+<ul>
+<li><strong>La web</strong> (desde la computadora o el navegador del celular), para la gestión completa: catálogo, proveedores, gastos, análisis, configuración.</li>
+<li><strong>La app para Android</strong>, pensada para el mostrador: registrar una venta en segundos, mirar el stock, ver alertas y mandar un pedido por WhatsApp. Las tareas de gestión (importar planillas, proveedores, gastos, remarcación, usuarios y planes) se hacen en la web.</li>
+</ul>
+<p>Tu cuenta es la misma en la web y en el celular.</p>
+
+<h3>1.1 Qué puede hacer cada rol</h3>
+<p>Cada persona del comercio entra con su propio usuario y tiene uno de tres roles. El dueño elige el rol al invitar a alguien.</p>
+<ul>
+<li><strong>Dueño</strong>: acceso total. Es el único que confirma órdenes de compra, administra usuarios y cambia el plan.</li>
+<li><strong>Empleado</strong>: catálogo y movimientos, sin costos ni márgenes.</li>
+<li><strong>Contador</strong>: sólo lectura de los números (panel, rentabilidad, gastos, reportes y análisis).</li>
+</ul>
+<table border="1">
+<tr><th>Función (en la web)</th><th>Dueño</th><th>Empleado</th><th>Contador</th></tr>
+<tr><td>Inicio</td><td>Panel completo</td><td>Accesos a Inventario y a Registrar movimiento</td><td>Panel completo, sólo lectura</td></tr>
+<tr><td>Inventario (ver productos y stock)</td><td>Sí, con costos</td><td>Sí, sin costos</td><td>No</td></tr>
+<tr><td>Crear, editar, dar de baja productos e importar planillas</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td>Registrar ventas, ingresos y ajustes</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+<tr><td>Ver el historial de movimientos</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Anular un movimiento</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td>Proveedores, listas de precios y comparador</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td>Gastos operativos</td><td>Cargar y editar</td><td>No</td><td>Sólo ver</td></tr>
+<tr><td>Rentabilidad</td><td>Sí</td><td>No</td><td>Sí</td></tr>
+<tr><td>Alertas, Falta de stock, Stock parado, Inflación, Reportes</td><td>Sí</td><td>No</td><td>Sólo ver</td></tr>
+<tr><td>Órdenes de compra</td><td>Crear, editar, confirmar, enviar, cancelar</td><td>No</td><td>Sólo ver y copiar el texto</td></tr>
+<tr><td>Remarcación de precios</td><td>Sí</td><td>No</td><td>Ver la vista previa, sin aplicar ni deshacer</td></tr>
+<tr><td>Asistente con IA</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td>Usuarios y datos del comercio</td><td>Sí</td><td>No</td><td>No</td></tr>
+<tr><td>Ver el plan</td><td>Ver y cambiar</td><td>Sólo ver</td><td>Sólo ver</td></tr>
+</table>
+
+<h3>1.2 Qué incluye cada plan</h3>
+<p>Todo comercio nuevo arranca en el plan <strong>Free</strong>. El dueño puede cambiar de plan cuando quiera desde “Plan”. El cambio es inmediato y <strong>no tiene cobro</strong>: este proyecto no integra un medio de pago.</p>
+<table border="1">
+<tr><th>Funcionalidad</th><th>Free</th><th>Pro</th><th>Premium</th></tr>
+<tr><td>Productos activos</td><td>Hasta 50</td><td>Sin límite</td><td>Sin límite</td></tr>
+<tr><td>Usuarios</td><td>1</td><td>Sin límite</td><td>Sin límite</td></tr>
+<tr><td>Inventario y movimientos</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Panel y rentabilidad</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Gastos operativos</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Proveedores y listas de precios</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Importación desde Excel</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Alertas de reposición</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Pérdidas por falta de stock</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Stock parado</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Órdenes de compra</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Reportes semanales</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Precios frente a la inflación</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Remarcación asistida</td><td>No</td><td>Sí</td><td>Sí</td></tr>
+<tr><td>Comparador de proveedores</td><td>No</td><td>No</td><td>Sí</td></tr>
+<tr><td>Asistente con IA</td><td>No</td><td>No</td><td>Sí</td></tr>
+</table>
+<p>Cuando entrás a una función que tu plan no incluye, ves un aviso del tipo “Disponible en el plan PRO…” con el enlace “Ver planes”.</p>
+
+<!-- ============================================================ -->
+<h2>2. Requisitos e instalación</h2>
+<h3>2.1 Para usar la web</h3>
+<ul>
+<li>Una computadora, tablet o celular con un navegador actualizado (Chrome, Edge, Firefox o Safari).</li>
+<li>Conexión a internet.</li>
+<li>No hay que instalar nada: entrá a <strong>https://inventariosmart0.vercel.app</strong>.</li>
+<li>Si vas a entrar con Google, el navegador tiene que permitir las ventanas emergentes de la página.</li>
+</ul>
+
+<h3>2.2 Para usar la app en el celular</h3>
+<ul>
+<li>Un celular con <strong>Android 7.0 o superior</strong>.</li>
+<li>Conexión a internet (datos o wifi).</li>
+<li>WhatsApp instalado, si querés mandar pedidos a tus proveedores desde el celular.</li>
+</ul>
+
+<h3>2.3 Cómo instalar la app (archivo APK)</h3>
+<p>La app no está en Google Play: se instala con un archivo <strong>APK</strong> que te comparte el equipo de InventarioSmart. Android pide un permiso extra para instalar apps que no vienen de la tienda. Los nombres de las opciones pueden variar un poco según la marca del teléfono.</p>
+<ol>
+<li>Descargá el archivo APK en el celular (por ejemplo, desde el enlace que te pasaron o desde un correo).</li>
+<li>Tocá la notificación de descarga, o abrí la app “Archivos” y buscá el archivo en “Descargas”.</li>
+<li>Si aparece un aviso de que, por seguridad, el teléfono no permite instalar apps de esa fuente, tocá “Configuración”.</li>
+<li>Activá “Permitir de esta fuente” (en algunos teléfonos se llama “Instalar apps desconocidas” u “Orígenes desconocidos”).</li>
+<li>Volvé atrás y tocá “Instalar”. Si Google Play Protect muestra una advertencia, elegí la opción para instalar de todas formas.</li>
+<li>Cuando termine, tocá “Abrir”. La app aparece en el teléfono con el nombre <strong>InventarioSmart</strong>.</li>
+<li>Por seguridad, después de instalar podés volver a desactivar el permiso del paso 4.</li>
+</ol>
+<p><em class="captura">[Captura: Permiso “Permitir de esta fuente” en Android]</em></p>
+
+<h3>2.4 La primera carga puede tardar</h3>
+<p>El servidor de InventarioSmart usa un servicio gratuito que se “duerme” cuando nadie lo usa por un rato. La primera vez que entrás después de un tiempo, el servidor tiene que despertarse y puede tardar <strong>hasta un minuto</strong>.</p>
+<ul>
+<li>En la app vas a ver el mensaje “La API está despertando, puede tardar hasta un minuto.” Esperá sin cerrar la app.</li>
+<li>En la web la pantalla queda un rato en “Cargando tu sesión…” o “Buscando tu comercio…”. Esperá sin recargar la página.</li>
+</ul>
+<p>Después de esa primera carga, todo responde rápido.</p>
+
+<!-- ============================================================ -->
+<h2>3. Primeros pasos</h2>
+
+<h3>3.1 Crear tu cuenta</h3>
+<p>Podés crear la cuenta con tu email y una contraseña, o con tu cuenta de Google.</p>
+<p><strong>Con email, desde la web:</strong></p>
+<ol>
+<li>Entrá a la web y tocá “Creá una gratis” (debajo de “¿No tenés cuenta?”).</li>
+<li>Completá “Nombre del comercio”, “Email” y “Contraseña” (mínimo 8 caracteres).</li>
+<li>Leé y marcá “Acepto los términos y la política de privacidad”.</li>
+<li>Tocá “Crear cuenta”. Entrás directo al inicio de tu comercio.</li>
+</ol>
+<p><em class="captura">[Captura: Pantalla “Empezá gratis y en minutos.” de registro en la web]</em></p>
+<p><strong>Con Google, desde la web:</strong></p>
+<ol>
+<li>En la pantalla de ingreso tocá “Continuar con Google”.</li>
+<li>Elegí tu cuenta de Google en la ventana que se abre.</li>
+<li>La primera vez el sistema te pide el nombre del comercio (ver 3.2).</li>
+</ol>
+<p><strong>Para entrar las veces siguientes:</strong> escribí tu “Email” y “Contraseña” y tocá “Iniciar sesión”, o tocá “Continuar con Google”.</p>
+<p><em class="captura">[Captura: Pantalla de ingreso “Tu stock y tus números reales, en un solo lugar.”]</em></p>
+<p>También podés crear la cuenta desde la app (ver capítulo 5).</p>
+
+<h3>3.2 Configurar tu comercio (primer ingreso)</h3>
+<p>Si entraste con Google por primera vez, aparece la pantalla “PRIMER PASO”:</p>
+<ol>
+<li>En “¿Cómo se llama tu comercio?”, escribí el nombre en “Nombre del comercio”. Ese nombre aparece en tus reportes y en tus órdenes de compra; lo podés cambiar cuando quieras.</li>
+<li>Tocá “Guardar y continuar”.</li>
+<li>En “SEGUNDO PASO · ¿Cómo querés empezar?” elegí una opción:
+  <ul>
+  <li>“Importar desde Excel”: subís tu planilla de productos (ver 3.3).</li>
+  <li>“Cargar a mano”: abre el formulario de producto nuevo.</li>
+  <li>“Ir al inicio”: lo hacés más tarde desde “Inventario”.</li>
+  </ul>
+</li>
+</ol>
+<p><em class="captura">[Captura: Onboarding “¿Cómo querés empezar?”]</em></p>
+<p>Después podés completar los datos del comercio en “Comercio” (menú “Cuenta”): “Nombre”, “CUIT” (opcional, 11 dígitos sin guiones) e “IVA por defecto (%)”, que se aplica a los productos nuevos. Tocá “Guardar”.</p>
+
+<h3>3.3 Importar tus productos desde Excel o CSV</h3>
+<p>Si ya tenés tus productos en una planilla, no hace falta cargarlos uno por uno. Sólo el dueño puede importar.</p>
+<p><strong>Preparar la planilla.</strong> Sirve un archivo <strong>.xlsx</strong> (se lee sólo la primera hoja) o <strong>.csv</strong> (separado por punto y coma, coma o tabulación), de hasta 5.000 filas y 2 MB. La primera fila lleva los nombres de las columnas:</p>
+<table border="1">
+<tr><th>Columna</th><th>¿Obligatoria?</th><th>Qué va</th></tr>
+<tr><td>codigo</td><td>Sí</td><td>Código único del producto</td></tr>
+<tr><td>nombre</td><td>Sí</td><td>Nombre del producto</td></tr>
+<tr><td>precio</td><td>Sí</td><td>Precio de venta con IVA incluido</td></tr>
+<tr><td>costo</td><td>No</td><td>Costo de reposición sin IVA (0 si falta)</td></tr>
+<tr><td>stock</td><td>No</td><td>Stock inicial (0 si falta; no se toca en productos existentes)</td></tr>
+<tr><td>stock minimo</td><td>No</td><td>Stock de seguridad (0 si falta)</td></tr>
+<tr><td>categoria</td><td>No</td><td>Categoría (texto libre)</td></tr>
+<tr><td>iva</td><td>No</td><td>Alícuota de IVA en % (la del comercio si falta)</td></tr>
+</table>
+<p>Los encabezados se reconocen aunque tengan acentos, mayúsculas o nombres parecidos: por ejemplo “Código” o “SKU”, “Descripción” o “Artículo”, “Precio de venta” o “PVP”, “Costo neto”, “Cantidad” o “Existencia”, “Stock mínimo”, “Rubro” o “Familia”, “Alícuota”. Los montos pueden escribirse como “2.340,50”, “2340,5” o “$ 1.200”.</p>
+<p>Ejemplo (es la planilla de ejemplo que podés descargar):</p>
+<table border="1">
+<tr><th>codigo</th><th>nombre</th><th>precio</th><th>costo</th><th>stock</th><th>stock minimo</th><th>categoria</th><th>iva</th></tr>
+<tr><td>FA-220</td><td>Filtro de aire FA-220</td><td>3990</td><td>2400</td><td>10</td><td>5</td><td>Filtros</td><td>21</td></tr>
+<tr><td>AM-1L</td><td>Aceite mineral 1L</td><td>1240</td><td>880</td><td>24</td><td>10</td><td>Lubricantes</td><td>21</td></tr>
+</table>
+<p><strong>Importar:</strong></p>
+<ol>
+<li>Andá a “Inventario” y tocá “Importar desde Excel”.</li>
+<li>Si no tenés una planilla armada, tocá “Descargar planilla de ejemplo”, completala y guardala.</li>
+<li>En “Planilla (.xlsx o .csv)” elegí tu archivo y tocá “Subir y revisar”.</li>
+<li>En el paso 2 (“Revisá qué se va a cargar”) ves un resumen, por ejemplo “40 productos nuevos, 5 a actualizar y 2 con errores, de 47 filas.” Con los filtros “Todas”, “Se va a crear”, “Se va a actualizar” y “Fila inválida” podés revisar fila por fila. Las filas con error dicen qué falla (por ejemplo, “Código repetido: se usa la fila 8.”).</li>
+<li>Si está todo bien, tocá “Importar N productos”. Las filas inválidas se omiten. Si querés corregir el archivo, tocá “Elegir otro archivo”.</li>
+<li>En el paso 3 (“Inventario importado”) ves cuántos productos se crearon, se actualizaron y se omitieron. Tocá “Ver inventario”.</li>
+</ol>
+<p>Importante:</p>
+<ul>
+<li>Nada se guarda hasta que confirmás en el paso 2.</li>
+<li>Si un código ya existe, se actualizan su precio, costo, nombre y demás datos, pero <strong>no su stock</strong>. El stock sólo cambia con movimientos.</li>
+<li>En el plan Free, el paso 2 te avisa cuántos productos activos quedarías teniendo (“tu plan admite 50”). Si la importación supera el límite, no se puede confirmar: pasá al plan Pro o importá menos productos.</li>
+</ul>
+<p><em class="captura">[Captura: Paso 2 de la importación de productos con la vista previa]</em></p>
+
+<h3>3.4 Invitar a tu equipo</h3>
+<p>Para sumar empleados o a tu contador necesitás el plan Pro o Premium (el plan Free admite 1 usuario). Sólo el dueño invita.</p>
+<ol>
+<li>En el menú “Cuenta”, entrá a “Usuarios”.</li>
+<li>En “Invitar a alguien”, escribí el “Email” de la persona.</li>
+<li>Elegí el “Rol”: “Dueño”, “Empleado” o “Contador”.</li>
+<li>Tocá “Invitar”. Vas a ver: “Invitación creada para … Cuando inicie sesión con ese email, entra a tu comercio.”</li>
+<li><strong>El sistema no manda un correo de invitación.</strong> Avisale vos a la persona que entre a la web o a la app y que cree su cuenta o ingrese <strong>con ese mismo email</strong> (con contraseña o con Google). Al entrar, queda directamente en tu comercio.</li>
+</ol>
+<p>En la tabla de usuarios ves el estado de cada uno: “Activo”, “Invitado” (todavía no entró) o “Inactivo”. Desde ahí podés cambiar el rol con el desplegable o tocar “Dar de baja” / “Reactivar”. Los cambios rigen en el próximo uso de esa persona, sin que tenga que volver a entrar. El comercio siempre necesita al menos un dueño activo.</p>
+<p><em class="captura">[Captura: Pantalla “Usuarios” con la tarjeta “Invitar a alguien”]</em></p>
+
+<h3>3.5 Cómo moverte por la web</h3>
+<ul>
+<li><strong>En la computadora</strong>, el menú está a la izquierda, agrupado en “General”, “Análisis”, “Compras”, “Asistente” y “Cuenta”. Cada persona ve sólo lo que su rol y su plan permiten. Con el botón de arriba del menú (“Contraer el menú” / “Expandir el menú”) lo achicás a íconos.</li>
+<li>Arriba a la derecha está el botón “Registrar movimiento” (dueño y empleado) y la campanita de “Alertas” con la cantidad de alertas activas (plan Pro o superior).</li>
+<li>Abajo del menú están tu email, el botón para cambiar el tema (ver 4.20) y el botón “Cerrar sesión”, que te pide confirmar con “Cerrar sesión” o “Seguir acá”.</li>
+<li><strong>En el navegador del celular</strong>, abajo aparece una barra con cuatro accesos rápidos y “Más”. Tocá “Más” para abrir el menú completo; se cierra con la X, tocando afuera o eligiendo una opción.</li>
+</ul>
+<p><em class="captura">[Captura: Menú lateral de la web con sus secciones]</em></p>
+
+<!-- ============================================================ -->
+<h2>4. La web, módulo por módulo</h2>
+
+<h3>4.1 Inicio y panel del mes</h3>
+<p>Al entrar, “Inicio” te saluda con el nombre de tu comercio (“Buen día”, “Buenas tardes” o “Buenas noches”) y muestra tu plan y, si corresponde, la cantidad de alertas activas.</p>
+<p><strong>Dueño y contador</strong> ven el panel del mes:</p>
+<ol>
+<li>Elegí el mes con las flechas “Mes anterior” / “Mes siguiente” o con el selector de mes. Por defecto es el mes actual.</li>
+<li>Arriba ves una frase de resumen, por ejemplo “Este mes vendiste 120 unidades por $ … netos, un 8 % más que el mes pasado.”</li>
+<li>Los cuatro indicadores principales son:
+  <ul>
+  <li>“Stock valorizado”: cuánto vale tu stock y en cuántos productos.</li>
+  <li>“Ventas netas del mes”: ventas sin IVA y comparación con el mes anterior.</li>
+  <li>“Margen bruto”: ganancia sobre el costo de reposición, en pesos y en %.</li>
+  <li>“Margen neto”: el bruto menos tus gastos del mes. Si no cargaste gastos o no hubo ventas, dice “No calculable”.</li>
+  </ul>
+</li>
+<li>Más abajo: “Perdiste por falta de stock” y “Plata parada en stock” (plan Pro, con “Ver detalle”), “Productos más rentables del mes”, “Alertas activas” (productos sin stock o por debajo del mínimo, con el botón “Ingresar”) y “Reposición” (qué conviene pedir, con “Ver alertas”).</li>
+<li>La sección “Contexto” muestra la “Inflación del mes”, la “Interanual”, el “Dólar minorista” y tu “Stock en dólares”, con su fuente y fecha.</li>
+</ol>
+<p><strong>Empleado</strong>: en lugar del panel ve dos accesos, “Inventario” (con cuántos productos tienen stock bajo o sin stock) y “Registrar un movimiento”.</p>
+<p><em class="captura">[Captura: Panel del mes en la web]</em></p>
+
+<h3>4.2 Inventario (productos)</h3>
+<p>En el menú “General” → “Inventario” ves tu catálogo con precio, stock y estado.</p>
+<ul>
+<li>Buscá con “Buscar por código o nombre…”.</li>
+<li>Filtrá con “Todos”, “OK”, “Bajo”, “Sin stock” o “Dados de baja”. Un producto está “Bajo” cuando su stock llega a su stock de seguridad, y “Sin stock” cuando llega a 0.</li>
+<li>En cada producto tenés “Vender”, “Ingresar” e “Historial” (sus movimientos).</li>
+<li>El empleado ve el catálogo y el stock, pero no los costos. Sólo el dueño crea, edita y da de baja.</li>
+</ul>
+<p><em class="captura">[Captura: Pantalla “Inventario” con filtros y productos]</em></p>
+<p><strong>Crear un producto (dueño):</strong></p>
+<ol>
+<li>Tocá “Nuevo producto”.</li>
+<li>Completá “Código” (único en tu comercio), “Nombre” y, si querés, “Categoría”.</li>
+<li>Cargá el “Precio de venta ($)” <strong>con IVA incluido</strong>, el “IVA (%)” (viene con el IVA por defecto del comercio) y el “Costo de reposición ($)” <strong>sin IVA</strong>, como figura en las listas de tus proveedores.</li>
+<li>Cargá el “Stock inicial” (queda registrado como un ingreso con motivo “Stock inicial”) y el “Stock de seguridad”: por debajo de ese valor el producto figura como “Bajo”.</li>
+<li>En “Días de anticipación de la alerta de reposición” indicá con cuántos días de margen querés el aviso (de 0 a 90; por defecto 3).</li>
+<li>Tocá “Crear producto”.</li>
+</ol>
+<p><strong>Editar un producto (dueño):</strong> tocá el nombre del producto en la lista. Cambiá lo que necesites y tocá “Guardar cambios”. Al editar también podés elegir el “Proveedor principal”: su última lista de precios fija el costo de reposición. El stock no se edita acá (“Se ajusta con movimientos de stock, no desde acá.”). Más abajo ves el “Historial de costos” y el enlace “Comparar proveedores”.</p>
+<p><em class="captura">[Captura: Formulario “Nuevo producto”]</em></p>
+<p><strong>Dar de baja y reactivar (dueño):</strong> tocá “Dar de baja” en el producto y confirmá. El producto no se borra: se conservan su código y su historial. Para volver a usarlo, filtrá por “Dados de baja” y tocá “Reactivar”.</p>
+
+<h3>4.3 Movimientos: ventas, ingresos y ajustes</h3>
+<p>Todo cambio de stock se hace con un movimiento. Hay tres tipos:</p>
+<ul>
+<li><strong>Venta</strong>: unidades vendidas; se descuentan del stock al precio de venta vigente.</li>
+<li><strong>Ingreso</strong>: mercadería que entra; se suma al stock.</li>
+<li><strong>Ajuste</strong>: corrección por conteo, rotura, vencimiento, robo, uso interno u otro; puede sumar o restar.</li>
+</ul>
+<p><strong>Registrar un movimiento (dueño y empleado):</strong></p>
+<ol>
+<li>Tocá “Registrar movimiento” (arriba a la derecha o en “Movimientos”). También podés tocar “Vender” o “Ingresar” en un producto del inventario.</li>
+<li>Elegí la pestaña “Venta”, “Ingreso” o “Ajuste”.</li>
+<li>En “Producto” buscá por código o nombre y elegilo. Vas a ver su stock actual.</li>
+<li>Escribí la “Cantidad”. En un ajuste, un número positivo suma y uno negativo resta (por ejemplo −3 por rotura).</li>
+<li>Revisá “Fecha y hora”: viene con el momento actual, pero podés cargar movimientos de días anteriores (no futuros).</li>
+<li>En un ingreso podés elegir el “Motivo (opcional)”: “Compra a proveedor”, “Devolución de cliente” u “Otro”. En un ajuste el motivo es obligatorio: “Conteo de inventario”, “Rotura o daño”, “Vencimiento”, “Robo o faltante”, “Uso interno” u “Otro”.</li>
+<li>Si querés, escribí una “Observación” (hasta 200 caracteres; por ejemplo el número de remito).</li>
+<li>Tocá “Registrar venta”, “Registrar ingreso” o “Registrar ajuste”.</li>
+</ol>
+<p>Vas a ver con cuántas unidades queda el producto. Si quedó bajo o sin stock, el mensaje agrega “Conviene reponer.” El formulario queda abierto con el mismo tipo y producto para cargar otro movimiento; tocá “Ver historial” para ir a la lista.</p>
+<p>El stock nunca queda negativo: si querés vender más de lo que hay, el sistema no registra nada y te avisa, por ejemplo: “No hay stock suficiente de Filtro de aire FA-220: quedan 3 unidades y el movimiento resta 5.” Vender exactamente lo que queda sí se puede.</p>
+<p><em class="captura">[Captura: Formulario “Registrar movimiento” con la pestaña Venta]</em></p>
+<p><strong>Ver el historial:</strong> en “Movimientos” ves cada movimiento con “Fecha”, “Tipo”, “Producto”, “Cantidad”, “Stock” resultante, quién lo “Registró” y el “Motivo”. Podés filtrar por “Todos”, “Venta”, “Ingreso” o “Ajuste” y por fechas “Desde” / “Hasta”.</p>
+<p><strong>Corregir un error: anular un movimiento (dueño).</strong> Los movimientos no se borran ni se editan. Si te equivocaste:</p>
+<ol>
+<li>En “Movimientos”, buscá el movimiento y tocá “Anular”.</li>
+<li>Confirmá en el cuadro del navegador. El mensaje explica que se registra un ajuste inverso y que el original queda en el historial.</li>
+<li>El original queda marcado como “Anulado” y aparece un movimiento nuevo de tipo “Anulación” que devuelve el stock.</li>
+<li>Después registrá el movimiento correcto.</li>
+</ol>
+<p>Cada movimiento se puede anular una sola vez, y una anulación no se puede anular (registrá un movimiento nuevo).</p>
+<p><em class="captura">[Captura: Historial de movimientos con una anulación]</em></p>
+
+<h3>4.4 Proveedores y listas de precios</h3>
+<p>Sólo el dueño administra proveedores. Entrá desde “Compras” → “Proveedores”.</p>
+<p><strong>Cargar un proveedor:</strong></p>
+<ol>
+<li>Tocá “Nuevo proveedor”.</li>
+<li>Completá “Nombre” y, si querés, “Persona de contacto”, “CUIT”, “Email” y “Teléfono”. Para mandar pedidos por WhatsApp, el teléfono tiene que tener código de área (por ejemplo 011 o 0351).</li>
+<li>Elegí el “Canal para enviarle órdenes”: “Automático” (correo si tiene y, si no, WhatsApp), “Correo” o “WhatsApp”.</li>
+<li>Indicá el “Plazo de entrega (días)”: lo que tarda desde que pedís hasta que llega (por defecto 7). Se usa para calcular cuándo reponer.</li>
+<li>Poné la “Confiabilidad” de 1 a 5 estrellas, a tu criterio. La usa el comparador.</li>
+<li>Agregá “Notas” si querés (condiciones de pago, horarios) y tocá “Crear proveedor”.</li>
+</ol>
+<p><em class="captura">[Captura: Formulario “Nuevo proveedor”]</em></p>
+<p>Tocá un proveedor de la lista para ver su ficha. Desde ahí tenés “Editar”, “Cargar costo” e “Importar lista”, y la “Lista de precios vigente”. Para dar de baja un proveedor, usá “Dar de baja” en la lista: se conserva su historial de precios.</p>
+<p><strong>Cargar un costo a mano:</strong> en la ficha tocá “Cargar costo”, buscá el producto, escribí el “Costo neto ($, sin IVA)” y tocá “Guardar costo”.</p>
+<p><strong>Importar una lista de precios:</strong></p>
+<ol>
+<li>En la ficha del proveedor tocá “Importar lista”.</li>
+<li>Prepará una planilla .xlsx o .csv con dos columnas: <strong>codigo</strong> del producto y <strong>costo</strong> neto sin IVA (hasta 5.000 filas y 2 MB). Podés tocar “Descargar planilla de ejemplo”. También se reconocen encabezados como “SKU”, “Costo neto” o “Precio sin IVA”.</li>
+</ol>
+<table border="1">
+<tr><th>codigo</th><th>costo</th></tr>
+<tr><td>FA-220</td><td>2340,50</td></tr>
+<tr><td>AM-1L</td><td>880</td></tr>
+<tr><td>BI-09</td><td>1200</td></tr>
+</table>
+<ol start="3">
+<li>Elegí el archivo y tocá “Subir y revisar”.</li>
+<li>Revisá la vista previa. Cada fila figura como “Costo nuevo”, “Cambia el costo”, “Sin cambios”, “Sin producto” (el código no está en tu inventario) o “Fila inválida”.</li>
+<li>Tocá “Confirmar N costos”. Sólo se aplican los costos nuevos y los que cambian.</li>
+<li>En “Lista importada” ves cuántos costos se registraron. Tocá “Ver lista vigente”.</li>
+</ol>
+<p><strong>Cómo se elige el costo de cada producto:</strong> el costo de reposición vigente es el último que informó el <strong>proveedor principal</strong> del producto. Los costos de otros proveedores quedan guardados en el historial (y sirven para el comparador) pero no cambian el vigente. Si un producto no tiene proveedor principal, el primer proveedor que le carga un costo pasa a serlo. Cada vez que cambia el costo, los márgenes se recalculan.</p>
+<p><em class="captura">[Captura: Vista previa de la importación de una lista de precios]</em></p>
+
+<h3>4.5 Gastos operativos</h3>
+<p>Cargar los gastos del mes es lo que permite calcular el <strong>margen neto</strong>. Entrá desde “Análisis” → “Gastos”. El dueño los carga; el contador sólo los ve.</p>
+<ol>
+<li>Elegí el mes con el selector.</li>
+<li>Tocá “Nuevo gasto”.</li>
+<li>Escribí el “Concepto” (por ejemplo, “Alquiler del local”).</li>
+<li>Elegí el “Tipo”: “Fijo” (alquiler, sueldos, servicios) o “Variable” (comisiones, fletes, embalajes).</li>
+<li>Elegí la “Periodicidad”:
+  <ul>
+  <li>“Único”: cuenta sólo en el mes elegido.</li>
+  <li>“Mensual”: cuenta todos los meses desde el mes de inicio, hasta el mes de fin si lo indicás en “Hasta (opcional)”.</li>
+  <li>“Anual”: el importe anual se reparte en doce meses desde el mes de inicio.</li>
+  </ul>
+</li>
+<li>Cargá el “Importe ($)” <strong>sin IVA</strong>, el mes y, si querés, “Notas”.</li>
+<li>Tocá “Cargar gasto”.</li>
+</ol>
+<p>Arriba de la lista ves “Gastos del mes”, “Unidades vendidas” y “Gasto por unidad vendida”, que es lo que se resta del margen bruto de cada unidad. Para cambiar un gasto tocá “Editar”. “Eliminar” borra el gasto definitivamente: esa acción no se puede deshacer.</p>
+<p><em class="captura">[Captura: Pantalla “Gastos operativos” con el resumen del mes]</em></p>
+
+<h3>4.6 Rentabilidad</h3>
+<p>En “Análisis” → “Rentabilidad” (dueño y contador) ves cuánto te deja cada producto en el mes elegido.</p>
+<ol>
+<li>Elegí el mes con el selector.</li>
+<li>Arriba ves “Ventas netas”, “Margen bruto”, “Gastos del mes” y “Margen neto”.</li>
+<li>En la tabla, por producto: “Precio neto” (sin IVA), “Costo”, “Margen bruto” y su “%”, unidades “Vendidas”, “Bruto del mes” y “Margen neto” con su “%”. Los valores negativos se ven en rojo.</li>
+<li>Usá “Buscar por código o nombre…” para encontrar un producto.</li>
+</ol>
+<p>Si no cargaste gastos del mes, o no hubo ventas, el margen neto aparece como “No calculable” y el sistema te avisa, por ejemplo: “No se puede calcular el gasto por unidad: cargá los gastos del mes.” El costo de lo vendido se calcula con el costo de reposición actual de cada producto, no con el del día de cada venta.</p>
+<p><em class="captura">[Captura: Pantalla “Rentabilidad” con la tabla por producto]</em></p>
+
+<h3>4.7 Alertas de reposición (plan Pro)</h3>
+<p>Las alertas te avisan <strong>antes</strong> de que un producto se agote, según lo que vendés por día y lo que tarda tu proveedor en entregar. Entrá desde “Análisis” → “Alertas” o la campanita.</p>
+<ul>
+<li>Arriba ves un resumen, por ejemplo “3 productos van a quedarse sin stock antes de que llegue la reposición.”, y el “Último cálculo”.</li>
+<li>Pestañas: “Activas”, “Pospuestas”, “Atendidas”, “Resueltas” y “Todas”.</li>
+<li>Por cada producto: “Stock”, “Ventas/día”, “Cobertura” (cuántos días te alcanza), “Punto · umbral”, “Proveedor” con su plazo, la cantidad “Sugerido” para pedir y el estado. La gravedad puede ser “Próxima al quiebre” o “Crítica” (ya está por debajo del punto de reposición).</li>
+</ul>
+<p><strong>Qué podés hacer con una alerta (dueño):</strong></p>
+<ul>
+<li>“Registrar ingreso”: cuando llega la mercadería, abre el formulario de ingreso con el producto elegido.</li>
+<li>“Atendida”: ya lo pediste; no se vuelve a avisar hasta que entre mercadería.</li>
+<li>“Posponer 7 días”: vuelve a aparecer en una semana si el producto sigue en riesgo.</li>
+<li>“Generar orden”: arma una orden de compra con los productos en alerta (ver 4.8).</li>
+<li>“Recalcular ahora”: vuelve a calcular en el momento.</li>
+</ul>
+<p>Las alertas se recalculan solas todos los días a las 7 de la mañana y cuando abrís la pantalla si el último cálculo tiene más de una hora. Una alerta se resuelve sola cuando el stock vuelve a estar por encima del umbral. Cada alerta nueva se avisa una vez por correo a los dueños activos. El contador puede ver las alertas pero no tocarlas.</p>
+<p>Para ajustar los avisos: el “Stock de seguridad” y los “Días de anticipación de la alerta de reposición” se cambian en cada producto; el “Plazo de entrega (días)”, en cada proveedor. Un producto sin proveedor usa 7 días de plazo por defecto. Un producto sin ventas en los últimos 30 días no genera alertas predictivas.</p>
+<p><em class="captura">[Captura: Pantalla “Alertas de reposición”]</em></p>
+
+<h3>4.8 Órdenes de compra (plan Pro)</h3>
+<p>El sistema arma el pedido y redacta el mensaje; vos revisás y confirmás. <strong>Nada se envía sin tu confirmación.</strong> Sólo el dueño crea, edita, confirma y cancela órdenes; el contador las ve y puede copiar el texto. Entrá desde “Compras” → “Órdenes”.</p>
+<p>Estados de una orden: “Borrador” → “Confirmada” → “Enviada”, o “Cancelada”.</p>
+<p><strong>1. Crear el borrador</strong></p>
+<ol>
+<li>Tocá “Nueva orden” (o “Generar orden” en Alertas).</li>
+<li>En “Orden sugerida” el sistema propone qué pedir, agrupado por proveedor, con el costo más conveniente y el motivo en “Por qué este proveedor” (por ejemplo, “menor costo”). Marcá “Incluir próximas al quiebre” si querés sumar las alertas que todavía no son críticas.</li>
+<li>Ajustá las cantidades si hace falta y tocá “Crear borrador” en el proveedor que quieras. Se abre la orden.</li>
+</ol>
+<p>Los productos en alerta que no tienen proveedor aparecen en “Sin proveedor”: asignales uno desde la ficha del producto para poder incluirlos. También podés pedirle un borrador al asistente con IA (plan Premium).</p>
+<p><em class="captura">[Captura: Pantalla “Orden sugerida”]</em></p>
+<p><strong>2. Editar el borrador</strong></p>
+<ol>
+<li>Cambiá el “Proveedor”, las cantidades, agregá productos con “Agregar producto por código o nombre…” o quitá líneas con el tachito.</li>
+<li>Escribí “Notas internas” si querés (no van en el mensaje).</li>
+<li>En “Texto del pedido” podés modificar el “Asunto” y el “Texto” que redactó el sistema. Con “Volver al texto sugerido” recuperás el original.</li>
+<li>Tocá “Guardar”. Los costos se actualizan con la lista vigente del proveedor.</li>
+</ol>
+<p><strong>3. Confirmar y enviar</strong></p>
+<p>Si el proveedor tiene correo y WhatsApp, elegí en “Enviar por” la opción “Correo” o “WhatsApp”. El botón principal cambia según el canal:</p>
+<ul>
+<li><strong>“Confirmar y enviar por correo”</strong>: el sistema manda el correo al proveedor, con tu correo como respuesta. La orden queda “Enviada”.</li>
+<li><strong>“Confirmar y enviar por WhatsApp”</strong>: la orden queda “Confirmada”. Tocá “Abrir WhatsApp”: se abre WhatsApp con el mensaje ya escrito para el número del proveedor. <strong>El mensaje lo enviás vos</strong> desde tu teléfono. Después volvé a la orden y tocá <strong>“Ya la envié”</strong>; la orden pasa a “Enviada”.</li>
+<li><strong>“Confirmar”</strong> (el proveedor no tiene correo ni WhatsApp): la orden queda “Confirmada”. Tocá “Copiar texto”, mandalo por el medio que uses y después tocá “Ya la envié”.</li>
+</ul>
+<p>Al confirmar, las alertas de esos productos quedan como “Atendida”. Si el correo no pudo enviarse, la orden queda “Confirmada” y te avisa: “El correo no pudo enviarse: copiá el texto y envialo por otro medio.”</p>
+<p><em class="captura">[Captura: Detalle de una orden en borrador con el botón “Confirmar y enviar por WhatsApp”]</em></p>
+<p><strong>4. Cancelar un borrador:</strong> tocá “Cancelar borrador” y confirmá. La orden se conserva como “Cancelada”. Sólo se pueden editar o cancelar órdenes en borrador.</p>
+
+<h3>4.9 Reportes semanales (plan Pro)</h3>
+<p>Cada lunes a las 8 de la mañana te llega por correo cómo te fue la semana anterior (de lunes a domingo). Los reportes también quedan en “Análisis” → “Reportes”.</p>
+<ol>
+<li>En la lista ves cada semana con sus ventas netas, el margen bruto y la comparación con la semana anterior.</li>
+<li>Tocá una semana para ver el detalle: “Ventas netas”, “Costo vendido”, “Margen bruto”, “Margen neto”, los “Productos estrella” y las “Oportunidades de ahorro” (“Comprar más barato”, “Capital inmovilizado” y “Margen bajo”, por debajo del 15 %), más la “Reposición urgente al cierre”.</li>
+<li>El dueño puede tocar “Reenviar por correo” en un reporte, o “Generar el de esta semana” en la lista para ver uno en el momento.</li>
+</ol>
+<p><strong>Configurar a quién le llega (dueño):</strong> en “Cuenta” → “Comercio”, sección “Reporte semanal”, marcá o desmarcá “Enviar el reporte semanal por correo”. Llega a los dueños activos; en “Destinatarios extra” podés sumar hasta 5 correos más (por ejemplo, el de tu contadora) con “Agregar”.</p>
+<p><em class="captura">[Captura: Detalle de un reporte semanal]</em></p>
+
+<h3>4.10 Precios e inflación (plan Pro)</h3>
+<p>En “Análisis” → “Inflación” comparás tus precios y tus costos con la inflación oficial (IPC del INDEC).</p>
+<ol>
+<li>Elegí el período: “3 meses”, “6 meses” o “12 meses”.</li>
+<li>Arriba ves una frase, por ejemplo “Tus precios subieron 20 % y la inflación 25 %: en términos reales bajaron 4 %.”, y los indicadores “Mis precios”, “Mis costos”, “Inflación” y “En términos reales”.</li>
+<li>El gráfico “Evolución en índice base 100” muestra las líneas “Mis precios”, “Mis costos”, “Inflación (IPC)” e “IPC bienes”, todas arrancando en 100.</li>
+<li>En “Producto por producto” cada producto figura como <strong>“Atrasado”</strong> (su precio subió menos que la inflación, más de 2 puntos por debajo), <strong>“Alineado”</strong> o <strong>“Adelantado”</strong> (más de 2 puntos por encima). Filtrá con “Atrasados”, “Alineados” o “Adelantados”.</li>
+<li>Cada producto muestra un “Sugerido por inflación” y un “Sugerido por margen”. Son una referencia: no cambian nada hasta que remarques.</li>
+<li>Tocá “Remarcar” para actualizar los precios atrasados (ver 4.11).</li>
+</ol>
+<p>Tené en cuenta que el INDEC publica el IPC con un mes de demora, así que la comparación llega hasta el último mes publicado. Tus precios se ponderan por lo que vendés: lo que más vendés pesa más.</p>
+<p><em class="captura">[Captura: Pantalla “Precios e inflación” con el gráfico]</em></p>
+
+<h3>4.11 Remarcación de precios (plan Pro)</h3>
+<p>Actualizá muchos precios en un solo paso, con vista previa y la posibilidad de deshacer. Entrá desde “Compras” → “Remarcaciones” → “Remarcar precios”, o desde “Remarcar” en Precios e inflación.</p>
+<p><strong>Calcular y revisar:</strong></p>
+<ol>
+<li>Elegí el criterio:
+  <ul>
+  <li>“Alcanzar la inflación”: lleva cada precio a donde estaría si hubiera acompañado a la inflación del período.</li>
+  <li>“Sostener el margen”: sube cada precio lo mismo que subió su costo.</li>
+  <li>“Porcentaje fijo”: suma el mismo “Porcentaje” a todos (por defecto 10).</li>
+  <li>“Margen objetivo”: calcula el precio desde el costo para que cada producto deje el “Margen bruto objetivo (%)” que indiques (por defecto 35).</li>
+  </ul>
+</li>
+<li>Elegí el “Redondeo”: “Sin redondeo”, “Al peso (hacia arriba)”, “A la decena (hacia arriba)” o “A la centena (hacia arriba)”. Elegí también qué “Productos” incluir: “Todos los activos”, “Sólo los atrasados”, “Sólo los alineados” o “Sólo los adelantados”.</li>
+<li>Por defecto <strong>ningún precio baja</strong>. Si querés que bajen los que dan menos, marcá “Permitir que bajen precios”.</li>
+<li>Revisá la “Vista previa”: “Precio actual”, “Precio nuevo”, “Cambio” y “Margen bruto” antes y después. Nada cambia hasta que apliques. Podés escribir un precio a mano o destildar un producto para dejarlo afuera.</li>
+</ol>
+<p><strong>Aplicar:</strong> tocá “Aplicar a N productos” y confirmá con “Aplicar” (o “Seguir revisando”). Los precios nuevos rigen en el momento. Se aplican todos o ninguno: si algún precio cambió mientras revisabas, no se aplica nada y te muestra cuáles cambiaron; tocá “Volver a calcular”.</p>
+<p><em class="captura">[Captura: Vista previa de la remarcación]</em></p>
+<p><strong>Deshacer:</strong></p>
+<ol>
+<li>En “Remarcaciones” ves cada remarcación con su criterio, cantidad de productos, fecha y quién la hizo. Con “Precios” ves el antes y el después.</li>
+<li>Tocá “Deshacer” y confirmá con “Deshacer” (o “Dejarla como está”).</li>
+<li>Vuelven a su precio anterior los productos que siguen con el precio remarcado. Los que cambiaste después no se tocan. Cada remarcación se puede deshacer una sola vez.</li>
+</ol>
+<p>El contador puede ver la vista previa, pero no aplicar ni deshacer.</p>
+
+<h3>4.12 Falta de stock (plan Pro)</h3>
+<p>En “Análisis” → “Falta de stock” ves cuánto dejaste de vender y de ganar por quedarte sin stock.</p>
+<ol>
+<li>Elegí el período: “Últimos 30 días”, “Últimos 60 días” o “Últimos 90 días”.</li>
+<li>Arriba: “Ganancia perdida”, “Ventas perdidas” y “Productos afectados”.</li>
+<li>Por producto: cuánto tiempo estuvo “Sin stock”, cuánto “Vendía por día”, las “Unidades perdidas” y la “Ganancia perdida”. Los que siguen agotados llevan la marca “Sin stock ahora”.</li>
+</ol>
+<p>Es una estimación hecha con lo que vendía cada producto en los días en que tuvo stock (últimos 90 días). Si un producto tuvo stock menos de 7 días o no tuvo ventas, figura como “Sin historial suficiente” y no suma en los totales. Si un producto ya no se vende, dalo de baja para que no cuente.</p>
+<p><em class="captura">[Captura: Pantalla “Falta de stock”]</em></p>
+
+<h3>4.13 Stock parado (plan Pro)</h3>
+<p>En “Análisis” → “Stock parado” ves cuánta plata tenés en productos que no se venden.</p>
+<ol>
+<li>Elegí el período: “Sin ventas en 30 días”, “Sin ventas en 60 días”, “Sin ventas en 90 días” (por defecto) o “Sin ventas en 180 días”.</li>
+<li>Arriba: “Plata parada” (al costo de reposición, sin IVA), qué porcentaje es “De tu stock” y cuántos “Productos”.</li>
+<li>Por producto: “Stock”, “Costo”, “Última venta” (o “Nunca se vendió”), tiempo “Sin vender” y “Plata parada”.</li>
+</ol>
+<p>Los productos dados de alta hace menos tiempo que el período elegido todavía no cuentan. La pantalla sugiere ideas para liberar esa plata: una promoción o un combo, preguntarle al proveedor si te lo toma de vuelta, o darlo de baja.</p>
+<p><em class="captura">[Captura: Pantalla “Stock parado”]</em></p>
+
+<h3>4.14 Comparador de proveedores (plan Premium)</h3>
+<p>Te dice a quién conviene comprarle cada insumo. Sólo el dueño. Entrá desde “Proveedores” → “Comparar precios”, o desde un producto con “Comparar proveedores”.</p>
+<ol>
+<li>Para comparar, un mismo producto tiene que tener costos cargados de dos proveedores o más.</li>
+<li>La lista muestra cada insumo con el proveedor “Recomendado”, el “Principal actual” y el “Ahorro estimado” por mes. Marcá “Sólo los que conviene cambiar” para ver sólo esos.</li>
+<li>Tocá un insumo para ver una tarjeta por proveedor con su puntaje de 0 a 100, su “Costo neto”, su plazo y su confiabilidad.</li>
+<li>Si te convence, tocá “Usar como principal” y confirmá: ese proveedor pasa a ser el principal y el costo de reposición del producto cambia a su precio.</li>
+</ol>
+<p><strong>Cómo se calcula:</strong> el puntaje combina el precio (pesa 60 %), el plazo de entrega (25 %) y la confiabilidad (15 %). El más barato tiene 100 en precio; el que entrega más rápido, 100 en plazo; 5 estrellas son 100 en confiabilidad. El ahorro estimado es la diferencia de costo entre tu proveedor principal y el recomendado, por las unidades que vendiste en los últimos 30 días.</p>
+<p><em class="captura">[Captura: Comparación de proveedores de un insumo]</em></p>
+
+<h3>4.15 Asistente con IA (plan Premium)</h3>
+<p>Preguntale por tu negocio como se lo preguntarías a una persona. Sólo el dueño. Entrá desde “Asistente”.</p>
+<ol>
+<li>Escribí tu consulta en “Escribí tu consulta…” (hasta 1.000 caracteres) y tocá “Enviar” o la tecla Enter (Shift + Enter para una línea nueva). También podés tocar una de las preguntas sugeridas, como “¿Qué productos tengo que reponer?” o “¿Tengo plata parada en productos que no se venden?”.</li>
+<li>Mientras responde vas a ver “Consultando tus datos…”. Debajo de cada respuesta dice qué datos consultó (por ejemplo, “Consulté: Alertas de reposición y Productos.”).</li>
+<li>Para empezar otro tema, tocá “Nueva conversación”. Tus conversaciones anteriores quedan en el panel “Conversaciones”.</li>
+</ol>
+<p><strong>Qué puede hacer:</strong> responder sobre tus ventas, rentabilidad, productos más vendidos y más rentables, stock, alertas, falta de stock, stock parado, gastos, precios frente a la inflación, indicadores oficiales, proveedores y el comparador. También puede <strong>preparar un borrador de orden de compra</strong>: aparece como una tarjeta “Orden … para …” que abre la orden para que la revises y la confirmes vos.</p>
+<p><strong>Qué no hace:</strong> no cambia productos, precios, costos, movimientos, gastos ni proveedores; no confirma, envía ni cancela órdenes; responde sólo preguntas sobre tu negocio; y si no tiene datos, te lo dice en vez de inventar. Las respuestas las genera un modelo de inteligencia artificial: verificá los números importantes en su pantalla.</p>
+<p><strong>Límite diario:</strong> cada comercio tiene un máximo de consultas por día (50 en la configuración estándar). Al llegar, ves “Llegaste al límite de 50 consultas por día al asistente. Se renueva mañana.”</p>
+<p><em class="captura">[Captura: Asistente con una respuesta y la tarjeta de una orden en borrador]</em></p>
+
+<h3>4.16 Comercio</h3>
+<p>En “Cuenta” → “Comercio” (dueño) cambiás el “Nombre”, el “CUIT” y el “IVA por defecto (%)”, y configurás el reporte semanal (ver 4.9). Tocá “Guardar”.</p>
+
+<h3>4.17 Usuarios</h3>
+<p>Ver 3.4.</p>
+
+<h3>4.18 Plan</h3>
+<p>En “Cuenta” → “Plan” todos ven en qué plan está el comercio, “Lo que estás usando” (por ejemplo, “32 de 50 productos activos”) y qué incluye cada plan. Sólo el dueño puede cambiarlo:</p>
+<ol>
+<li>Tocá “Subir a Pro”, “Subir a Premium”, “Bajar a Pro” o “Bajar a Free”.</li>
+<li>Leé el cuadro de confirmación: qué se habilita y qué deja de estar disponible. Tocá el botón para confirmar o “Cancelar”.</li>
+<li>Vas a ver “Listo: tu comercio está en el plan …”. El cambio rige al instante para todos los usuarios del comercio.</li>
+</ol>
+<p>Bajar de plan no borra nada: tus alertas, órdenes, reportes y conversaciones quedan guardados y vuelven cuando subas. Para bajar a Free tenés que tener como máximo 50 productos activos y 1 usuario activo; si no, el sistema te dice cuánto sobra y tenés que dar de baja lo que sobra antes. Abajo ves el historial “Cambios de plan”.</p>
+<p><em class="captura">[Captura: Pantalla “Plan” con las tres tarjetas]</em></p>
+
+<h3>4.19 Cerrar sesión</h3>
+<p>Tocá “Cerrar sesión” abajo del menú y confirmá con “Cerrar sesión”.</p>
+
+<h3>4.20 Tema claro u oscuro</h3>
+<p>Abajo del menú, al lado de tu email, está el botón para cambiar el tema: dice “Cambiar a tema claro” o “Cambiar a tema oscuro”. La web recuerda tu elección; si nunca elegiste, sigue el tema de tu computadora. En el celular, el botón está dentro de “Más”.</p>
+
+<!-- ============================================================ -->
+<h2>5. La app para Android</h2>
+<p>La app está pensada para el mostrador: tareas que se hacen en menos de un minuto. Usás la misma cuenta que en la web.</p>
+
+<h3>5.1 Entrar a la app</h3>
+<ol>
+<li>Abrí InventarioSmart. En “Ingresá a tu comercio” escribí tu “Email” y “Contraseña” y tocá “Ingresar”, o tocá “Continuar con Google”.</li>
+<li>Si todavía no tenés cuenta, tocá “No tengo cuenta: crear cuenta”, completá “Tu nombre”, “Email”, “Contraseña” y “Repetí la contraseña”, y tocá “Crear cuenta”. Usá el mismo email que vas a usar en la web.</li>
+<li>Si sos dueño y es tu primer ingreso, escribí el “Nombre del comercio” y tocá “Guardar y continuar”.</li>
+</ol>
+<p>La sesión queda abierta aunque cierres la app. Si el ingreso con Google muestra “Google no está disponible en esta instalación.”, entrá con email y contraseña.</p>
+<p><em class="captura">[Captura: Pantalla de ingreso de la app]</em></p>
+
+<h3>5.2 Pestañas según tu rol</h3>
+<table border="1">
+<tr><th>Rol</th><th>Pestañas de abajo</th><th>Pantalla inicial</th></tr>
+<tr><td>Dueño</td><td>“Inicio”, “Inventario”, “Movimiento”, “Más”</td><td>Inicio</td></tr>
+<tr><td>Empleado</td><td>“Inventario”, “Movimiento”, “Más”</td><td>Inventario</td></tr>
+<tr><td>Contador</td><td>“Inicio”, “Más”</td><td>Inicio</td></tr>
+</table>
+<p>En casi todas las listas podés deslizar hacia abajo para actualizar.</p>
+
+<h3>5.3 Inicio</h3>
+<p>Muestra el resumen del mes, con las flechas “Mes anterior” / “Mes siguiente”: la frase “Este mes vendiste … unidades por … netos.”, y las tarjetas “Stock”, “Ventas netas”, “Margen bruto” y “Margen neto”. Con plan Pro también ves “Perdiste por falta de stock” y “Plata parada en stock” (tocalas para ver el detalle). Más abajo: “Reposición” (con “Ver alertas”), “Más rentables del mes” y “Alertas” (“Sin stock” y “Stock bajo”, con “Ver” para abrir el inventario filtrado).</p>
+<p><em class="captura">[Captura: Inicio en el celular]</em></p>
+
+<h3>5.4 Inventario</h3>
+<ol>
+<li>Buscá con “Buscar por código o nombre” y filtrá con “Todos”, “OK”, “Bajo” o “Sin stock”.</li>
+<li>Cada producto muestra código, stock, estado y precio (el dueño ve también el costo).</li>
+<li>Tocá “Vender” en un producto para registrar la venta directamente.</li>
+<li>El dueño puede cargar un producto con el botón “Nuevo producto”: “Código”, “Nombre”, “Precio de venta (con IVA)”, “Costo de reposición (sin IVA)”, “Stock inicial” y “Stock de seguridad”, y tocar “Guardar producto”.</li>
+</ol>
+<p>Editar o dar de baja un producto se hace desde la web.</p>
+<p><em class="captura">[Captura: Inventario en el celular]</em></p>
+
+<h3>5.5 Registrar un movimiento</h3>
+<ol>
+<li>Tocá la pestaña “Movimiento” (o “Vender” en un producto).</li>
+<li>Elegí “Venta”, “Ingreso” o “Ajuste”.</li>
+<li>Tocá “Producto” (“Elegí un producto”), buscalo y elegilo. Vas a ver su “Stock actual”.</li>
+<li>Escribí la “Cantidad”. En un ajuste, negativa para restar. En una venta, la app te muestra el precio de venta vigente con IVA al que se registra.</li>
+<li>En un ingreso podés elegir el “Motivo (opcional)”; en un ajuste, el “Motivo del ajuste” es obligatorio. Si querés, agregá una “Observación (opcional)”.</li>
+<li>Tocá “Registrar venta”, “Registrar ingreso” o “Registrar ajuste”.</li>
+<li>Vas a ver, por ejemplo, “Venta registrada. Stock resultante: 7.” Tocá “Registrar otro” para seguir con el mismo producto o “Ver inventario”.</li>
+</ol>
+<p>Si se corta la conexión, el botón pasa a decir “Reintentar”: tocalo sin miedo, la venta no se registra dos veces. Para anular un movimiento, usá la web (sólo el dueño).</p>
+<p><em class="captura">[Captura: Registrar movimiento en el celular]</em></p>
+
+<h3>5.6 Más</h3>
+<p>Arriba ves tu comercio, tu email, tu rol y tu plan. Debajo, según tu rol y tu plan:</p>
+<ul>
+<li><strong>Análisis</strong> (dueño y contador): “Alertas de reposición”, y con plan Pro “Falta de stock” y “Stock parado”. Funcionan igual que en la web (ver 4.7, 4.12 y 4.13). El dueño puede tocar “Registrar ingreso”, “Atendida” o “Posponer 7 días” en una alerta.</li>
+<li><strong>Compras</strong> (dueño y contador): “Órdenes de compra” (ver 5.7).</li>
+<li><strong>Asistente</strong> (dueño): “Asistente con IA”, igual que en la web (ver 4.15). Con el ícono “Conversaciones” ves las anteriores y con “Nueva conversación” empezás otra.</li>
+<li><strong>Apariencia</strong>: elegí el tema “Sistema”, “Claro” u “Oscuro”. La elección queda guardada en el teléfono.</li>
+<li><strong>En la web</strong>: te recuerda qué tareas se hacen en la web (importar planillas, proveedores y listas de precios, gastos del mes, remarcación, usuarios y planes) y la dirección inventariosmart0.vercel.app.</li>
+<li>“Cerrar sesión”: sale de la cuenta en el momento.</li>
+</ul>
+<p>Si tu plan no incluye una sección, la app te lo avisa y te recuerda que podés cambiar de plan desde la web.</p>
+<p><em class="captura">[Captura: Pestaña “Más” del celular]</em></p>
+
+<h3>5.7 Órdenes de compra desde el celular</h3>
+<p>Las órdenes se arman desde las alertas en la web o pidiéndoselas al asistente; en el celular las revisás, las confirmás y las mandás por WhatsApp.</p>
+<ol>
+<li>En “Más” → “Órdenes de compra”, filtrá por “Todas”, “Borradores”, “Confirmadas”, “Enviadas” o “Canceladas” y tocá una orden.</li>
+<li>En un borrador (dueño) podés cambiar la “Cantidad” de cada línea, “Quitar” líneas y tocar “Guardar”. Para agregar productos, cambiar el proveedor o reescribir el texto, usá la web.</li>
+<li>Si el proveedor tiene correo y WhatsApp, elegí en “Enviar por”.</li>
+<li>Tocá “Confirmar y enviar por WhatsApp” (o “Confirmar y enviar por correo”, o “Confirmar”).</li>
+<li>Para WhatsApp: tocá “Abrir WhatsApp”. Se abre WhatsApp con el mensaje ya escrito para el proveedor; envialo vos. Volvé a la app y tocá “Ya la envié”.</li>
+<li>Si preferís mandarlo por otro medio, tocá “Copiar texto”, pegalo donde quieras y después tocá “Ya la envié”.</li>
+<li>Para descartar un borrador, tocá “Cancelar borrador” y confirmá con “Cancelar orden”.</li>
+</ol>
+<p>El contador ve las órdenes y puede copiar el texto, pero no editarlas ni confirmarlas.</p>
+<p><em class="captura">[Captura: Orden confirmada con el botón “Abrir WhatsApp” en el celular]</em></p>
+
+<!-- ============================================================ -->
+<h2>6. Mensajes frecuentes y qué hacer</h2>
+<table border="1">
+<tr><th>Mensaje que ves</th><th>Qué significa</th><th>Qué hacer</th></tr>
+<tr><td>“La API está despertando, puede tardar hasta un minuto.” (app) o la pantalla queda en “Cargando tu sesión…” / “Buscando tu comercio…” (web)</td><td>El servidor estaba en reposo y se está encendiendo.</td><td>Esperá hasta un minuto sin cerrar ni recargar.</td></tr>
+<tr><td>“No pudimos comunicarnos con el servidor. Revisá tu conexión e intentá de nuevo.”</td><td>No hay internet o el servidor no respondió.</td><td>Revisá tu conexión y tocá “Reintentar”.</td></tr>
+<tr><td>“Disponible en el plan PRO…” / “Esta función está disponible a partir del plan PREMIUM.”</td><td>Tu plan no incluye esa función.</td><td>Tocá “Ver planes”. El dueño puede cambiar el plan en “Plan” (sin cobro).</td></tr>
+<tr><td>“No tenés permiso” – “Tu rol actual es empleado y esta sección es para duenio o contador.”</td><td>Tu rol no puede entrar a esa sección.</td><td>Tocá “Volver al inicio”. Si necesitás acceso, pedile al dueño que cambie tu rol.</td></tr>
+<tr><td>“No tenés permiso para realizar esta acción.”</td><td>Tu rol no puede hacer esa acción (por ejemplo, el contador quiere editar).</td><td>Pedíselo a un dueño.</td></tr>
+<tr><td>“Ya existe un producto con el código FA-220.”</td><td>El código ya lo usa otro producto de tu comercio.</td><td>Usá otro código o editá el producto existente.</td></tr>
+<tr><td>“El código FA-220 pertenece a un producto dado de baja. Reactivalo en lugar de crear otro.”</td><td>El código es de un producto dado de baja.</td><td>En “Inventario”, filtrá “Dados de baja” y tocá “Reactivar”.</td></tr>
+<tr><td>“No hay stock suficiente de …: quedan 3 unidades y el movimiento resta 5.”</td><td>Querés vender o restar más de lo que hay. No se registró nada.</td><td>Revisá la cantidad. Si en realidad tenés más unidades, registrá antes un ingreso o un ajuste por conteo.</td></tr>
+<tr><td>“… está dado de baja. Reactivalo antes de registrar movimientos.”</td><td>El producto está dado de baja.</td><td>El dueño lo reactiva desde “Inventario”.</td></tr>
+<tr><td>“Este movimiento ya fue anulado.” / “Una anulación no se puede anular. Registrá un nuevo movimiento.”</td><td>Cada movimiento se anula una sola vez.</td><td>Registrá un movimiento nuevo con lo correcto.</td></tr>
+<tr><td>“El plan FREE admite hasta 50 productos activos. Pasá al plan PRO para seguir cargando.”</td><td>Llegaste al límite de productos del plan Free.</td><td>Dá de baja productos que no uses o pasá al plan Pro.</td></tr>
+<tr><td>“El plan FREE admite 1 usuario. Pasá al plan PRO para invitar a tu equipo.”</td><td>El plan Free no permite más usuarios.</td><td>Pasá al plan Pro desde “Plan”.</td></tr>
+<tr><td>“Ese email ya está en uso en InventarioSmart.”</td><td>Ese email ya pertenece a un usuario (de tu comercio o de otro). Cada persona pertenece a un solo comercio.</td><td>Usá otro email para esa persona.</td></tr>
+<tr><td>“El comercio necesita al menos un dueño activo.”</td><td>Querés quitarle el rol de dueño o dar de baja al único dueño.</td><td>Asigná el rol “Dueño” a otra persona antes.</td></tr>
+<tr><td>“No se puede pasar al plan Free: tenés 60 productos activos y el plan admite 50. Dá de baja lo que sobra y volvé a intentar.”</td><td>Superás los límites del plan al que querés bajar.</td><td>Dá de baja productos o usuarios hasta entrar en el límite y volvé a intentar.</td></tr>
+<tr><td>“No encontramos las columnas obligatorias: codigo, nombre, precio. Descargá la plantilla para ver el formato.”</td><td>La planilla no tiene los encabezados necesarios.</td><td>Revisá la primera fila o usá “Descargar planilla de ejemplo”.</td></tr>
+<tr><td>“El archivo supera los 2 MB.” / “La planilla tiene N filas y el máximo es 5000. Dividila en varias.”</td><td>El archivo es muy grande.</td><td>Dividilo en varias planillas.</td></tr>
+<tr><td>“No se puede calcular el gasto por unidad: cargá los gastos del mes.”</td><td>Sin gastos cargados, el margen neto es “No calculable”.</td><td>Cargá los gastos del mes en “Gastos”.</td></tr>
+<tr><td>“El precio de … cambió desde la vista previa. No se aplicó nada: volvé a calcular.”</td><td>Alguien cambió un precio mientras revisabas la remarcación.</td><td>Tocá “Volver a calcular” y aplicá de nuevo.</td></tr>
+<tr><td>“Esta remarcación ya se deshizo.”</td><td>Cada remarcación se deshace una sola vez.</td><td>Si hace falta, hacé una remarcación nueva.</td></tr>
+<tr><td>“Sólo se puede modificar una orden en borrador.”</td><td>La orden ya fue confirmada o cancelada.</td><td>Si necesitás otro pedido, creá una orden nueva.</td></tr>
+<tr><td>“El correo no pudo enviarse: copiá el texto y envialo por otro medio.”</td><td>La orden quedó confirmada pero el correo falló.</td><td>Tocá “Copiar texto”, mandalo vos y tocá “Ya la envié”.</td></tr>
+<tr><td>“No se pudo abrir WhatsApp. Copiá el texto y envialo a mano.”</td><td>El teléfono no pudo abrir WhatsApp.</td><td>Revisá que WhatsApp esté instalado o usá “Copiar texto”.</td></tr>
+<tr><td>“Llegaste al límite de 50 consultas por día al asistente. Se renueva mañana.”</td><td>Se usaron todas las consultas del día del comercio.</td><td>Volvé a preguntar mañana.</td></tr>
+<tr><td>“El asistente no está disponible en este momento. Tu consulta quedó escrita: probá de nuevo en unos minutos.”</td><td>El servicio de IA no respondió. La consulta no se descuenta del límite.</td><td>Esperá unos minutos y tocá “Enviar” de nuevo.</td></tr>
+<tr><td>“El email o la contraseña no son correctos.”</td><td>Datos de ingreso equivocados.</td><td>Revisalos. Si te registraste con Google, usá “Continuar con Google”.</td></tr>
+<tr><td>“Ya existe una cuenta con ese email. Probá iniciar sesión.”</td><td>Ya te registraste con ese email.</td><td>Ingresá en vez de crear la cuenta.</td></tr>
+<tr><td>“El navegador bloqueó la ventana de Google. Permití las ventanas emergentes.”</td><td>El navegador no dejó abrir la ventana de Google.</td><td>Permití las ventanas emergentes para la página y volvé a intentar.</td></tr>
+<tr><td>“Demasiados intentos. Esperá unos minutos y volvé a probar.”</td><td>Hubo muchos intentos de ingreso seguidos.</td><td>Esperá unos minutos.</td></tr>
+<tr><td>“La sesión no es válida o venció. Volvé a iniciar sesión.”</td><td>Tu sesión se venció.</td><td>Volvé a ingresar.</td></tr>
+<tr><td>“Tu acceso a este comercio fue dado de baja. Hablá con el dueño.” (web) / “Tu acceso no está vigente. Si creés que es un error, hablá con el dueño del comercio.” (app)</td><td>El dueño te dio de baja.</td><td>Hablá con el dueño para que te reactive.</td></tr>
+<tr><td>“El navegador no permitió copiar. Seleccioná el texto a mano.”</td><td>El navegador bloqueó el portapapeles.</td><td>Seleccioná el texto del pedido y copialo a mano.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>7. Preguntas frecuentes</h2>
+<p><strong>¿Tengo que pagar para cambiar de plan?</strong><br>No. En esta versión el cambio de plan no tiene cobro: el proyecto no integra un medio de pago.</p>
+<p><strong>¿Puedo usar la misma cuenta en la web y en el celular?</strong><br>Sí. Entrás con el mismo email (o la misma cuenta de Google) y ves el mismo comercio.</p>
+<p><strong>Me equivoqué al cargar una venta. ¿Cómo la borro?</strong><br>Los movimientos no se borran: el dueño la anula desde “Movimientos” con “Anular”, y después se registra la venta correcta. Así queda todo el historial.</p>
+<p><strong>¿Por qué el precio va con IVA y el costo sin IVA?</strong><br>El precio es el que cobrás en el mostrador, con IVA incluido. El costo es el que figura en las listas de tus proveedores, sin IVA. El sistema saca el IVA del precio y calcula todos los márgenes sin IVA.</p>
+<p><strong>¿Por qué el margen neto dice “No calculable”?</strong><br>Porque faltan los gastos del mes o no hubo ventas. Cargá tus gastos en “Gastos”.</p>
+<p><strong>Importé una planilla y el stock de los productos que ya tenía no cambió. ¿Está bien?</strong><br>Sí. La importación actualiza precio, costo y nombre de los productos existentes, pero no su stock. Para cambiar el stock registrá un ingreso o un ajuste.</p>
+<p><strong>Invité a un empleado pero no le llegó ningún correo.</strong><br>Es así: el sistema no manda correo de invitación. Decile que entre a la web o a la app con ese email.</p>
+<p><strong>¿El sistema manda pedidos a mis proveedores sin que yo lo sepa?</strong><br>No. Ninguna orden se envía sin que el dueño la confirme. Por WhatsApp, el mensaje lo mandás vos desde tu teléfono.</p>
+<p><strong>¿Por qué un producto que se está terminando no tiene alerta?</strong><br>Las alertas predictivas necesitan ventas en los últimos 30 días para calcular la velocidad de venta. Igual vas a ver el producto como “Bajo” o “Sin stock” en el inventario y en el inicio.</p>
+<p><strong>¿El asistente puede cambiarme los precios?</strong><br>No. Sólo consulta tus datos y puede preparar borradores de órdenes, que confirmás vos.</p>
+<p><strong>Si bajo de plan, ¿pierdo mis datos?</strong><br>No. Quedan guardados y vuelven cuando subas de plan.</p>
+<p><strong>¿Puedo dejar de recibir el reporte semanal?</strong><br>Sí. En “Comercio”, desmarcá “Enviar el reporte semanal por correo”.</p>
+<p><strong>La app tarda mucho la primera vez que la abro en el día.</strong><br>Es normal: el servidor se está despertando (ver 2.4). Después anda rápido.</p>
+
+<!-- ============================================================ -->
+<h2>8. Glosario</h2>
+<table border="1">
+<tr><th>Término</th><th>Qué significa</th></tr>
+<tr><td>Precio neto</td><td>El precio de venta sin IVA.</td></tr>
+<tr><td>Costo de reposición</td><td>Lo que te cuesta hoy volver a comprar el producto, sin IVA. Es el último costo que informó su proveedor principal.</td></tr>
+<tr><td>Margen bruto</td><td>Precio neto menos costo de reposición. En %, se calcula sobre el precio neto.</td></tr>
+<tr><td>Margen neto</td><td>Margen bruto menos los gastos operativos del mes repartidos por unidad vendida. Sin gastos cargados es “No calculable”.</td></tr>
+<tr><td>Gasto por unidad vendida</td><td>Gastos del mes divididos por las unidades vendidas del mes.</td></tr>
+<tr><td>Stock de seguridad</td><td>La cantidad mínima que querés tener siempre. Por debajo, el producto figura como “Bajo”.</td></tr>
+<tr><td>Plazo de entrega (lead time)</td><td>Los días que tarda un proveedor desde que le pedís hasta que llega.</td></tr>
+<tr><td>Velocidad de venta</td><td>Lo que vendés por día: ventas de los últimos 30 días dividido 30.</td></tr>
+<tr><td>Punto de reposición</td><td>El stock en el que conviene pedir: velocidad de venta × plazo de entrega + stock de seguridad. Por debajo, la alerta es “Crítica”.</td></tr>
+<tr><td>Cobertura</td><td>Cuántos días te alcanza el stock actual al ritmo de venta.</td></tr>
+<tr><td>Quiebre (falta de stock)</td><td>El tiempo en que un producto activo estuvo con stock 0.</td></tr>
+<tr><td>Stock parado</td><td>Productos activos con stock que no se vendieron en el período elegido (30, 60, 90 o 180 días). La “plata parada” es stock × costo de reposición.</td></tr>
+<tr><td>IPC</td><td>Índice de precios al consumidor del INDEC: la inflación oficial.</td></tr>
+<tr><td>Variación real</td><td>Cuánto subió un precio descontada la inflación. Si es menor a −2 %, el precio está “Atrasado”; si es mayor a +2 %, “Adelantado”; en el medio, “Alineado”.</td></tr>
+<tr><td>Remarcación</td><td>Cambio de precios en lote, con vista previa y la posibilidad de deshacer.</td></tr>
+<tr><td>Borrador</td><td>Una orden de compra todavía no confirmada. No se envía nada hasta que la confirmás.</td></tr>
+<tr><td>Anulación</td><td>Movimiento automático que revierte otro equivocado. El original queda en el historial.</td></tr>
+<tr><td>Dar de baja</td><td>Desactivar un producto, proveedor o usuario sin borrarlo. Se puede reactivar.</td></tr>
+</table>
+
+<p><em>Fin del manual de usuario v1.0.</em></p>
+</body>
+</html>

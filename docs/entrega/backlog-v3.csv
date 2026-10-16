@@ -1,0 +1,29 @@
+Product Backlog InventarioSmart — v3.0 — 09/10/2026
+ID,Historia de usuario,RF asociado,Prioridad,Estim. (SP),Fase,Estado,Fecha de cierre,Change de OpenSpec,Criterios de aceptación
+HU-01,Gestión de inventario (ABM de productos y stock),"RF-01, RF-02",Alta,8,Fase 1 – MVP,Hecho,10/09/2026,product-catalog,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-02,Gestión de proveedores y listas de precios,RF-03,Alta,8,Fase 1 – MVP,Hecho,22/09/2026,suppliers-price-lists,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-03,Cálculo automático de rentabilidad,RF-04,Alta,8,Fase 1 – MVP,Hecho,23/09/2026,profitability-engine,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-04,Dashboard financiero,RF-05,Alta,5,Fase 1 – MVP,Hecho,23/09/2026,financial-dashboard,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-05,Importación desde Excel (onboarding),RF-08,Alta,5,Fase 1 – MVP,Hecho,23/09/2026,excel-import-onboarding,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-10 ★,Registro de movimientos de stock,RF-13,Alta,5,Fase 1 – MVP,Hecho,22/09/2026,stock-movements,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-11,Gestión de usuarios y acceso,RF-11,Alta,3,Fase 1 – MVP,Hecho,10/09/2026,auth-tenancy,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-13 ★,Gestión de gastos operativos,RF-14,Alta,5,Fase 1 – MVP,Hecho,22/09/2026,operating-expenses,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-06,Alertas predictivas de reposición,RF-06,Media,8,Fase 2 – Alertas,Hecho,23/09/2026,"restock-alerts, mobile-stock-insights",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-07,Órdenes de compra en modo copiloto,RF-07,Media,5,Fase 2 – Alertas,Hecho,24/09/2026,"purchase-orders-copilot, mobile-orders",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-09,Reportes semanales automáticos,RF-09,Media,3,Fase 2 – Alertas,Hecho,24/09/2026,weekly-reports,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-12,Comparador de precios entre proveedores,RF-12,Media,5,Fase 2 – Alertas,Hecho,28/09/2026,supplier-comparison,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-15 ◆,Mis precios frente a la inflación,RF-16,Media,8,Fase 2 – Alertas,Hecho,28/09/2026,inflation-insights,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-16 ◆,Enviar la orden por WhatsApp,RF-17,Media,3,Fase 2 – Alertas,Hecho,28/09/2026,"purchase-orders-whatsapp, mobile-orders",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-17 ◆,Remarcación asistida,RF-18,Media,5,Fase 2 – Alertas,Hecho,28/09/2026,bulk-repricing,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-18 ◆,Cuánto pierdo por quedarme sin stock,RF-19,Media,5,Fase 2 – Alertas,Hecho,01/10/2026,"stockout-losses, mobile-stock-insights",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-19 ◆,Plata parada en stock,RF-20,Media,3,Fase 2 – Alertas,Hecho,01/10/2026,"dead-stock, mobile-stock-insights",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-08,Asistente conversacional con IA (Premium),RF-10,Baja,13,Fase 3 – IA,Hecho,02/10/2026,"ai-assistant, assistant-top-sellers, assistant-stock-insights, mobile-assistant",Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+HU-14 ★,Gestión de plan y suscripción,RF-15,Baja,5,Fase 3 – IA,Hecho,29/09/2026,subscription-plans,Ver Propuesta v3.0 §5.2 y los escenarios CP del documento de casos de prueba
+
+Resumen,Cant. HU,Story Points,Hechas
+Fase 1 – MVP,8,47,8
+Fase 2 – Alertas,9,45,9
+Fase 3 – IA,2,18,2
+TOTAL,19,110,19
+
+★ Incorporada en la v2.0. ◆ Incorporada en la v3.0 (estimación realizada al incorporarla). La fecha de cierre es la del commit que la implementó; las changes posteriores que la amplían figuran en la misma fila.
