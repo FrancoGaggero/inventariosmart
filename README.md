@@ -106,6 +106,9 @@ pnpm dev
   `apps/web/public/plantillas/lista-de-precios.csv` (columnas `codigo;costo`, costo neto sin IVA).
   Convención de listados: paginación por cursor, respuesta `{ items, siguienteCursor }`; `siguienteCursor` null en la última página.
 - Web: http://localhost:5173
+  Portada pública con escenas 3D en three.js (ADR 0026): el depósito del hero, "Cómo funciona" y "Hecho para Argentina",
+  en un chunk diferido con imagen fija de respaldo. El contorno del mapa se regenera con `herramientas/mapas` y las
+  imágenes fijas con `node herramientas/visuales/exportar.mjs escena-deposito escena-como escena-argentina`.
   Paleta ámbar cálida, en tema claro u oscuro, con el conmutador al pie de la barra lateral (se guarda en el
   navegador; por defecto sigue al sistema). Navegación en una barra lateral desde 768 px, que se colapsa a un riel de
   íconos, y en el celular una barra inferior con "Más" (ADR 0022). Tests de la web:

@@ -1,0 +1,12 @@
+{
+  "name": "inventariosmart-mapas",
+  "private": true,
+  "description": "Generador del contorno de Argentina de la portada (landing-3d D5, ADR 0026). Fuera del workspace pnpm.",
+  "type": "module",
+  "scripts": {
+    "generar": "node generar-argentina.mjs"
+  },
+  "devDependencies": {
+    "polygon-clipping": "0.15.7"
+  }
+}

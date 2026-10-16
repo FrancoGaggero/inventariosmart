@@ -1,30 +1,13 @@
 // @vitest-environment node
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { tokensClaro, tokensOscuro } from '@/test/tokens-css';
 
 /**
  * Contraste de la paleta (ADR 0022, design D8): lee los tokens de index.css en los dos temas y
  * exige WCAG AA. Si alguien cambia un color y queda ilegible, este test lo frena.
  */
-const css = readFileSync(fileURLToPath(new URL('../index.css', import.meta.url)), 'utf8');
-
-function tokensDe(bloque: string): Record<string, string> {
-  const tokens: Record<string, string> = {};
-  for (const [, nombre, valor] of bloque.matchAll(/--color-([a-z0-9-]+):\s*([^;]+);/g)) {
-    tokens[nombre!] = valor!.trim();
-  }
-  return tokens;
-}
-
-function bloque(selector: RegExp): string {
-  const inicio = css.search(selector);
-  if (inicio < 0) throw new Error(`No encontré ${selector}`);
-  return css.slice(inicio, css.indexOf('\n}', inicio));
-}
-
-const oscuro = tokensDe(bloque(/@theme \{/));
-const claro = { ...oscuro, ...tokensDe(bloque(/:root\[data-theme='light'\] \{/)) };
+const oscuro = tokensOscuro;
+const claro = tokensClaro;
 
 type Rgba = [number, number, number, number];
 

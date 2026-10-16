@@ -8,6 +8,12 @@
       "port": 5173
     },
     {
+      "name": "web-preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@inventariosmart/web", "preview", "--port", "4173", "--strictPort"],
+      "port": 4173
+    },
+    {
       "name": "api",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@inventariosmart/api", "dev"],

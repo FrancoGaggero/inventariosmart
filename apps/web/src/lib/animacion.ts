@@ -88,3 +88,27 @@ export function tramoDePaso(
     number,
   ];
 }
+
+/**
+ * Desplazamiento de un botón magnético (landing-3d D6): el botón se corre hacia el puntero cuando
+ * está a menos de `radio` px de su borde, hasta `max` px, y vuelve a 0 lejos.
+ */
+export function atraccion(
+  px: number,
+  py: number,
+  rect: Rectangulo,
+  radio = 80,
+  max = 6,
+): { x: number; y: number } {
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = px - cx;
+  const dy = py - cy;
+  const alcance = radio + Math.max(rect.width, rect.height) / 2;
+  const d = Math.hypot(dx, dy);
+  if (d === 0 || d > alcance) return { x: 0, y: 0 };
+  const fuerza =
+    max * Math.min(1, d / (alcance / 2)) * (1 - Math.max(0, d - alcance / 2) / (alcance / 2));
+  const redondear = (v: number) => Math.round(v * 100) / 100 + 0;
+  return { x: redondear((dx / d) * fuerza), y: redondear((dy / d) * fuerza) };
+}

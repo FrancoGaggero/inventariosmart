@@ -14,3 +14,5 @@ apps/api/src/generated/
 
 # Taller de animaciones (ADR 0025): renders intermedios.
 herramientas/visuales/out/
+# Fuente de Natural Earth del generador de mapas (12 MB; se baja con verificación SHA-256).
+herramientas/mapas/fuente/

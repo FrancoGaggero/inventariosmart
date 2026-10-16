@@ -1,13 +1,15 @@
-/* global console, process */
+/* global console, fetch, process, setTimeout, window */
 // Exportador de animaciones de la app (ADR 0025, design D3 de app-animations).
 //
 // Para cada pieza y tema: render a secuencia PNG con alfa (HyperFrames o Remotion), WebP animado
 // con ffmpeg, PNG fijo del último cuadro, control de peso y copia a la web y al celular.
+// Las piezas `escena3d` (landing-3d D7) son la imagen fija de las escenas 3D de la portada: se
+// dibujan con la misma escena de la web, en apps/web/captura.html, con Chrome sin ventana.
 //
 //   node exportar.mjs                       todas las piezas
 //   node exportar.mjs vacio-cajas bienvenida sólo esas
 //   node exportar.mjs --revisar             sólo lint y check de HyperFrames, sin renderizar
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   copyFileSync,
   existsSync,
@@ -20,6 +22,8 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import puppeteer from 'puppeteer-core';
+import sharp from 'sharp';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../..');
@@ -42,7 +46,34 @@ const PIEZAS = {
   'vacio-recibo': { con: 'hyperframes', tope: 150 * KB },
   'vacio-flechas': { con: 'hyperframes', tope: 150 * KB },
   bienvenida: { con: 'remotion', tope: 600 * KB, composicion: 'Bienvenida' },
+  // Imagen fija de las escenas 3D de la portada: sólo web, sin WebP.
+  'escena-deposito': {
+    con: 'escena3d',
+    tope: 150 * KB,
+    escena: 'deposito',
+    progreso: 0.5,
+    ancho: 640,
+    alto: 520,
+  },
+  'escena-como': {
+    con: 'escena3d',
+    tope: 120 * KB,
+    escena: 'como',
+    progreso: 0.9,
+    ancho: 640,
+    alto: 480,
+  },
+  'escena-argentina': {
+    con: 'escena3d',
+    tope: 120 * KB,
+    escena: 'argentina',
+    progreso: 1,
+    ancho: 640,
+    alto: 512,
+  },
 };
+const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const PUERTO_CAPTURA = 5174;
 
 const entorno = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', REMOTION_DISABLE_TELEMETRY: '1' };
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
@@ -167,7 +198,53 @@ function aWebp(dirCuadros, destino) {
   return join(dirCuadros, lista.at(-1));
 }
 
-function main() {
+/** Levanta Vite de la web en un puerto propio para la página de captura. */
+async function servidorDeCaptura() {
+  const vite = spawn(
+    'pnpm',
+    [
+      '--filter',
+      '@inventariosmart/web',
+      'exec',
+      'vite',
+      '--port',
+      String(PUERTO_CAPTURA),
+      '--strictPort',
+    ],
+    {
+      cwd: RAIZ,
+      shell: process.platform === 'win32',
+      stdio: 'ignore',
+    },
+  );
+  for (let i = 0; i < 60; i++) {
+    try {
+      const r = await fetch(`http://localhost:${PUERTO_CAPTURA}/captura.html`);
+      if (r.ok) return vite;
+    } catch {
+      // todavía arrancando
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  vite.kill();
+  throw new Error('Vite no respondió en el puerto de captura.');
+}
+
+/** Dibuja una escena 3D con SwiftShader (render por CPU, igual en cualquier máquina) y la comprime. */
+async function renderEscena(navegador, p, tema, salida) {
+  const pagina = await navegador.newPage();
+  await pagina.setViewport({ width: p.ancho, height: p.alto, deviceScaleFactor: 2 });
+  const url = `http://localhost:${PUERTO_CAPTURA}/captura.html?escena=${p.escena}&tema=${tema}&progreso=${p.progreso}&calidad=completa&ancho=${p.ancho}&alto=${p.alto}`;
+  await pagina.goto(url);
+  await pagina.waitForFunction('window.__escenaLista || window.__escenaError', { timeout: 120000 });
+  const error = await pagina.evaluate(() => window.__escenaError);
+  if (error) throw new Error(`${p.escena}-${tema}: ${error}`);
+  const crudo = await (await pagina.$('#escena')).screenshot({ omitBackground: true });
+  await pagina.close();
+  await sharp(crudo).png({ palette: true, quality: 80, compressionLevel: 9 }).toFile(salida);
+}
+
+async function main() {
   const args = process.argv.slice(2);
   const soloRevisar = args.includes('--revisar');
   const pedidas = args.filter((a) => !a.startsWith('--'));
@@ -176,7 +253,37 @@ function main() {
   mkdirSync(OUT, { recursive: true });
 
   const generados = [];
-  for (const pieza of nombres) {
+  const escenas = nombres.filter((n) => PIEZAS[n].con === 'escena3d');
+  if (escenas.length > 0 && !soloRevisar) {
+    const vite = await servidorDeCaptura();
+    const navegador = await puppeteer.launch({
+      executablePath: CHROME,
+      headless: true,
+      args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    });
+    try {
+      for (const pieza of escenas) {
+        for (const tema of TEMAS) {
+          const png = join(OUT, `${pieza}-${tema}.png`);
+          await renderEscena(navegador, PIEZAS[pieza], tema, png);
+          const bytes = statSync(png).size;
+          if (bytes > PIEZAS[pieza].tope) {
+            throw new Error(
+              `${pieza}-${tema}.png pesa ${Math.round(bytes / KB)} KB y el tope es ${PIEZAS[pieza].tope / KB} KB: no se copia nada.`,
+            );
+          }
+          console.log(
+            `  ${pieza}-${tema}: ${Math.round(bytes / KB)} KB (tope ${PIEZAS[pieza].tope / KB} KB)`,
+          );
+          generados.push({ pieza, tema, webp: null, png, bytes: null, png_bytes: bytes });
+        }
+      }
+    } finally {
+      await navegador.close();
+      vite.kill();
+    }
+  }
+  for (const pieza of nombres.filter((n) => PIEZAS[n].con !== 'escena3d')) {
     const p = PIEZAS[pieza];
     const proyecto = p.con === 'hyperframes' ? prepararHyperframes(pieza) : null;
     if (proyecto) revisarHyperframes(pieza, proyecto);
@@ -207,15 +314,19 @@ function main() {
   // Sólo se copia si todas las piezas pasaron su tope.
   for (const destino of DESTINOS) {
     mkdirSync(destino, { recursive: true });
-    for (const g of generados) {
-      copyFileSync(g.webp, join(destino, `${g.pieza}-${g.tema}.webp`));
+    // Las escenas 3D son de la portada web: no van al celular.
+    const propios = generados.filter(
+      (g) => PIEZAS[g.pieza].con !== 'escena3d' || destino === DESTINOS[0],
+    );
+    for (const g of propios) {
+      if (g.webp) copyFileSync(g.webp, join(destino, `${g.pieza}-${g.tema}.webp`));
       copyFileSync(g.png, join(destino, `${g.pieza}-${g.tema}.png`));
     }
     const ruta = join(destino, 'manifiesto.json');
     const previo = existsSync(ruta) ? JSON.parse(readFileSync(ruta, 'utf8')) : {};
-    for (const g of generados) {
+    for (const g of propios) {
       previo[`${g.pieza}-${g.tema}`] = {
-        framework: PIEZAS[g.pieza].con,
+        framework: PIEZAS[g.pieza].con === 'escena3d' ? 'three.js' : PIEZAS[g.pieza].con,
         webp: g.bytes,
         png: g.png_bytes,
       };
@@ -225,9 +336,7 @@ function main() {
   console.log(`Listo: ${generados.length} archivo(s) en ${DESTINOS.length} destinos.`);
 }
 
-try {
-  main();
-} catch (e) {
+main().catch((e) => {
   console.error(`✗ ${e.message}`);
   process.exit(1);
-}
+});

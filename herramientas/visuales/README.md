@@ -4,10 +4,11 @@ Produce las animaciones de la app (ADR 0025): imágenes WebP animadas con transp
 
 Está fuera del workspace de pnpm (`pnpm-workspace.yaml` incluye `apps/*` y `packages/*`), así que no suma dependencias a CI. Lo generado se commitea en `apps/web/public/animaciones/` y `apps/mobile/assets/animaciones/`.
 
-| Pieza                | Framework                                               | Dónde se usa                                    |
-| -------------------- | ------------------------------------------------------- | ----------------------------------------------- |
-| `vacio-<nombre>` (6) | HyperFrames 0.8.137 (HTML + SVG + GSAP), `hyperframes/` | `EstadoVacio` en la web y `Vacio` en el celular |
-| `bienvenida`         | Remotion 4.0.533 (React), `remotion/`                   | Onboarding de la web y del celular              |
+| Pieza                 | Framework                                                      | Dónde se usa                                           |
+| --------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
+| `vacio-<nombre>` (6)  | HyperFrames 0.8.137 (HTML + SVG + GSAP), `hyperframes/`        | `EstadoVacio` en la web y `Vacio` en el celular        |
+| `bienvenida`          | Remotion 4.0.533 (React), `remotion/`                          | Onboarding de la web y del celular                     |
+| `escena-<nombre>` (3) | three.js, la misma escena de la web en `apps/web/captura.html` | Imagen fija de las escenas 3D de la portada (ADR 0026) |
 
 ## Requisitos
 
@@ -22,6 +23,8 @@ node exportar.mjs                         # todas las piezas
 node exportar.mjs vacio-cajas bienvenida  # sólo esas
 node exportar.mjs --revisar               # sólo el lint de HyperFrames, sin renderizar
 ```
+
+Las piezas `escena-deposito`, `escena-como` y `escena-argentina` (ADR 0026) no son animaciones: el exportador levanta Vite de la web en el puerto 5174, abre `captura.html` con Chrome sin ventana (`puppeteer-core`, SwiftShader) y guarda un PNG por tema comprimido con `sharp`, sólo para la web. Topes: 150 KB el depósito y 120 KB las otras. Hay que regenerarlas si cambia una escena, la paleta o el mapa. Chrome se busca en `C:/Program Files/Google/Chrome/Application/chrome.exe` o en la variable `CHROME`.
 
 Para cada pieza y tema: render a secuencia PNG con alfa, WebP animado (`libwebp_anim`, calidad 80, compresión 6), PNG fijo del último cuadro y control de peso: 150 KB por estado vacío y 600 KB para la bienvenida. Si una pieza pasa su tope, no se copia nada. Además actualiza `manifiesto.json` en cada destino.
 

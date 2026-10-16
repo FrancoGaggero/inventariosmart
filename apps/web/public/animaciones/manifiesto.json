@@ -68,5 +68,35 @@
     "framework": "remotion",
     "webp": 127282,
     "png": 7848
+  },
+  "escena-deposito-claro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 32405
+  },
+  "escena-deposito-oscuro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 33318
+  },
+  "escena-como-claro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 22772
+  },
+  "escena-como-oscuro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 20956
+  },
+  "escena-argentina-claro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 14161
+  },
+  "escena-argentina-oscuro": {
+    "framework": "three.js",
+    "webp": null,
+    "png": 14704
   }
 }

@@ -2,12 +2,12 @@ import { tarjetasDePlanes } from '@/lib/plan-formato';
 import { LIMITES_PLAN, type Plan } from '@inventariosmart/shared';
 import {
   ArrowRight,
-  BarChart3,
   BellRing,
   Check,
   FileSpreadsheet,
   LogIn,
   type LucideIcon,
+  MessageCircle,
   Package,
   ShoppingCart,
   Smartphone,
@@ -15,10 +15,18 @@ import {
   TrendingUp,
   Truck,
 } from 'lucide-react';
-import { m, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
+import {
+  type MotionValue,
+  m,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'motion/react';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { Animado } from '@/features/publico/Animado';
+import { BotonMagnetico } from '@/features/publico/BotonMagnetico';
 import { BarraDeProgreso } from '@/features/publico/BarraDeProgreso';
 import { ComoFuncionaAnclado } from '@/features/publico/ComoFuncionaAnclado';
 import { Contador } from '@/features/publico/Contador';
@@ -26,9 +34,14 @@ import { FondoAnimado } from '@/features/publico/FondoAnimado';
 import { Escalonado, Item, Revelar } from '@/features/publico/Revelar';
 import { TarjetaInclinable } from '@/features/publico/TarjetaInclinable';
 import { TextoQueSeArma } from '@/features/publico/TextoQueSeArma';
+import { useMedia } from '@/features/publico/useMedia';
 import { GraficaBarras } from '@/ui/GraficaBarras';
 import { Logo } from '@/ui/Logo';
+import { Lienzo3D } from './3d/Lienzo3D';
 import { FrenteAFrente } from './FrenteAFrente';
+import { MarquesinaRubros } from './MarquesinaRubros';
+import { NavSecciones } from './NavSecciones';
+import { HechoParaArgentina } from './HechoParaArgentina';
 
 interface Servicio {
   Icono: LucideIcon;
@@ -94,9 +107,15 @@ const PASOS = [
     texto: 'Desde la web o el celular. Sin tickets ni cuadernos: el stock baja solo.',
   },
   {
-    Icono: BarChart3,
-    titulo: 'Mirá tus números',
-    texto: 'Panel del mes, productos más rentables, qué reponer y a quién comprarle.',
+    Icono: BellRing,
+    titulo: 'Te avisa antes de que falte',
+    texto:
+      'Con tu velocidad de venta y el plazo del proveedor, la alerta llega antes del faltante.',
+  },
+  {
+    Icono: MessageCircle,
+    titulo: 'Mandá la orden por WhatsApp',
+    texto: 'La orden sale redactada al proveedor más conveniente; vos la confirmás y la enviás.',
   },
 ];
 
@@ -121,8 +140,6 @@ const unDecimal = new Intl.NumberFormat('es-AR', {
   maximumFractionDigits: 1,
 });
 
-const ENLACE_SECCION = 'px-3 py-2 rounded-lg text-t2 hover:text-t1 hover:bg-fill transition-colors';
-
 /** Cabecera que se compacta al bajar (landing-motion D3). */
 function Cabecera() {
   const { scrollY } = useScroll();
@@ -140,28 +157,17 @@ function Cabecera() {
         <Link to="/" className="rounded-lg">
           <Logo />
         </Link>
-        <nav className="hidden md:flex items-center gap-1 ml-4 text-sm" aria-label="Secciones">
-          <a href="#diferencia" className={ENLACE_SECCION}>
-            Antes y después
-          </a>
-          <a href="#servicios" className={ENLACE_SECCION}>
-            Servicios
-          </a>
-          <a href="#como" className={ENLACE_SECCION}>
-            Cómo funciona
-          </a>
-          <a href="#planes" className={ENLACE_SECCION}>
-            Planes
-          </a>
-        </nav>
+        <NavSecciones />
         <div className="ml-auto flex items-center gap-2">
           <Link to="/login" className="btn btn-ghost !py-2 !px-3">
             <LogIn className="w-4 h-4" aria-hidden />
             Ingresar
           </Link>
-          <Link to="/registro" className="btn btn-primary !py-2 !px-3 hidden sm:inline-flex">
-            Crear cuenta
-          </Link>
+          <BotonMagnetico max={4} className="hidden sm:inline-flex">
+            <Link to="/registro" className="btn btn-primary !py-2 !px-3">
+              Crear cuenta
+            </Link>
+          </BotonMagnetico>
         </div>
       </div>
     </header>
@@ -235,8 +241,50 @@ function Encabezado({ titulo, texto }: { titulo: string; texto: string }) {
   );
 }
 
+/**
+ * Columna del panel del hero con el "depósito vivo" detrás (landing-3d D3): las cajas pasan de las
+ * estanterías al gráfico del panel y a la curva de margen a medida que se baja.
+ */
+function VisualDelHero({
+  avance,
+  referencia,
+}: {
+  avance: MotionValue<number>;
+  referencia: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div ref={referencia} className="relative pt-40 sm:pt-48 lg:pt-32">
+      <Lienzo3D
+        escena="deposito"
+        prioridad="idle"
+        progreso={avance}
+        imagen={{ ancho: 640, alto: 520 }}
+        className="absolute -inset-x-4 -top-6 bottom-1/3 lg:-inset-x-10 lg:-top-20 lg:bottom-1/3"
+      />
+      <div className="relative z-10 lg:w-[88%]">
+        <PanelDelHero />
+      </div>
+    </div>
+  );
+}
+
 /** Portada pública en `/` para visitantes sin sesión (design D8), animada (landing-motion D3). */
 export function LandingPage() {
+  // Desde 1024 px el hero queda anclado mientras el depósito se transforma; en pantallas angostas
+  // o con "reducir movimiento", la escena avanza mientras cruza la pantalla.
+  const ancho = useMedia('(min-width: 1024px)');
+  const reducido = useReducedMotion();
+  const anclado = ancho && !reducido;
+  const tramoAnclado = useRef<HTMLDivElement>(null);
+  const visual = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: avanceAnclado } = useScroll({
+    target: tramoAnclado,
+    offset: ['start start', 'end end'],
+  });
+  const { scrollYProgress: avanceSuelto } = useScroll({
+    target: visual,
+    offset: ['start 90%', 'start 5%'],
+  });
   return (
     <Animado>
       <div className="min-h-full flex flex-col">
@@ -245,49 +293,61 @@ export function LandingPage() {
         <BarraDeProgreso />
 
         <main className="flex-1">
-          <section className="max-w-6xl mx-auto px-4 md:px-6 pt-14 pb-10 grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div className="space-y-6">
-              <Revelar>
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-3">
-                  <Sparkles className="w-4 h-4" aria-hidden />
-                  Para PyMEs argentinas
-                </p>
-              </Revelar>
-              <TextoQueSeArma
-                className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]"
-                partes={[
-                  { texto: 'Tu stock y tus' },
-                  { texto: 'números reales', className: 'acento-serif text-[1.1em]' },
-                  { texto: ', en un solo lugar.' },
-                ]}
-              />
-              <Escalonado alMontar inicio={0.55} paso={0.12} className="space-y-6">
-                <Item>
-                  <p className="text-t2 text-lg max-w-xl">
-                    Inventario, rentabilidad y reposición inteligente para el comercio que hoy lleva
-                    todo en una planilla. Sabé qué te deja plata y qué se te va a acabar, antes de
-                    que pase.
+          <div ref={tramoAnclado} className={anclado ? 'h-[175vh]' : undefined}>
+            <section
+              className={`max-w-6xl mx-auto px-4 md:px-6 grid gap-10 lg:grid-cols-2 lg:items-center ${
+                anclado ? 'sticky top-14 min-h-[calc(100vh-3.5rem)] py-8' : 'pt-14 pb-10'
+              }`}
+            >
+              <div className="space-y-6">
+                <Revelar>
+                  <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-3">
+                    <Sparkles className="w-4 h-4" aria-hidden />
+                    Para PyMEs argentinas
                   </p>
-                </Item>
-                <Item className="flex flex-wrap gap-3">
-                  <Link to="/registro" className="btn btn-primary btn-brillo">
-                    Crear cuenta gratis
-                    <ArrowRight className="w-4 h-4" aria-hidden />
-                  </Link>
-                  <Link to="/login" className="btn btn-ghost">
-                    <LogIn className="w-4 h-4" aria-hidden />
-                    Ya tengo cuenta
-                  </Link>
-                </Item>
-                <Item>
-                  <p className="text-xs text-t3">
-                    Sin tarjeta. El plan Free incluye hasta {LIMITES_PLAN.FREE.productos} productos.
-                  </p>
-                </Item>
-              </Escalonado>
-            </div>
-            <PanelDelHero />
-          </section>
+                </Revelar>
+                <TextoQueSeArma
+                  subrayado={1}
+                  className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]"
+                  partes={[
+                    { texto: 'Tu stock y tus' },
+                    { texto: 'números reales', className: 'acento-serif text-[1.1em]' },
+                    { texto: ', en un solo lugar.' },
+                  ]}
+                />
+                <Escalonado alMontar inicio={0.55} paso={0.12} className="space-y-6">
+                  <Item>
+                    <p className="text-t2 text-lg max-w-xl">
+                      Inventario, rentabilidad y reposición inteligente para el comercio que hoy
+                      lleva todo en una planilla. Sabé qué te deja plata y qué se te va a acabar,
+                      antes de que pase.
+                    </p>
+                  </Item>
+                  <Item className="flex flex-wrap gap-3">
+                    <BotonMagnetico>
+                      <Link to="/registro" className="btn btn-primary btn-brillo">
+                        Crear cuenta gratis
+                        <ArrowRight className="w-4 h-4" aria-hidden />
+                      </Link>
+                    </BotonMagnetico>
+                    <Link to="/login" className="btn btn-ghost">
+                      <LogIn className="w-4 h-4" aria-hidden />
+                      Ya tengo cuenta
+                    </Link>
+                  </Item>
+                  <Item>
+                    <p className="text-xs text-t3">
+                      Sin tarjeta. El plan Free incluye hasta {LIMITES_PLAN.FREE.productos}{' '}
+                      productos.
+                    </p>
+                  </Item>
+                </Escalonado>
+              </div>
+              <VisualDelHero avance={anclado ? avanceAnclado : avanceSuelto} referencia={visual} />
+            </section>
+          </div>
+
+          <MarquesinaRubros />
 
           <FrenteAFrente />
 
@@ -323,9 +383,20 @@ export function LandingPage() {
             <ComoFuncionaAnclado
               pasos={PASOS}
               titulo="Cómo funciona"
-              subtitulo="Tres pasos y el primer día ya tenés el panel."
+              subtitulo="Cuatro pasos y el primer día ya tenés el panel."
+              visual={(avance) => (
+                <Lienzo3D
+                  escena="como"
+                  prioridad="cercania"
+                  progreso={avance}
+                  imagen={{ ancho: 640, alto: 480 }}
+                  className="absolute inset-0 w-full h-full"
+                />
+              )}
             />
           </section>
+
+          <HechoParaArgentina />
 
           <section
             id="planes"
@@ -360,12 +431,14 @@ export function LandingPage() {
                           </li>
                         ))}
                       </ul>
-                      <Link
-                        to={`/registro?plan=${p.clave}`}
-                        className={`btn mt-5 ${p.destacado ? 'btn-primary btn-brillo' : 'btn-ghost'}`}
-                      >
-                        {p.boton}
-                      </Link>
+                      <BotonMagnetico max={p.destacado ? 6 : 0} className="mt-5 flex flex-col">
+                        <Link
+                          to={`/registro?plan=${p.clave}`}
+                          className={`btn ${p.destacado ? 'btn-primary btn-brillo' : 'btn-ghost'}`}
+                        >
+                          {p.boton}
+                        </Link>
+                      </BotonMagnetico>
                     </div>
                   </TarjetaInclinable>
                 </Item>

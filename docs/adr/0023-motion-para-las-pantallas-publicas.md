@@ -1,6 +1,6 @@
 # ADR 0023 · Motion para las pantallas públicas
 
-**Estado:** aceptada · 02/10/2026. Acota la regla "sin librerías de animación" de ADR 0012 a la app con sesión.
+**Estado:** aceptada · 02/10/2026. Acota la regla "sin librerías de animación" de ADR 0012 a la app con sesión. Completada por ADR 0026 (escenas 3D de la portada con three.js).
 
 ## Contexto
 

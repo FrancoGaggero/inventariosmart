@@ -39,6 +39,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | `mobile-app`            | HU-08 | RF-10         | 3    | 30 · `mobile-assistant` (02/10/2026; asistente con IA e historial en el celular) |
 | (sin spec, web y mobile UI) | —  | RNF-01, RNF-08 | 2   | 31 · `app-animations` (06/10/2026, skip_specs; animaciones de estados vacíos y onboarding con HyperFrames y Remotion) |
 | `mobile-app`            | HU-07, HU-16 | RF-07, RF-17 | 2  | 32 · `mobile-orders` (07/10/2026; órdenes de compra y WhatsApp en el celular) |
+| (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2  | 33 · `landing-3d` (16/10/2026, skip_specs; escenas 3D con three.js en la portada y "Hecho para Argentina") |
 
 ## Reglas de uso
 

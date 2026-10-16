@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  atraccion,
   inclinacion,
   palabras,
   posicionRelativa,
@@ -77,5 +78,26 @@ describe('animaciones de las pantallas públicas (landing-motion D2)', () => {
     }
     expect(tramoDePaso(0, 3)).toEqual([0, 0.04, 0.293, 0.373]);
     expect(tramoDePaso(2, 3)[3]).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('botón magnético (landing-3d D6)', () => {
+  const boton = { left: 100, top: 100, width: 120, height: 40 };
+
+  it('no se mueve con el puntero lejos ni en el centro', () => {
+    expect(atraccion(600, 600, boton)).toEqual({ x: 0, y: 0 });
+    expect(atraccion(160, 120, boton)).toEqual({ x: 0, y: 0 });
+  });
+
+  it('se corre hacia el puntero cercano sin pasar el máximo', () => {
+    const derecha = atraccion(250, 120, boton);
+    expect(derecha.x).toBeGreaterThan(0);
+    expect(derecha.y).toBe(0);
+    const arriba = atraccion(160, 60, boton);
+    expect(arriba.y).toBeLessThan(0);
+    for (let x = 0; x < 400; x += 7) {
+      const d = atraccion(x, 90, boton, 80, 6);
+      expect(Math.hypot(d.x, d.y)).toBeLessThanOrEqual(6.001);
+    }
   });
 });

@@ -10,6 +10,22 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // three y el motor de las escenas en un solo chunk con nombre estable (landing-3d D1);
+        // verificar-chunks.mjs igual lo encuentra por firma, no por nombre.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'tres',
+              test: /node_modules[\\/](\.pnpm[\\/]three@[^\\/]+[\\/]node_modules[\\/])?three[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,
