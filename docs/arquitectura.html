@@ -517,6 +517,8 @@ CREATE POLICY producto_sistema ON producto
 
 <section id="s10">
   <h2><span class="n">10</span>Plan ejecutado</h2>
+  <h3>Proceso de diseño</h3>
+  <p>Este documento y el DER base se escribieron antes de construir (09/09 y 10/09/2026). Después, cada historia tuvo su diseño propio antes de programarla: una change de OpenSpec con propuesta, especificación con escenarios, diseño (tablas, endpoints, roles y planes) y tareas, más un ADR por cada decisión no trivial. Los diagramas UML de la cátedra (casos de uso, clases y componentes) y el DER final se consolidaron el 09/10/2026, después de construir, a partir del sistema real, porque el alcance creció con cinco historias nuevas y así coinciden con lo entregado. Las etapas 3 y 4 del Gantt se superpusieron (Gantt v3, nota 2).</p>
   <p>El Gantt v2 concentraba el desarrollo entre el 12/10 y el 04/12 y dejaba las Fases 2 y 3 fuera de plazo. Se adelantó el esqueleto técnico a septiembre y cada historia se construyó como una change de OpenSpec (propuesta, spec con escenarios CP, diseño y tareas), con CI en verde y despliegue antes de pasar a la siguiente. Resultado: las 19 historias de las tres fases quedaron construidas entre el 09/09 y el 06/10/2026. El detalle de las 32 changes, con fecha, está en <span class="id">openspec/CAPACIDADES.md</span> y en el Gantt v3.</p>
   <div class="sprints">
     <div class="sp"><div class="when"><b>Sprint 0</b>09/09 → 10/09</div><div class="what"><b>Esqueleto andante.</b> Monorepo, CI, NestJS con <span class="id">/health</span> y Swagger en Render, web en Vercel, login con Google de punta a punta y RLS (HU-11).</div></div>

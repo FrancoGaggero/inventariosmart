@@ -1,8 +1,18 @@
 <html><head><meta charset="utf-8"><title>Diseño técnico - InventarioSmart</title>
 <style>body{font-family:Arial,sans-serif;font-size:11pt}table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:4px;vertical-align:top}th{background:#f2e6d3}img{max-width:100%}</style></head><body>
 <h1>InventarioSmart · Diseño técnico: DER, diagrama de clases, componentes y casos de uso</h1>
-<p>Versión 1.0 · 9 de octubre de 2026 · Franco Gaggero · Tareas 3.2, 3.4, 3.5 y 3.7 del Gantt.</p>
+<p>Versión 1.1 · 5 de noviembre de 2026 · Franco Gaggero · Tareas 3.2, 3.4, 3.5 y 3.7 del Gantt.</p>
 <p>Los diagramas se mantienen en el repositorio, en <a href="https://github.com/FrancoGaggero/inventariosmart/tree/main/docs/diagramas">docs/diagramas</a>, como código Mermaid con su versión SVG (ampliable sin pérdida) y PNG. El DER se genera desde el esquema real de la base de datos, de modo que coincide con lo implementado.</p>
+
+<h2>Proceso de diseño</h2>
+<p>El diseño se hizo en tres momentos, y conviene leer estos diagramas sabiendo cuál es cuál.</p>
+<table>
+<tr><th>Momento</th><th>Qué se diseñó</th><th>Dónde quedó</th></tr>
+<tr><td>Antes de construir (09/09 y 10/09/2026)</td><td>Arquitectura: monolito modular con una API REST para web y Android, stack, multi-tenencia con Row Level Security, contrato OpenAPI, entornos y plan de sprints. DER base de la Fase 1.</td><td>Diseño de arquitectura (documento 08) y ADR 0001 a 0005.</td></tr>
+<tr><td>Durante la construcción, historia por historia (10/09 al 16/10/2026)</td><td>Cada historia de usuario se trabajó como un cambio de OpenSpec con cuatro artefactos que se revisaron antes de programar: propuesta (qué y por qué), especificación (requisitos y escenarios GIVEN / WHEN / THEN con su código de caso de prueba), diseño (tablas nuevas con su política de aislamiento, endpoints con roles y plan, decisiones) y tareas. Las decisiones no triviales se registraron como ADR.</td><td>32 cambios en <code>openspec/changes/archive</code>, especificaciones en <code>openspec/specs</code> y ADR 0006 a 0026 en el repositorio.</td></tr>
+<tr><td>Después de construir (09/10/2026)</td><td>Consolidación de los entregables de modelado de la cátedra: diagrama y especificación de casos de uso, DER final, diagrama de clases y diagrama de componentes, y actualización de la arquitectura.</td><td>Este documento, Casos de uso (05) y Diseño de arquitectura (08).</td></tr>
+</table>
+<p><b>Por qué los diagramas UML se consolidaron después de construir.</b> El Gantt v2 planificaba la etapa de diseño completa antes del desarrollo. En la práctica se adoptó un desarrollo guiado por especificación: el diseño de detalle de cada historia se hacía justo antes de construirla, y las etapas 3 y 4 se superpusieron (Gantt v3, nota 2). Durante la construcción el alcance creció con cinco historias nuevas (HU-15 a HU-19), así que un diagrama hecho al principio habría quedado desactualizado. Por eso los diagramas se armaron al final a partir del sistema real: el DER sale del esquema de la base de datos, los casos de uso de las especificaciones de las 19 historias y los componentes de los módulos de la API. Así coinciden con lo que se entrega. Los diagramas se pueden regenerar con los scripts de <code>herramientas/diagramas</code> si el sistema cambia.</p>
 
 <h2>1. Modelo entidad-relación (DER)</h2>
 <p>El modelo tiene 19 tablas. Dieciocho pertenecen a un comercio: llevan la clave foránea <b>comercio_id</b> y una política de Row Level Security que impide leer o escribir filas de otro comercio (RNF-10). La tabla de indicadores económicos es la única de referencia global, compartida y de sólo lectura para la aplicación.</p>

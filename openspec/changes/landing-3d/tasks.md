@@ -41,6 +41,6 @@
 
 ## 8. Cierre
 
-- [ ] 8.1 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (la web también sin `.env`) y `pnpm build`; push. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
+- [x] 8.1 `pnpm lint`, `pnpm format:check`, `pnpm typecheck`, `pnpm test` (la web también sin `.env`) y `pnpm build`; push. Listo cuando: el run de CI del commit final tiene los dos jobs en verde
 - [ ] 8.2 Producción: Franco abre https://inventariosmart0.vercel.app sin sesión en la compu y en el celular. Listo cuando: Franco confirma que las tres escenas se ven y le gustan
 - [ ] 8.3 Mover la tarjeta de Trello y actualizar el estado en el backlog. Listo cuando: Franco lo confirma
