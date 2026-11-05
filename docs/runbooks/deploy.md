@@ -48,8 +48,11 @@ El `PlanGuard` lee el plan en cada request: el cambio aplica sin reiniciar la AP
 
 - **Render:** Deployments → elegir el anterior → **Rollback**. Las migraciones son aditivas; no hace falta revertirlas.
 - **Vercel:** Deployments → **Promote to Production** sobre el deployment anterior.
+- **Datos:** si se pierden o se corrompen datos, la recuperación es desde el respaldo diario cifrado (RNF-09):
+  [restore.md](restore.md).
 
 ## Rotación de credenciales
 
 - **Firebase service account:** Configuración del proyecto → Cuentas de servicio → Generar nueva clave; actualizar `FIREBASE_SERVICE_ACCOUNT_JSON` en Render y en la carpeta de secretos; borrar la clave vieja en Google Cloud IAM. Pendiente antes del hito H4 (la clave del sprint 0 pasó por un chat).
-- **Neon:** Roles → Reset password; actualizar `DATABASE_URL` y `DIRECT_URL` en Render y en los `.env` locales.
+- **Neon:** Roles → Reset password; actualizar `DATABASE_URL` y `DIRECT_URL` en Render y en los `.env` locales, y el
+  secreto `BACKUP_DATABASE_URL` de GitHub si cambia la clave de `neondb_owner` (si no, el respaldo diario falla).

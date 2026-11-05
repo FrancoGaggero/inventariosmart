@@ -1,0 +1,124 @@
+name: Respaldo diario
+
+# RNF-09 (ADR 0027): volcado diario de la rama production de Neon, cifrado, guardado 30 días y
+# verificado restaurándolo. Recuperación: docs/runbooks/restore.md.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 03:00 de Buenos Aires
+  workflow_dispatch:
+
+concurrency:
+  group: respaldo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  respaldo:
+    name: Volcar, cifrar y verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      # Base efímera donde se restaura el respaldo para comprobarlo (D3).
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: restauracion
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # La conexión y la frase sólo viven en variables de entorno: nunca en la línea de comandos.
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      RESTAURADA_URL: postgresql://postgres:postgres@localhost:5432/restauracion
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar
+        id: preparar
+        run: |
+          if [ -z "$BACKUP_DATABASE_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Faltan los secretos BACKUP_DATABASE_URL o BACKUP_PASSPHRASE (docs/runbooks/restore.md)."
+            exit 1
+          fi
+          # GitHub enmascara el secreto entero; también la clave sola, por si un error la muestra.
+          clave="${BACKUP_DATABASE_URL#*://}"; clave="${clave%%@*}"; clave="${clave#*:}"
+          echo "::add-mask::$clave"
+          echo "::add-mask::$BACKUP_PASSPHRASE"
+          mkdir -p "$RUNNER_TEMP/respaldo"
+          fecha=$(TZ=America/Argentina/Buenos_Aires date +%F)
+          echo "fecha=$fecha" >>"$GITHUB_OUTPUT"
+          echo "archivo=respaldo-$fecha.dump.gpg" >>"$GITHUB_OUTPUT"
+
+      - name: Volcar la base de producción
+        timeout-minutes: 15
+        run: |
+          # pg_dump de la misma versión mayor que Neon: el runner trae un cliente más viejo y pg_dump
+          # no vuelca un servidor más nuevo. Neon puede tener el cómputo dormido: la primera conexión
+          # lo despierta, por eso hay un reintento.
+          for intento in 1 2; do
+            if docker run --rm --network host --user "$(id -u):$(id -g)" -e BACKUP_DATABASE_URL \
+                -v "$RUNNER_TEMP/respaldo:/respaldo" postgres:18 \
+                pg_dump --format=custom --no-owner --no-privileges \
+                --dbname "$BACKUP_DATABASE_URL" --file /respaldo/respaldo.dump; then
+              exit 0
+            fi
+            echo "::warning::pg_dump falló (intento $intento)"
+            sleep 20
+          done
+          exit 1
+
+      - name: Cifrar
+        run: |
+          # AES-256 simétrico (D2). El volcado sin cifrar nunca sale del runner.
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
+            --symmetric --cipher-algo AES256 --compress-algo none \
+            --output "${{ steps.preparar.outputs.archivo }}" "$RUNNER_TEMP/respaldo/respaldo.dump" \
+            3<<<"$BACKUP_PASSPHRASE"
+          rm -f "$RUNNER_TEMP/respaldo/respaldo.dump"
+
+      - name: Guardar el respaldo (30 días)
+        uses: actions/upload-artifact@v4
+        with:
+          name: respaldo-${{ steps.preparar.outputs.fecha }}
+          path: ${{ steps.preparar.outputs.archivo }}
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Descifrar y restaurar en una base efímera
+        run: |
+          # Se restaura el archivo cifrado que se acaba de guardar: así se prueba también la frase.
+          gpg --batch --pinentry-mode loopback --passphrase-fd 3 --decrypt \
+            --output "$RUNNER_TEMP/respaldo/restaurado.dump" "${{ steps.preparar.outputs.archivo }}" \
+            3<<<"$BACKUP_PASSPHRASE"
+          docker run --rm --network host --user "$(id -u):$(id -g)" \
+            -v "$RUNNER_TEMP/respaldo:/respaldo" postgres:18 \
+            pg_restore --no-owner --no-privileges --exit-on-error \
+            --dbname "$RESTAURADA_URL" /respaldo/restaurado.dump
+          rm -f "$RUNNER_TEMP/respaldo/restaurado.dump"
+
+      - name: Devolverle sus permisos a app_api
+        run: |
+          # Mismo paso que el runbook: el respaldo no lleva permisos (--no-privileges).
+          psql "$RESTAURADA_URL" -X -q -v ON_ERROR_STOP=1 -c "CREATE ROLE app_api NOLOGIN NOBYPASSRLS"
+          bash .github/scripts/permisos-app-api.sh apps/api/prisma/migrations postgres \
+            | psql "$RESTAURADA_URL" -X -q -v ON_ERROR_STOP=1
+
+      - name: Verificar
+        run: |
+          {
+            echo "## Respaldo ${{ steps.preparar.outputs.fecha }}"
+            echo
+            echo "Archivo cifrado: $(du -h "${{ steps.preparar.outputs.archivo }}" | cut -f1), guardado 30 días."
+            echo
+          } >>"$GITHUB_STEP_SUMMARY"
+          bash .github/scripts/verificar-respaldo.sh apps/api/prisma/schema.prisma apps/api/prisma/migrations

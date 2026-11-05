@@ -40,6 +40,7 @@ y la trazabilidad HU → spec → CP sea directa. Formato: kebab-case, plano (si
 | (sin spec, web y mobile UI) | —  | RNF-01, RNF-08 | 2   | 31 · `app-animations` (06/10/2026, skip_specs; animaciones de estados vacíos y onboarding con HyperFrames y Remotion) |
 | `mobile-app`            | HU-07, HU-16 | RF-07, RF-17 | 2  | 32 · `mobile-orders` (07/10/2026; órdenes de compra y WhatsApp en el celular) |
 | (sin spec, web UI)      | —     | RNF-01, RNF-08 | 2  | 33 · `landing-3d` (16/10/2026, skip_specs; escenas 3D con three.js en la portada y "Hecho para Argentina") |
+| (sin spec, infraestructura) | — | RNF-09         | —  | 34 · `database-backups` (05/11/2026, skip_specs; respaldo diario cifrado en GitHub Actions, verificado al restaurar, y runbook de recuperación) |
 
 ## Reglas de uso
 

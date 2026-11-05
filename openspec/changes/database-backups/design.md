@@ -64,11 +64,17 @@ La motivación está en proposal.md.
 El mismo workflow tiene un segundo paso contra un servicio `postgres:18` efímero del runner (igual que el CI):
 
 1. **Restaurar:** descifra el artefacto recién generado y lo restaura con `pg_restore --no-owner --no-privileges --exit-on-error`.
-2. **Comprobar** con `psql`:
+2. **Devolver los permisos:** crear `app_api` y aplicar el SQL de `.github/scripts/permisos-app-api.sh`.
+   - Con `--no-privileges` el volcado no lleva los `GRANT` ni los `REVOKE`, entre ellos los recortes de las tablas de sólo inserción (RN-07).
+   - El script los rearma con el bloque general de `rls.md` más los de cada migración, en orden.
+   - Es el mismo paso que el runbook: así se prueba a diario. *Agregado durante el apply:* el diseño original no lo preveía, y sin él una restauración dejaba a `app_api` con `UPDATE` y `DELETE` sobre el historial.
+3. **Comprobar** con `psql` (`.github/scripts/verificar-respaldo.sh`):
    - que existan las 19 tablas del esquema;
    - que las filas de `_prisma_migrations` coincidan con las carpetas de `apps/api/prisma/migrations` del commit que corre, así se ve si producción tiene migraciones pendientes;
-   - que haya al menos un comercio.
-3. **Registrar:** los tamaños y las cantidades por tabla van al resumen del workflow (`$GITHUB_STEP_SUMMARY`), sin datos personales.
+   - que haya al menos un comercio;
+   - que la RLS esté activa y forzada en todas las tablas;
+   - que `app_api` lea todas las tablas, no lea `_prisma_migrations` y no tenga ninguno de los privilegios que le revocan las migraciones.
+4. **Registrar:** los tamaños y las cantidades por tabla van al resumen del workflow (`$GITHUB_STEP_SUMMARY`), sin datos personales.
 
 Si cualquier paso falla, el workflow queda en rojo y GitHub avisa al dueño por correo. Con eso RNF-09 es verificable todos los días, no sólo una vez.
 
@@ -76,8 +82,8 @@ Si cualquier paso falla, el workflow queda en rojo y GitHub avisa al dueño por 
 
 1. **Bajar** el respaldo con `gh run download <id> -n respaldo-AAAA-MM-DD`, o desde la pestaña Actions.
 2. **Descifrar** con `gpg --decrypt` usando la frase de la carpeta de secretos.
-3. **Preparar la rama:** crear en Neon una rama vacía, por ejemplo `restauracion-AAAA-MM-DD`, y su `app_api` siguiendo `rls.md`.
-4. **Restaurar:** `pg_restore --no-owner --no-privileges --dbname <conexión directa de la rama>` con `docker run postgres:18`, y después los `GRANT` de `app_api`.
+3. **Preparar la rama:** crear en Neon una rama nueva, por ejemplo `restauracion-AAAA-MM-DD`, y dentro de ella una base vacía (`restaurada`), porque una rama hija copia los datos del padre. `app_api` viene heredado de `production`.
+4. **Restaurar:** `pg_restore --no-owner --no-privileges --exit-on-error --dbname <conexión directa de esa base>` con el cliente de PostgreSQL 18 de la máquina, y después `permisos-app-api.sh` con `neondb_owner`.
 5. **Verificar:** las mismas consultas del workflow, más entrar a la web contra esa rama en local.
 6. **Cambiar:** apuntar `DATABASE_URL` y `DIRECT_URL` de Render a la rama restaurada, o promoverla a principal en Neon. También dice cómo volver atrás.
 
